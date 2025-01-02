@@ -49,16 +49,16 @@ public abstract class CreativeInventoryMixin extends EffectRenderingInventoryScr
             AbstractContainerMenu abstractcontainermenu = this.minecraft.player.inventoryMenu;
             for (Slot slot : abstractcontainermenu.slots) {
                   if (slot instanceof BackSlot backSlot) {
-                        CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(backSlot, 41, 127, 20);
+                        CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(backSlot, backSlot.index, 127, 20);
                         menu.slots.set(backSlot.index, wrapped);
                   }
                   if (slot instanceof ShorthandSlot.WeaponSlot shortSlot) {
-                        CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(shortSlot, 41, -22, shortSlot.getContainerSlot() * 18);
+                        CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(shortSlot, shortSlot.index, -22, shortSlot.getContainerSlot() * 18);
                         menu.slots.set(shortSlot.index, wrapped);
                   }
-                  if (slot instanceof ShorthandSlot.ToolSlot shortSlot) {
-                        CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(shortSlot, 41, -40, shortSlot.getContainerSlot() * 18);
-                        menu.slots.set(shortSlot.index, wrapped);
+                  if (slot instanceof ShorthandSlot.ToolSlot toolSlot) {
+                        CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(toolSlot, toolSlot.index, -40, toolSlot.getContainerSlot() * 18);
+                        menu.slots.set(toolSlot.index, wrapped);
                   }
             }
       }
