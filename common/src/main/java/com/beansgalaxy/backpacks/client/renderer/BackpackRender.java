@@ -1,15 +1,19 @@
 package com.beansgalaxy.backpacks.client.renderer;
 
+import com.beansgalaxy.backpacks.CommonClient;
 import com.beansgalaxy.backpacks.Constants;
+import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.platform.Services;
+import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.util.Tint;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.beansgalaxy.backpacks.util.ViewableBackpack;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.geom.ModelLayerLocation;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.ItemModelShaper;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
@@ -23,10 +27,10 @@ import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.armortrim.ArmorTrim;
 import net.minecraft.world.item.component.DyedItemColor;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 public interface BackpackRender {
@@ -42,7 +46,15 @@ public interface BackpackRender {
 
       BlockRenderDispatcher blockRenderer();
 
-      default void renderTexture(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, ResourceLocation texture, ItemStack itemStack) {
+      default void renderTexture(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, ResourceLocation texture, ItemStack itemStack, ViewableBackpack viewable) {
+            UtilityComponent utilities = itemStack.get(ITraitData.UTILITIES);
+            if (utilities != null && !utilities.isBlank()) {
+                  ItemStack first = utilities.get(0);
+                  renderUtilities(pose, pBufferSource, pCombinedLight, first, viewable, true);
+                  ItemStack second = utilities.get(1);
+                  renderUtilities(pose, pBufferSource, pCombinedLight, second, viewable, false);
+            }
+
             if (texture.equals(ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "leather"))) {
                   builtInLeatherModel(pose, pBufferSource, pCombinedLight, itemStack);
                   return;
@@ -73,6 +85,50 @@ public interface BackpackRender {
             } else {
                   model().renderButton(pose, outer, pCombinedLight, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
             }
+      }
+
+      private void renderUtilities(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, ItemStack stack, ViewableBackpack viewable, boolean rightSide) {
+            if (stack.isEmpty())
+                  return;
+
+            BakedModel model = resolveUtilitiesModel(stack);
+            if (model == null)
+                  return;
+
+            ItemDisplayContext displayContext = ItemDisplayContext.FIXED;
+
+            pose.pushPose();
+            model.getTransforms().getTransform(displayContext).apply(!rightSide, pose);
+            pose.scale(.5f, .5f, .5f);
+            if (rightSide) {
+                  pose.translate(33/32f, -19/16f, -1f);
+                  pose.mulPose(Axis.YN.rotationDegrees(90));
+            }
+            else {
+                  pose.translate(-33/32f, -19/16f, 0f);
+                  pose.mulPose(Axis.YP.rotationDegrees(90));
+            }
+
+            float fallDistance = viewable.fallDistance();
+            boolean isFallFlying = false;
+            float fallPitch = isFallFlying ? 0 : (float) -Math.log(fallDistance * 2 + 1);
+            double y = fallPitch * 0.02;
+            pose.translate(0, y, -fallPitch * 0.004);
+            pose.mulPose(Axis.XP.rotationDegrees(fallPitch * 2));
+            VertexConsumer buffer = pBufferSource.getBuffer(Sheets.cutoutBlockSheet());
+            this.blockRenderer().getModelRenderer().renderModel(pose.last(), buffer, null, model, 1.0F, 1.0F, 1.0F, pCombinedLight, OverlayTexture.NO_OVERLAY);
+            pose.popPose();
+      }
+
+      default BakedModel resolveUtilitiesModel(ItemStack stack) {
+            ItemModelShaper itemModelShaper = itemRenderer().getItemModelShaper();
+            BakedModel itemModel = itemModelShaper.getItemModel(stack);
+            BakedModel resolve = itemModel.getOverrides().resolve(itemModel, CommonClient.UTILITY_DISPLAY_STAND_IN, null, null, 0);
+            if (resolve == null)
+                  return null;
+
+            Minecraft minecraft = Minecraft.getInstance();
+            return resolve.getOverrides().resolve(resolve, stack, minecraft.level, minecraft.player, minecraft.player == null ? 0 : minecraft.player.getId());
       }
 
       default void builtInLeatherModel(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, ItemStack pItemStack) {

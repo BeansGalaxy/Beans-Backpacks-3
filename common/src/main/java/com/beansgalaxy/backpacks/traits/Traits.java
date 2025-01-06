@@ -2,6 +2,7 @@ package com.beansgalaxy.backpacks.traits;
 
 import com.beansgalaxy.backpacks.access.EquipmentSlotAccess;
 import com.beansgalaxy.backpacks.components.PlaceableComponent;
+import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.components.ender.EmptyEnderItem;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
@@ -26,9 +27,11 @@ import com.beansgalaxy.backpacks.traits.quiver.QuiverCodecs;
 import com.beansgalaxy.backpacks.traits.quiver.QuiverTraits;
 import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.PrimitiveCodec;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -84,6 +87,9 @@ public interface Traits {
 
       TraitComponentKind<ChestTraits>
                   CHEST = TraitComponentKind.register(ChestTraits.NAME, ChestCodecs.INSTANCE);
+
+      DataComponentType<Byte>
+                  UTILITIES = register(UtilityComponent.NAME, UtilityComponent.SIZE_CODEC, ByteBufCodecs.BYTE);
 
       List<TraitComponentKind<? extends GenericTraits>> ALL_TRAITS = List.of(
                   BUNDLE,     LUNCH_BOX,        BULK,       BUCKET,

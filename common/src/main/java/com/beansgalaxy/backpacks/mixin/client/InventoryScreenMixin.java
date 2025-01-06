@@ -1,7 +1,7 @@
 package com.beansgalaxy.backpacks.mixin.client;
 
 import com.beansgalaxy.backpacks.CommonClient;
-import com.beansgalaxy.backpacks.shorthand.ShorthandSlot;
+import com.beansgalaxy.backpacks.container.ShorthandSlot;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;

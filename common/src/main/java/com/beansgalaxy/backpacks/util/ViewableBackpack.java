@@ -85,6 +85,10 @@ public abstract class ViewableBackpack implements PatchedComponentHolder {
             headPitch = newPitch;
       }
 
+      public float fallDistance() {
+            return 0f;
+      }
+
       @Override public <T> @Nullable T remove(DataComponentType<? extends T> type) {
             return holder().remove(type);
       }

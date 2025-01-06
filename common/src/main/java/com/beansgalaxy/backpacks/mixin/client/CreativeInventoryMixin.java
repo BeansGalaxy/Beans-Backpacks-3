@@ -1,10 +1,9 @@
 package com.beansgalaxy.backpacks.mixin.client;
 
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
-import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
-import com.beansgalaxy.backpacks.screen.BackSlot;
-import com.beansgalaxy.backpacks.shorthand.Shorthand;
-import com.beansgalaxy.backpacks.shorthand.ShorthandSlot;
+import com.beansgalaxy.backpacks.container.BackSlot;
+import com.beansgalaxy.backpacks.container.Shorthand;
+import com.beansgalaxy.backpacks.container.ShorthandSlot;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
 import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
@@ -26,8 +25,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Mixin(value = CreativeModeInventoryScreen.class)
 public abstract class CreativeInventoryMixin extends EffectRenderingInventoryScreen<CreativeModeInventoryScreen.ItemPickerMenu> {

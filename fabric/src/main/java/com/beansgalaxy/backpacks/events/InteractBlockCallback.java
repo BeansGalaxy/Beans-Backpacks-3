@@ -1,7 +1,7 @@
 package com.beansgalaxy.backpacks.events;
 
 
-import com.beansgalaxy.backpacks.shorthand.Shorthand;
+import com.beansgalaxy.backpacks.container.Shorthand;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;

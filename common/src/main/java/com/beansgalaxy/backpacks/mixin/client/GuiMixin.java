@@ -1,6 +1,8 @@
 package com.beansgalaxy.backpacks.mixin.client;
 
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
+import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;

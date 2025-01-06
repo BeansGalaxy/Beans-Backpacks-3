@@ -1,7 +1,7 @@
 package com.beansgalaxy.backpacks.mixin.common;
 
-import com.beansgalaxy.backpacks.screen.BackSlot;
-import com.beansgalaxy.backpacks.shorthand.Shorthand;
+import com.beansgalaxy.backpacks.container.BackSlot;
+import com.beansgalaxy.backpacks.container.Shorthand;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;

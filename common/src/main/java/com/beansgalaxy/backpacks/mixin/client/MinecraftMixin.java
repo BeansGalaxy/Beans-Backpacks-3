@@ -5,7 +5,7 @@ import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.access.MinecraftAccessor;
 import com.beansgalaxy.backpacks.client.KeyPress;
 import com.beansgalaxy.backpacks.data.EnderStorage;
-import com.beansgalaxy.backpacks.shorthand.Shorthand;
+import com.beansgalaxy.backpacks.container.Shorthand;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -27,8 +27,6 @@ public abstract class MinecraftMixin implements MinecraftAccessor {
       @Shadow @Nullable public LocalPlayer player;
       @Shadow public ClientLevel level;
 
-      @Shadow protected abstract boolean shouldRun(Runnable pRunnable);
-
       @Shadow @Nullable public HitResult hitResult;
       @Unique public final EnderStorage beans_Backpacks_2$enderStorage = new EnderStorage();
 
@@ -43,13 +41,6 @@ public abstract class MinecraftMixin implements MinecraftAccessor {
             if(BackData.get(player).isActionKeyDown() && instance.hitResult instanceof BlockHitResult blockHitResult && KeyPress.INSTANCE.consumeActionUseOn(instance, blockHitResult))
                   ci.cancel();
       }
-//
-//      @Inject(method = "startUseItem", cancellable = true, at = @At(value = "INVOKE", shift = At.Shift.BEFORE,
-//                  ordinal = 1, target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z"))
-//      private void hotkeyUseItem(CallbackInfo ci) {
-//            if(BackData.get(player).isActionKeyDown() && KeyPress.INSTANCE.consumeActionUse(level, player))
-//                  ci.cancel();
-//      }
 
       @Inject(method = "handleKeybinds", at = @At("TAIL"))
       private void handleBackpackKeybinds(CallbackInfo ci) {

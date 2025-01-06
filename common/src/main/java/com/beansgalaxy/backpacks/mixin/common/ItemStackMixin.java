@@ -1,14 +1,17 @@
 package com.beansgalaxy.backpacks.mixin.common;
 
+import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.components.reference.NonTrait;
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
@@ -68,8 +71,8 @@ public abstract class ItemStackMixin {
             list.add(Component.translatable("tooltip.beansbackpacks.advanced.reference", location.toString()).withStyle(ChatFormatting.DARK_GRAY).withStyle(ChatFormatting.ITALIC));
       }
 
-      @Inject(method = "addAttributeTooltips", locals = LocalCapture.CAPTURE_FAILHARD, at = @At(value = "INVOKE", shift = At.Shift.BEFORE, target = "Lnet/minecraft/world/item/ItemStack;forEachModifier(Lnet/minecraft/world/entity/EquipmentSlotGroup;Ljava/util/function/BiConsumer;)V"))
-      private void backpackAttributeLines(Consumer<Component> pTooltipAdder, Player pPlayer, CallbackInfo ci, ItemAttributeModifiers itemattributemodifiers, EquipmentSlotGroup[] slotGroups, int var5, int var6, EquipmentSlotGroup slotGroup, MutableBoolean mutableboolean) {
+      @Inject(method = "addAttributeTooltips", at = @At(value = "INVOKE", shift = At.Shift.BEFORE, target = "Lnet/minecraft/world/item/ItemStack;forEachModifier(Lnet/minecraft/world/entity/EquipmentSlotGroup;Ljava/util/function/BiConsumer;)V"))
+      private void backpackAttributeLines(Consumer<Component> pTooltipAdder, Player pPlayer, CallbackInfo ci, @Local EquipmentSlotGroup slotGroup, @Local MutableBoolean mutableboolean) {
             EquipableComponent.get(instance).ifPresent(equipable ->
                   Traits.runIfPresent(instance, traits -> {
                         if (NonTrait.is(traits) || !equipable.slots().test(slotGroup))
@@ -84,6 +87,20 @@ public abstract class ItemStackMixin {
                         traits.client().appendEquipmentLines(traits, pTooltipAdder);
                   })
             );
+
+            if (EquipmentSlotGroup.BODY.equals(slotGroup)) {
+                  byte size = UtilityComponent.getSize(instance);
+                  if (size != 0) {
+                        if (mutableboolean.isTrue()) {
+                              pTooltipAdder.accept(CommonComponents.EMPTY);
+                              pTooltipAdder.accept(Component.translatable("item.modifiers." + slotGroup.getSerializedName()).withStyle(ChatFormatting.GRAY));
+                              mutableboolean.setFalse();
+                        }
+
+                        MutableComponent translatable = Component.translatable("traits.beansbackpacks.equipment.utility", size);
+                        pTooltipAdder.accept(translatable.withStyle(ChatFormatting.GOLD));
+                  }
+            }
       }
 
       @Inject(method = "forEachModifier(Lnet/minecraft/world/entity/EquipmentSlot;Ljava/util/function/BiConsumer;)V", at = @At("HEAD"))

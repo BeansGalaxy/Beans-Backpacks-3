@@ -112,5 +112,6 @@
   "config.beansbackpacks.shorthand-hud.far-corner": "The Shorthand will appear in the corner of the Screen on the Main Hand's side",
 
   "pack.source.beansbackpacks": "backpacks",
-  "config.beansbackpacks.client.player-render": "Player Rendering"
+  "config.beansbackpacks.client.player-render": "Player Rendering",
+  "traits.beansbackpacks.equipment.utility": "+%d Utility"
 }

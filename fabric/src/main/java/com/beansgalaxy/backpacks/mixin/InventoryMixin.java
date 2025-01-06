@@ -1,7 +1,8 @@
 package com.beansgalaxy.backpacks.mixin;
 
 import com.beansgalaxy.backpacks.access.BackData;
-import com.beansgalaxy.backpacks.shorthand.Shorthand;
+import com.beansgalaxy.backpacks.container.Shorthand;
+import com.beansgalaxy.backpacks.container.UtilityContainer;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.player.Inventory;
@@ -27,6 +28,11 @@ public abstract class InventoryMixin implements BackData {
       public void backpackInit(Player player, CallbackInfo ci) {
             ImmutableList.Builder<NonNullList<ItemStack>> builder = ImmutableList.builder();
             compartments = builder.addAll(this.compartments).add(beans_Backpacks_3$body).build();
+      }
+
+      @Override
+      public NonNullList<ItemStack> beans_Backpacks_3$getBody() {
+            return beans_Backpacks_3$body;
       }
 
       @Unique private boolean beans_Backpacks_3$actionKeyIsDown = false;
@@ -58,6 +64,11 @@ public abstract class InventoryMixin implements BackData {
             return beans_Backpacks_3$tinySlot;
       }
 
+      @Override
+      public void setTinySlot(int tinySlot) {
+            beans_Backpacks_3$tinySlot = tinySlot;
+      }
+
       @Unique private Shorthand shorthand;
 
       @Override @Unique
@@ -67,12 +78,12 @@ public abstract class InventoryMixin implements BackData {
             return shorthand;
       }
 
-      @Override
-      public void setTinySlot(int tinySlot) {
-            beans_Backpacks_3$tinySlot = tinySlot;
-      }
+      @Unique private UtilityContainer utility;
 
-      public NonNullList<ItemStack> beans_Backpacks_3$getBody() {
-            return beans_Backpacks_3$body;
+      @Override @Unique
+      public UtilityContainer getUtility() {
+            if (utility == null)
+                  utility = new UtilityContainer(this);
+            return utility;
       }
 }

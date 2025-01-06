@@ -73,7 +73,7 @@ public class ArmorStandFeature extends RenderLayer<ArmorStand, ArmorStandArmorMo
                         viewable.lastDelta = tick;
 
                         pose.translate(0, 13 / 16f, 0);
-                        renderTexture(pose, pBufferSource, pCombinedLight, texture, itemStack);
+                        renderTexture(pose, pBufferSource, pCombinedLight, texture, itemStack, viewable);
                         pose.popPose();
                   }
                   else if (model != null)

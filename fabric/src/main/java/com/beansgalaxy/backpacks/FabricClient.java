@@ -29,6 +29,7 @@ public class FabricClient implements ClientModInitializer {
             ColorProviderRegistry.ITEM.register(CommonClient.BUNDLE_ITEM_COLOR, ModItems.BUNDLE.get());
             ColorProviderRegistry.ITEM.register(CommonClient.BULK_POUCH_ITEM_COLOR, ModItems.BULK_POUCH.get());
             ItemProperties.registerGeneric(ResourceLocation.withDefaultNamespace("no_gui"), CommonClient.NO_GUI_PREDICATE);
+            ItemProperties.registerGeneric(ResourceLocation.withDefaultNamespace("utilities"), CommonClient.UTILITIES_PREDICATE);
             ItemProperties.registerGeneric(ResourceLocation.withDefaultNamespace("fullness"), CommonClient.FULLNESS_ITEM_PREDICATE);
             ItemProperties.registerGeneric(ResourceLocation.withDefaultNamespace("eating"), CommonClient.EATING_TRAIT_ITEM_PREDICATE);
             ItemProperties.register(ModItems.ENDER_POUCH.get(), ResourceLocation.withDefaultNamespace("searching"), CommonClient.ENDER_SEARCHING_PREDICATE);
@@ -37,6 +38,7 @@ public class FabricClient implements ClientModInitializer {
             KeyBindingHelper.registerKeyBinding(KeyPress.INSTANCE.MENUS_KEY);
             KeyBindingHelper.registerKeyBinding(KeyPress.INSTANCE.INSTANT_KEY);
             KeyBindingHelper.registerKeyBinding(KeyPress.INSTANCE.SHORTHAND_KEY);
+            KeyBindingHelper.registerKeyBinding(KeyPress.INSTANCE.SECONDARY_KEY);
             KeyBindingHelper.registerKeyBinding(KeyPress.INSTANCE.UTILITY_KEY);
 
             EntityModelLayerRegistry.registerModelLayer(BackpackRender.BACKPACK_MODEL, BackpackModel::getTexturedModelData);

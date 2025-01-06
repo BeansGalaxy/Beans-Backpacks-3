@@ -97,7 +97,7 @@ public class EntityRender extends EntityRenderer<BackpackEntity> implements Back
                   viewable.lastDelta = tick;
 
                   pose.translate(0, 13 / 16f, 0);
-                  renderTexture(pose, source, light, texture, stack);
+                  renderTexture(pose, source, light, texture, stack, viewable);
                   pose.popPose();
             }
             else {

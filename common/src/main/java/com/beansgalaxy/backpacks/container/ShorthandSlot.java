@@ -1,4 +1,4 @@
-package com.beansgalaxy.backpacks.shorthand;
+package com.beansgalaxy.backpacks.container;
 
 import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;

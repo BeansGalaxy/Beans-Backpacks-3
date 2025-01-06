@@ -212,6 +212,10 @@ public abstract class AllayMixin extends PathfinderMob implements ViewableAccess
 
                   return Traits.get(stack).isEmpty();
             }
+
+            @Override public float fallDistance() {
+                  return AllayMixin.this.fallDistance;
+            }
       };
 
       @Override public ViewableBackpack beans_Backpacks_3$getViewable() {

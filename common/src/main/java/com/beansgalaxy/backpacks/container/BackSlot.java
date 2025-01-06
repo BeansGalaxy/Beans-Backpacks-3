@@ -1,7 +1,8 @@
-package com.beansgalaxy.backpacks.screen;
+package com.beansgalaxy.backpacks.container;
 
 import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.access.EquipmentSlotAccess;
+import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.mojang.datafixers.util.Pair;
@@ -17,16 +18,12 @@ import org.jetbrains.annotations.Nullable;
 public class BackSlot extends Slot implements EquipmentSlotAccess {
       public static final int X = 77;
       public static final int Y = 44;
+      public static final int SLOT = 41;
 
       private final Player owner;
 
-      public BackSlot(Inventory inv, int slot) {
-            super(inv, slot, X, Y);
-            owner = inv.player;
-      }
-
-      public BackSlot(Inventory inv, int slot, int x, int y) {
-            super(inv, slot, x + 32 + 20 + 16, y - 29 - 13);
+      public BackSlot(Inventory inv) {
+            super(inv, SLOT, X, Y);
             owner = inv.player;
       }
 
@@ -52,6 +49,15 @@ public class BackSlot extends Slot implements EquipmentSlotAccess {
       public void setByPlayer(ItemStack pNewStack, ItemStack pOldStack) {
             this.owner.onEquipItem(EquipmentSlot.BODY, pOldStack, pNewStack);
             super.setByPlayer(pNewStack, pOldStack);
+      }
+
+      @Override
+      public void setChanged() {
+            super.setChanged();
+
+            UtilityContainer utilities = UtilityContainer.get(owner);
+            ItemStack newStack = getItem();
+            utilities.size = UtilityComponent.getSize(newStack);
       }
 
       @Override

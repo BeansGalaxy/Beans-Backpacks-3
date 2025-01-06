@@ -5,7 +5,6 @@ import com.beansgalaxy.backpacks.client.renderer.BackpackCapeModel;
 import com.beansgalaxy.backpacks.client.renderer.BackpackModel;
 import com.beansgalaxy.backpacks.client.renderer.BackpackRender;
 import com.beansgalaxy.backpacks.client.renderer.EntityRender;
-import com.beansgalaxy.backpacks.data.config.*;
 import com.beansgalaxy.backpacks.data.config.screen.ConfigRows;
 import com.beansgalaxy.backpacks.data.config.screen.ConfigScreen;
 import com.beansgalaxy.backpacks.data.config.screen.IConfig;
@@ -13,7 +12,6 @@ import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.util.ModItems;
 import com.beansgalaxy.backpacks.util.TraitTooltip;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.resources.model.ModelResourceLocation;
@@ -30,7 +28,6 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -39,6 +36,7 @@ public class NeoForgeClient {
 
       public NeoForgeClient(IEventBus eventBus, ModContainer container) {
             ItemProperties.registerGeneric(ResourceLocation.withDefaultNamespace("no_gui"), CommonClient.NO_GUI_PREDICATE);
+            ItemProperties.registerGeneric(ResourceLocation.withDefaultNamespace("utilities"), CommonClient.UTILITIES_PREDICATE);
             ItemProperties.registerGeneric(ResourceLocation.withDefaultNamespace("fullness"), CommonClient.FULLNESS_ITEM_PREDICATE);
             ItemProperties.registerGeneric(ResourceLocation.withDefaultNamespace("eating"), CommonClient.EATING_TRAIT_ITEM_PREDICATE);
             ItemProperties.registerGeneric(ResourceLocation.withDefaultNamespace("searching"), CommonClient.ENDER_SEARCHING_PREDICATE);
@@ -102,6 +100,7 @@ public class NeoForgeClient {
                   event.register(KeyPress.INSTANCE.MENUS_KEY);
                   event.register(KeyPress.INSTANCE.INSTANT_KEY);
                   event.register(KeyPress.INSTANCE.SHORTHAND_KEY);
+                  event.register(KeyPress.INSTANCE.SECONDARY_KEY);
                   event.register(KeyPress.INSTANCE.UTILITY_KEY);
             }
 

@@ -1,10 +1,9 @@
 package com.beansgalaxy.backpacks.client.renderer;
 
 import com.beansgalaxy.backpacks.CommonClient;
-import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.components.equipable.EquipmentModel;
-import com.beansgalaxy.backpacks.shorthand.Shorthand;
+import com.beansgalaxy.backpacks.container.Shorthand;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -132,7 +131,7 @@ public class BackFeature extends RenderLayer<AbstractClientPlayer, PlayerModel<A
                               renderCapeAbove(pose, pBufferSource, pCombinedLight, player, headPitch);
                         }
 
-                        renderTexture(pose, pBufferSource, pCombinedLight, texture, itemStack);
+                        renderTexture(pose, pBufferSource, pCombinedLight, texture, itemStack, viewable);
                         pose.popPose();
                   }
                   else if (model != null)

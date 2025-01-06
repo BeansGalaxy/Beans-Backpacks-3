@@ -2,18 +2,21 @@ package com.beansgalaxy.backpacks.client;
 
 import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.access.BackData;
+import com.beansgalaxy.backpacks.access.PlayerAccessor;
+import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.network.serverbound.BackpackUseOn;
 import com.beansgalaxy.backpacks.network.serverbound.InstantKeyPress;
 import com.beansgalaxy.backpacks.network.serverbound.SyncHotkey;
+import com.beansgalaxy.backpacks.network.serverbound.UtilitiesUse;
 import com.beansgalaxy.backpacks.traits.chest.screen.MenuChestScreen;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.mojang.blaze3d.platform.InputConstants;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.locale.Language;
-import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -22,9 +25,14 @@ import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.*;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
+
+import java.util.Optional;
 
 public class KeyPress {
       public static final KeyPress INSTANCE = new KeyPress();
@@ -41,6 +49,8 @@ public class KeyPress {
       public static final String ACTION_KEY_DISABLED_DESC = "key.beansbackpacks.desc.action_disabled";
 
       public static final String SHORTHAND_KEY_IDENTIFIER = "key.beansbackpacks.shorthand";
+      public static final String SECONDARY_KEY_IDENTIFIER = "key.beansbackpacks.secondary";
+
       public static final String UTILITY_KEY_IDENTIFIER = "key.beansbackpacks.utility";
 
       public final KeyMapping ACTION_KEY = new KeyMapping(
@@ -63,9 +73,14 @@ public class KeyPress {
                   GLFW.GLFW_KEY_GRAVE_ACCENT,
                   KEY_CATEGORY);
 
+      public final KeyMapping SECONDARY_KEY = new KeyMapping(
+                  SECONDARY_KEY_IDENTIFIER,
+                  GLFW.GLFW_KEY_0,
+                  KEY_CATEGORY);
+
       public final KeyMapping UTILITY_KEY = new KeyMapping(
                   UTILITY_KEY_IDENTIFIER,
-                  GLFW.GLFW_KEY_0,
+                  GLFW.GLFW_KEY_B,
                   KEY_CATEGORY);
 
       public void tick(Minecraft minecraft, LocalPlayer player) {
@@ -74,9 +89,6 @@ public class KeyPress {
             isPressed menusKey = KeyPress.isPressed(minecraft, KeyPress.getMenusKeyBind());
             int tinyChestSlot = minecraft.screen instanceof MenuChestScreen screen ? screen.slotIndex() : -1;
             boolean menuKeyPressed = tinyChestSlot == -1 && menusKey.pressed();
-
-//            if(actionKey.pressed() && minecraft.hitResult instanceof BlockHitResult hitResult && Constants.CLIENT_CONFIG.instant_place.get())
-//                  consumeActionUseOn(minecraft, hitResult);
 
             BackData backData = BackData.get(player);
 
@@ -88,31 +100,7 @@ public class KeyPress {
             backData.setTinySlot(tinyChestSlot);
             SyncHotkey.send(actionKeyPressed, menuKeyPressed, tinyChestSlot);
 
-//            boolean instantPlace = Constants.CLIENT_CONFIG.instant_place.get();
-//            if (actionKey.pressed() && (instantPlace || actionKey.onMouse()) && minecraft.screen == null) {
-//                  KeyPress.instantPlace(instance);
-//            }
-//            else if (menusKey.pressed() && menusKey.onMouse() && minecraft.screen instanceof ClickAccessor clickAccessor)
-//                  clickAccessor.beans_Backpacks_2$instantPlace();
-
       }
-//
-//      public boolean consumeActionUse(Level level, Player player) {
-//            ItemStack backStack = player.getItemBySlot(EquipmentSlot.BODY);
-//            CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir =
-//                        new CallbackInfoReturnable<>("backpack_action_use", true, InteractionResultHolder.pass(backStack));
-//
-//            Traits.runIfPresent(backStack, traits -> {
-//                  traits.use(level, player, InteractionHand.MAIN_HAND, PatchedComponentHolder.of(backStack), backStack, cir);
-//            });
-//
-//            if (cir.getReturnValue().getResult().consumesAction()) {
-//                  BackpackUse.send();
-//                  return true;
-//            }
-//
-//            return false;
-//      }
 
       public boolean consumeActionUseOn(Minecraft instance, BlockHitResult hitResult) {
             BlockPos blockPos = hitResult.getBlockPos();
@@ -216,32 +204,6 @@ public class KeyPress {
             return customKey.isUnbound() ? sprintKey : customKey;
       }
 
-      public static Component getKeyReadable(KeyMapping keyBind) {
-            String name = "tldr." + keyBind.saveString();
-            if (Language.getInstance().has(name)) {
-                  return Component.translatable(name);
-            }
-
-            return keyBind.getTranslatedKeyMessage();
-      }
-
-      public static Component getReadable(boolean inMenu) {
-            KeyMapping keyBind = inMenu ? getMenusKeyBind() : getActionKeyBind();
-            InputConstants.Key key = InputConstants.getKey(keyBind.saveString());
-            Component readable = getKeyReadable(keyBind);
-            if (InputConstants.Type.MOUSE.equals(key.getType())) {
-                  return Component.translatable("help.beansbackpacks.mouse_button", readable);
-            }
-            boolean instantPlace = false;// Constants.CLIENT_CONFIG.instant_place.get();
-            if (instantPlace) {
-                  return Component.translatable("help.beansbackpacks.instant_place", readable);
-            }
-            if (inMenu)
-                  return Component.translatable("help.beansbackpacks.menu_hotkey", readable);
-
-            return Component.translatable("help.beansbackpacks.action_hotkey", readable, getKeyReadable(Minecraft.getInstance().options.keyUse));
-      }
-
       public static @NotNull isPressed isPressed(Minecraft minecraft, KeyMapping bind) {
             KeyMapping sneakKey = minecraft.options.keyShift;
             if (sneakKey.same(bind))
@@ -254,6 +216,26 @@ public class KeyPress {
             boolean isMouseKey = key.getType().equals(InputConstants.Type.MOUSE);
             boolean isPressed = isMouseKey ? GLFW.glfwGetMouseButton(window, value) == 1 : InputConstants.isKeyDown(window, value);
             return new isPressed(isMouseKey, isPressed);
+      }
+
+      private boolean wasUtilityDown = false;
+
+      public void handleUtility(LocalPlayer player, HitResult result) {
+            boolean isUtilityDown = UTILITY_KEY.isDown();
+            if (isUtilityDown != wasUtilityDown) {
+                  UtilityComponent.testItems(player, (item, mute) -> {
+                        if (item.is(Items.SPYGLASS)) {
+                              PlayerAccessor access = (PlayerAccessor) player;
+                              access.setUtilityScoped(isUtilityDown);
+                              if (isUtilityDown)
+                                    player.playSound(SoundEvents.SPYGLASS_USE, 1.0F, 1.0F);
+                              return true;
+                        }
+                        return false;
+                  });
+            }
+
+            wasUtilityDown = isUtilityDown;
       }
 
       public record isPressed(boolean onMouse, boolean pressed) {}

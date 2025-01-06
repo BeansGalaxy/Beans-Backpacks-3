@@ -1,6 +1,7 @@
 package com.beansgalaxy.backpacks.components.reference;
 
 import com.beansgalaxy.backpacks.components.PlaceableComponent;
+import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
@@ -11,10 +12,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.BitSet;
 import java.util.HashMap;
 
 public record ReferenceRegistry(GenericTraits traits, ItemAttributeModifiers modifiers,
-                                PlaceableComponent placeable, EquipableComponent equipable
+                                PlaceableComponent placeable, EquipableComponent equipable,
+                                byte utilities
 ) {
       public static final HashMap<ResourceLocation, ReferenceRegistry> REFERENCES = new HashMap<>();
 
@@ -27,7 +30,7 @@ public record ReferenceRegistry(GenericTraits traits, ItemAttributeModifiers mod
       }
 
       public static ReferenceRegistry createEmptyReference() {
-            return new ReferenceRegistry(NonTrait.INSTANCE, ItemAttributeModifiers.EMPTY, null, null);
+            return new ReferenceRegistry(NonTrait.INSTANCE, ItemAttributeModifiers.EMPTY, null, null, (byte) 0);
       }
 
       @Nullable
@@ -61,6 +64,8 @@ public record ReferenceRegistry(GenericTraits traits, ItemAttributeModifiers mod
                   buf.writeBoolean(isEquipment);
                   if (isEquipment)
                         EquipableComponent.STREAM_CODEC.encode(buf, reference.equipable);
+
+                  buf.writeByte(reference.utilities);
             }
 
             private <T extends GenericTraits> void encode(RegistryFriendlyByteBuf buf, Codec<T> codec, GenericTraits fields) {
@@ -80,7 +85,9 @@ public record ReferenceRegistry(GenericTraits traits, ItemAttributeModifiers mod
                   boolean isEquipable = buf.readBoolean();
                   EquipableComponent equipableComponent = isEquipable ? EquipableComponent.STREAM_CODEC.decode(buf) : null;
 
-                  return new ReferenceRegistry(fields, modifiers, placeableComponent, equipableComponent);
+                  byte utilities = buf.readByte();
+
+                  return new ReferenceRegistry(fields, modifiers, placeableComponent, equipableComponent, utilities);
             }
       };
 }

@@ -84,7 +84,7 @@ public class AllayFeature extends RenderLayer<Allay, AllayModel> implements Back
                   pose.mulPose(Axis.XN.rotationDegrees(16));
                   float scale = 0.875f;
                   pose.scale(scale, scale, scale);
-                  renderTexture(pose, pBufferSource, pCombinedLight, texture, itemStack);
+                  renderTexture(pose, pBufferSource, pCombinedLight, texture, itemStack, viewable);
                   pose.popPose();
             }
             else if (model != null)

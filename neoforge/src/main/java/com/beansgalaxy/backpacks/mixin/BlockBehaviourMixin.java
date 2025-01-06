@@ -1,6 +1,6 @@
 package com.beansgalaxy.backpacks.mixin;
 
-import com.beansgalaxy.backpacks.shorthand.Shorthand;
+import com.beansgalaxy.backpacks.container.Shorthand;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;

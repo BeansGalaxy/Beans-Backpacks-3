@@ -221,6 +221,10 @@ public abstract class ArmorStandMixin extends LivingEntity implements ViewableAc
 
                   return Traits.get(stack).isEmpty();
             }
+
+            @Override public float fallDistance() {
+                  return ArmorStandMixin.this.fallDistance;
+            }
       };
 
       @Override public ViewableBackpack beans_Backpacks_3$getViewable() {

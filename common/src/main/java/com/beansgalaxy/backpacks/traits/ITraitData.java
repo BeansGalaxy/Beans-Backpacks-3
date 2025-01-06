@@ -2,6 +2,7 @@ package com.beansgalaxy.backpacks.traits;
 
 import com.beansgalaxy.backpacks.components.SlotSelection;
 import com.beansgalaxy.backpacks.components.StackableComponent;
+import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.traits.bulk.BulkMutable;
 import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
@@ -50,6 +51,9 @@ public abstract class ITraitData<T> {
 
       public static final DataComponentType<StackableComponent>
                   STACKABLE = Traits.register("stackable", StackableComponent.CODEC, StackableComponent.STREAM_CODEC);
+
+      public static final DataComponentType<UtilityComponent>
+                  UTILITIES = Traits.register("utility_slots", UtilityComponent.CODEC, UtilityComponent.STREAM_CODEC);
 
       public static void register() {
 

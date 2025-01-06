@@ -1,4 +1,4 @@
-package com.beansgalaxy.backpacks.shorthand;
+package com.beansgalaxy.backpacks.container;
 
 import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.data.ServerSave;

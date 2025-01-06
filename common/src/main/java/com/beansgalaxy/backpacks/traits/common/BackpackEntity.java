@@ -6,6 +6,7 @@ import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.components.PlaceableComponent;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.components.reference.NonTrait;
+import com.beansgalaxy.backpacks.mixin.common.AllayMixin;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.generic.MutableTraits;
@@ -105,6 +106,10 @@ public class BackpackEntity extends Entity implements PatchedComponentHolder {
 
             @Override public boolean shouldClose() {
                   return false;
+            }
+
+            @Override public float fallDistance() {
+                  return BackpackEntity.this.fallDistance;
             }
       };
 

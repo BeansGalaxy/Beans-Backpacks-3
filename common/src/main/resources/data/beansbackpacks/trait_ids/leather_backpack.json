@@ -10,5 +10,6 @@
   },
   "placeable": {
     "backpack_texture": "beansbackpacks:leather"
-  }
+  },
+  "utilities": 1
 }

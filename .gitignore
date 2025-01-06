@@ -26,3 +26,4 @@ fabric/runs/client/*
 neoforge/run/*
 !neoforge/run/screenshots
 
+/.debug/

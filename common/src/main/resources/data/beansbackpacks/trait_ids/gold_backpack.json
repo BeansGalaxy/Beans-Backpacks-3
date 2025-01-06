@@ -9,5 +9,6 @@
   },
   "placeable": {
     "backpack_texture": "beansbackpacks:gold"
-  }
+  },
+  "utilities": 1
 }

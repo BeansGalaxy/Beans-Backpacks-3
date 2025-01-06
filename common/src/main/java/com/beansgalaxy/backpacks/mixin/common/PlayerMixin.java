@@ -3,11 +3,12 @@ package com.beansgalaxy.backpacks.mixin.common;
 import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.access.BackData;
+import com.beansgalaxy.backpacks.access.PlayerAccessor;
 import com.beansgalaxy.backpacks.access.ViewableAccessor;
 import com.beansgalaxy.backpacks.components.PlaceableComponent;
 import com.beansgalaxy.backpacks.components.SlotSelection;
 import com.beansgalaxy.backpacks.data.ServerSave;
-import com.beansgalaxy.backpacks.shorthand.Shorthand;
+import com.beansgalaxy.backpacks.container.Shorthand;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
@@ -28,11 +29,15 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -48,7 +53,10 @@ import java.util.List;
 import java.util.function.Predicate;
 
 @Mixin(Player.class)
-public abstract class PlayerMixin implements ViewableAccessor {
+public abstract class PlayerMixin extends LivingEntity implements ViewableAccessor, PlayerAccessor {
+      protected PlayerMixin(EntityType<? extends LivingEntity> pEntityType, Level pLevel) {
+            super(pEntityType, pLevel);
+      }
 
       @Shadow public abstract ItemStack getItemBySlot(EquipmentSlot pSlot1);
 
@@ -114,6 +122,10 @@ public abstract class PlayerMixin implements ViewableAccessor {
                   double yaw = Math.abs(instance.yHeadRot - openedYaw) % 360 - 180;
                   boolean yawMatches = Math.abs(yaw) > 90;
                   return !yawMatches;
+            }
+
+            @Override public float fallDistance() {
+                  return PlayerMixin.this.fallDistance;
             }
       };
 
@@ -298,4 +310,34 @@ public abstract class PlayerMixin implements ViewableAccessor {
             }
       }
 
+      @Unique private boolean utilitiesScope = false;
+
+      @Override
+      public boolean isUtilityScoped() {
+            return utilitiesScope;
+      }
+
+      @Override
+      public void setUtilityScoped(boolean isScoped) {
+            utilitiesScope = isScoped;
+      }
+
+      @Inject(method = "isScoping", cancellable = true, at = @At("TAIL"))
+      private void backpacks_isScoping(CallbackInfoReturnable<Boolean> cir) {
+            if (utilitiesScope)
+                  cir.setReturnValue(true);
+      }
+
+      @Override
+      public void setItemUsed(ItemStack itemstack) {
+            if (!itemstack.isEmpty() && !this.isUsingItem()) {
+                  this.useItem = itemstack;
+                  this.useItemRemaining = itemstack.getUseDuration(this);
+                  if (!this.level().isClientSide) {
+                        this.setLivingEntityFlag(1, true);
+                        this.setLivingEntityFlag(2, false);
+                        this.gameEvent(GameEvent.ITEM_INTERACT_START);
+                  }
+            }
+      }
 }

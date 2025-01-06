@@ -28,6 +28,7 @@
     "common.data_features.ServerPackSource"
   ],
   "client": [
+    "client.AbstractClientPlayerMixin",
     "client.AbstractScreenMixin",
     "client.AllayModelMixin",
     "client.AllayRendererMixin",

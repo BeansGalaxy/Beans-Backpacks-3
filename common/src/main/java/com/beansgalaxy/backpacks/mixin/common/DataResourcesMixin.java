@@ -2,6 +2,7 @@ package com.beansgalaxy.backpacks.mixin.common;
 
 import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.components.PlaceableComponent;
+import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.components.reference.NonTrait;
 import com.beansgalaxy.backpacks.components.reference.ReferenceRegistry;
@@ -71,6 +72,7 @@ public class DataResourcesMixin {
       private static void registerTraitsFromJson(JsonObject parse, RegistryOps<JsonElement> registryOps, ResourceLocation location) {
             Iterator<String> iterator = parse.keySet().iterator();
 
+            byte utilities = 0;
             PlaceableComponent placeable = null;
             EquipableComponent equipable = null;
             ItemAttributeModifiers attributes = ItemAttributeModifiers.EMPTY;
@@ -93,6 +95,20 @@ public class DataResourcesMixin {
                               }
 
                               attributes = result.getOrThrow();
+                        }
+                        case UtilityComponent.NAME -> {
+                              if (utilities != 0)
+                                    continue;
+
+                              DataResult<Byte> result = UtilityComponent.SIZE_CODEC.parse(registryOps, json);
+                              if (result.isError()) {
+                                    String message = "Failure while parsing trait_id \"" + location + "\"; Error while decoding \"" + type + "\"; ";
+                                    String error = result.error().get().message();
+                                    Constants.LOG.warn("{}{}", message, error);
+                                    continue;
+                              }
+
+                              utilities = result.getOrThrow();
                         }
                         case PlaceableComponent.NAME -> {
                               if (placeable != null)
@@ -129,7 +145,7 @@ public class DataResourcesMixin {
                         default -> {
                               TraitComponentKind<? extends GenericTraits> kind = TraitComponentKind.get(type);
                               if (kind == null) {
-                                    String message = "Failure while parsing trait_id \"" + location + "\"; The trait \"" + type + "\" does not exist!";
+                                    String message = "Failure while parsing trait_id \"" + location + "\"; The traits \"" + type + "\" do not exist!";
                                     Constants.LOG.warn(message);
                                     continue;
                               }
@@ -147,9 +163,9 @@ public class DataResourcesMixin {
                   }
             }
 
-            if (NonTrait.is(fields) && placeable == null && equipable == null)
+            if (NonTrait.is(fields) && placeable == null && equipable == null && ItemAttributeModifiers.EMPTY.equals(attributes))
                   return;
 
-            ReferenceRegistry.put(location, new ReferenceRegistry(fields, attributes, placeable, equipable));
+            ReferenceRegistry.put(location, new ReferenceRegistry(fields, attributes, placeable, equipable, utilities));
       }
 }

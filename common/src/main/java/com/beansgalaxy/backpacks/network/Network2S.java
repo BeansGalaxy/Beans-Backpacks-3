@@ -21,6 +21,7 @@ public enum Network2S {
       TINY_INTERACT_2S(TinyMenuInteract.class, TinyMenuInteract.ID, TinyMenuInteract::encode, TinyMenuInteract::new, TinyMenuInteract::handle),
       SYNC_SELECTED_SLOT_2S(SyncSelectedSlot.class, SyncSelectedSlot.ID, SyncSelectedSlot::encode, SyncSelectedSlot::new, SyncSelectedSlot::handle),
       INSTANT_KEY_2S(InstantKeyPress.class, InstantKeyPress.ID, InstantKeyPress::encode, InstantKeyPress::new, InstantKeyPress::handle),
+      UTILITY_ROCKET_USE(UtilitiesUse.class, UtilitiesUse.ID, UtilitiesUse::encode, UtilitiesUse::new, UtilitiesUse::handle),
       ;
 
       public final DynamicLoaderPacket<? super RegistryFriendlyByteBuf, ?> packet;

@@ -1,9 +1,10 @@
 package com.beansgalaxy.backpacks;
 
-import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.access.MinecraftAccessor;
+import com.beansgalaxy.backpacks.access.PlayerAccessor;
 import com.beansgalaxy.backpacks.client.KeyPress;
 import com.beansgalaxy.backpacks.components.StackableComponent;
+import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.data.EnderStorage;
@@ -11,9 +12,10 @@ import com.beansgalaxy.backpacks.data.config.ClientConfig;
 import com.beansgalaxy.backpacks.data.config.options.ShorthandHUD;
 import com.beansgalaxy.backpacks.data.config.options.ToolBeltHUD;
 import com.beansgalaxy.backpacks.network.serverbound.SyncSelectedSlot;
-import com.beansgalaxy.backpacks.screen.BackSlot;
-import com.beansgalaxy.backpacks.shorthand.ShortContainer;
-import com.beansgalaxy.backpacks.shorthand.Shorthand;
+import com.beansgalaxy.backpacks.container.BackSlot;
+import com.beansgalaxy.backpacks.container.ShortContainer;
+import com.beansgalaxy.backpacks.container.Shorthand;
+import com.beansgalaxy.backpacks.network.serverbound.UtilitiesUse;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
@@ -21,12 +23,12 @@ import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
 import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxTraits;
 import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
 import com.beansgalaxy.backpacks.util.Tint;
-import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.gui.GuiGraphics;
@@ -43,6 +45,8 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.stats.Stats;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
@@ -74,6 +78,15 @@ public class CommonClient {
       public static final ItemStack NO_GUI_STAND_IN = new ItemStack(Items.AIR);
       public static final ClampedItemPropertyFunction NO_GUI_PREDICATE = (itemStack, clientLevel, livingEntity, i) -> {
             if (itemStack == NO_GUI_STAND_IN && clientLevel == null && livingEntity == null && i == 0)
+                  return 1;
+
+            return 0;
+      };
+
+
+      public static final ItemStack UTILITY_DISPLAY_STAND_IN = new ItemStack(Items.AIR);
+      public static final ClampedItemPropertyFunction UTILITIES_PREDICATE = (itemStack, clientLevel, livingEntity, i) -> {
+            if (itemStack == UTILITY_DISPLAY_STAND_IN && clientLevel == null && livingEntity == null && i == 0)
                   return 1;
 
             return 0;
@@ -459,24 +472,25 @@ public class CommonClient {
             }
       }
 
+
       public static void handleKeyBinds(LocalPlayer player, @Nullable HitResult hitResult) {
             KeyPress keyPress = KeyPress.INSTANCE;
             while (keyPress.SHORTHAND_KEY.consumeClick()) {
                   Shorthand shorthand = Shorthand.get(player);
                   Inventory inventory = player.getInventory();
-                  if (keyPress.UTILITY_KEY.isDown()) {
-                        keyPress.UTILITY_KEY.consumeClick();
+                  if (keyPress.SECONDARY_KEY.isDown()) {
+                        keyPress.SECONDARY_KEY.consumeClick();
                         shorthand.resetSelected(inventory);
                         continue;
                   }
 
                   shorthand.selectWeapon(inventory, true);
             }
-            while (keyPress.UTILITY_KEY.consumeClick()) {
+            while (keyPress.SECONDARY_KEY.consumeClick()) {
                   Shorthand shorthand = Shorthand.get(player);
                   Inventory inventory = player.getInventory();
                   if (keyPress.SHORTHAND_KEY.isDown()) {
-                        keyPress.UTILITY_KEY.consumeClick();
+                        keyPress.SECONDARY_KEY.consumeClick();
                         shorthand.resetSelected(inventory);
                         continue;
                   }
@@ -496,6 +510,8 @@ public class CommonClient {
                         KeyPress.tryEquip(player, hit);
                   }
             }
+
+            keyPress.handleUtility(player, hitResult);
       }
 
       public static void handleSetSelectedSlot(int slot) {
