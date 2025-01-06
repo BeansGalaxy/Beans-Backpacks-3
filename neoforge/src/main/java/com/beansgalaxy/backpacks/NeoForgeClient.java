@@ -107,7 +107,7 @@ public class NeoForgeClient {
             @SubscribeEvent
             public static void clientSetup(FMLClientSetupEvent event) {
                   event.enqueueWork(() -> {
-                        CommonClient.CLIENT_CONFIG.read();
+                        CommonClass.CLIENT_CONFIG.read();
                   });
             }
       }

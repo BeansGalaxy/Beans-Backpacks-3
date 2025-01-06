@@ -47,7 +47,7 @@ public class FabricClient implements ClientModInitializer {
             EntityRendererRegistry.register(CommonClass.LEGACY_ENDER_ENTITY.get(), EntityRender::new);
             EntityRendererRegistry.register(CommonClass.LEGACY_WINGED_ENTITY.get(), EntityRender::new);
 
-            CommonClient.CLIENT_CONFIG.read();
+            CommonClass.CLIENT_CONFIG.read();
       }
 
 }

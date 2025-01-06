@@ -1,6 +1,6 @@
 package com.beansgalaxy.backpacks.client.renderer;
 
-import com.beansgalaxy.backpacks.CommonClient;
+import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.components.equipable.EquipmentModel;
 import com.beansgalaxy.backpacks.container.Shorthand;
@@ -64,7 +64,7 @@ public class BackFeature extends RenderLayer<AbstractClientPlayer, PlayerModel<A
       }
 
       private void renderShorthand(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, AbstractClientPlayer player) {
-            if (CommonClient.CLIENT_CONFIG.disable_shorthand_render.get())
+            if (CommonClass.CLIENT_CONFIG.disable_shorthand_render.get())
                   return;
 
             Shorthand shorthand = Shorthand.get(player);
@@ -94,7 +94,7 @@ public class BackFeature extends RenderLayer<AbstractClientPlayer, PlayerModel<A
       }
 
       private void renderEquipables(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, AbstractClientPlayer player, float tick) {
-            if (CommonClient.CLIENT_CONFIG.disable_equipable_render.get())
+            if (CommonClass.CLIENT_CONFIG.disable_equipable_render.get())
                   return;
 
             EquipableComponent.runIfPresent(player, (equipable, slot) -> {
@@ -119,7 +119,7 @@ public class BackFeature extends RenderLayer<AbstractClientPlayer, PlayerModel<A
 
                         pose.translate(0, 13 / 16f, 0);
                         ItemStack chestStack = player.getItemBySlot(EquipmentSlot.CHEST);
-                        if (CommonClient.CLIENT_CONFIG.elytra_model_equipment.get().contains(chestStack.getItem())) {
+                        if (CommonClass.CLIENT_CONFIG.elytra_model_equipment.get().contains(chestStack.getItem())) {
                               float xRot = getParentModel().body.xRot;
                               setUpWithWings(player, xRot, pose);
                         }

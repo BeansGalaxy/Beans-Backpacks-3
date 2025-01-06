@@ -1,5 +1,6 @@
 package com.beansgalaxy.backpacks;
 
+import com.beansgalaxy.backpacks.data.config.ClientConfig;
 import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
@@ -63,6 +64,7 @@ public class CommonClass {
                 new RangedAttribute("attribute.name.player.tool_belt", 2, 0, 5).setSyncable(true));
       public static final Holder<Attribute> SHORTHAND_ATTRIBUTE = Services.PLATFORM.register("player.shorthand",
                 new RangedAttribute("attribute.name.player.shorthand", 1, 0, 4).setSyncable(true));
+      public static final ClientConfig CLIENT_CONFIG = new ClientConfig();
 
       public static void init() {
         ModSound.Events.register();

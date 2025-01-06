@@ -502,6 +502,7 @@ public abstract class ConfigRows extends ContainerObjectSelectionList<ConfigRows
                                     .backgroundSize(176, 166)
                                     .elementSize(16, 16)
                                     .elementPos(value.get(0), value.get(1))
+                                    .childSlots(2)
                                     .onSave((x, y) -> {
                                           value.get().set(0, x);
                                           value.get().set(1, y);

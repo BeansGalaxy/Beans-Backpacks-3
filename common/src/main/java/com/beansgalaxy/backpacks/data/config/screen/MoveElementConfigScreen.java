@@ -18,12 +18,13 @@ public class MoveElementConfigScreen extends Screen {
       private final BiConsumer<Integer, Integer> onSave;
       private final int elementW;
       private final int elementH;
+      private final int childSlots;
       private int elementX;
       private int elementY;
       private int topPos;
       private int leftPos;
 
-      public MoveElementConfigScreen(Screen lastScreen, ResourceLocation background, BiConsumer<Integer, Integer> onSave, int elementX, int elementY, int elementW, int elementH, int bgWidth, int bgHeight, int bgU, int bgV) {
+      public MoveElementConfigScreen(Screen lastScreen, ResourceLocation background, BiConsumer<Integer, Integer> onSave, int elementX, int elementY, int elementW, int elementH, int bgWidth, int bgHeight, int bgU, int bgV, int childSlots) {
             super(Component.empty());
             this.lastScreen = lastScreen;
             this.background = background;
@@ -36,6 +37,7 @@ public class MoveElementConfigScreen extends Screen {
             this.bgHeight = bgHeight;
             this.elementX = elementX;
             this.elementY = elementY;
+            this.childSlots = childSlots;
       }
 
       @Override
@@ -52,7 +54,7 @@ public class MoveElementConfigScreen extends Screen {
             super.init();
 
             this.leftPos = (int) (bgWidth / -2.0 + width / 2.0);
-            this.topPos = (int) (bgHeight / -2.0 + height / 2.0);
+            this.topPos = (int) (bgHeight / -4.0 + height / 4.0);
 
             int center = width / 2;
             Button save = Button.builder(Component.translatable("screen.beansbackpacks.move_element.save_and_close"), in -> {
@@ -79,6 +81,10 @@ public class MoveElementConfigScreen extends Screen {
             int eleX = leftPos + elementX;
             int eleY = topPos + elementY;
             gui.fill(eleX, eleY, elementW + eleX, elementH + eleY, 300, 0xFFEE3333);
+            for (int i = 0; i < childSlots; i++) {
+                  int chiY = eleY - (elementH + 2) * (i + 1);
+                  gui.fill(eleX, chiY, elementW + eleX, elementH + chiY, 300, 0xFFDDCC33);
+            }
             gui.blit(background, leftPos, topPos, bgU, bgV, bgWidth, bgHeight);
             super.render(gui, x, y, delta);
       }
@@ -94,6 +100,7 @@ public class MoveElementConfigScreen extends Screen {
             private int bgH = 0;
             private int bgU = 0;
             private int bgV = 0;
+            private int childSlots = 0;
 
             public static Builder create() {
                   return new Builder();
@@ -123,6 +130,11 @@ public class MoveElementConfigScreen extends Screen {
                   return this;
             }
 
+            public Builder childSlots(int size) {
+                  childSlots = size;
+                  return this;
+            }
+
             public Builder background(ResourceLocation background) {
                   this.background = background;
                   return this;
@@ -134,7 +146,7 @@ public class MoveElementConfigScreen extends Screen {
             }
 
             public MoveElementConfigScreen build(Screen lastScreen) {
-                  return new MoveElementConfigScreen(lastScreen, background, onSave, elementX, elementY, elementW, elementH, bgW, bgH, bgU, bgV);
+                  return new MoveElementConfigScreen(lastScreen, background, onSave, elementX, elementY, elementW, elementH, bgW, bgH, bgU, bgV, childSlots);
             }
       }
 }

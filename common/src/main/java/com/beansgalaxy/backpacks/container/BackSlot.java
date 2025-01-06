@@ -1,5 +1,6 @@
 package com.beansgalaxy.backpacks.container;
 
+import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.access.EquipmentSlotAccess;
 import com.beansgalaxy.backpacks.components.UtilityComponent;
@@ -16,15 +17,21 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
 public class BackSlot extends Slot implements EquipmentSlotAccess {
-      public static final int X = 77;
-      public static final int Y = 44;
       public static final int SLOT = 41;
 
       private final Player owner;
 
       public BackSlot(Inventory inv) {
-            super(inv, SLOT, X, Y);
+            super(inv, SLOT, getX(), getY());
             owner = inv.player;
+      }
+
+      public static int getX() {
+            return CommonClass.CLIENT_CONFIG.back_slot_pos.get(0);
+      }
+
+      public static int getY() {
+            return CommonClass.CLIENT_CONFIG.back_slot_pos.get(1);
       }
 
       @Override

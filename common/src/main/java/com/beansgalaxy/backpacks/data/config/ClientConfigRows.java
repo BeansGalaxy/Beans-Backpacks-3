@@ -1,6 +1,5 @@
 package com.beansgalaxy.backpacks.data.config;
 
-import com.beansgalaxy.backpacks.CommonClient;
 import com.beansgalaxy.backpacks.data.config.options.ToolBeltHUD;
 import com.beansgalaxy.backpacks.data.config.screen.ConfigRows;
 import com.beansgalaxy.backpacks.data.config.screen.ConfigScreen;
@@ -24,6 +23,7 @@ public class ClientConfigRows extends ConfigRows {
       private List<ConfigLabel> getRows() {
             ClientConfig config = (ClientConfig) this.config;
             return List.of(
+                        new MoveBackSlotConfigRow(config.back_slot_pos),
                         new EnumConfigRow<>(config.shorthand_hud_location, ShorthandHUD.values()),
                         new EnumConfigRow<>(config.tool_belt_hud_visibility, ToolBeltHUD.values()),
                         new ConfigLabel(Component.translatable("config.beansbackpacks.client.player-render")),

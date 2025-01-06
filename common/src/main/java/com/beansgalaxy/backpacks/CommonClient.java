@@ -1,21 +1,17 @@
 package com.beansgalaxy.backpacks;
 
 import com.beansgalaxy.backpacks.access.MinecraftAccessor;
-import com.beansgalaxy.backpacks.access.PlayerAccessor;
 import com.beansgalaxy.backpacks.client.KeyPress;
 import com.beansgalaxy.backpacks.components.StackableComponent;
-import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.data.EnderStorage;
-import com.beansgalaxy.backpacks.data.config.ClientConfig;
 import com.beansgalaxy.backpacks.data.config.options.ShorthandHUD;
 import com.beansgalaxy.backpacks.data.config.options.ToolBeltHUD;
 import com.beansgalaxy.backpacks.network.serverbound.SyncSelectedSlot;
 import com.beansgalaxy.backpacks.container.BackSlot;
 import com.beansgalaxy.backpacks.container.ShortContainer;
 import com.beansgalaxy.backpacks.container.Shorthand;
-import com.beansgalaxy.backpacks.network.serverbound.UtilitiesUse;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
@@ -28,7 +24,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.gui.GuiGraphics;
@@ -45,8 +40,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.stats.Stats;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
@@ -68,8 +61,6 @@ import java.util.List;
 import java.util.Optional;
 
 public class CommonClient {
-
-      public static final ClientConfig CLIENT_CONFIG = new ClientConfig();
 
       public static void init() {
 
@@ -206,7 +197,7 @@ public class CommonClient {
       private static final ResourceLocation SHORTHAND_TOOL_BELT = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/slots/shorthand/tool_belt.png");
 
       public static void renderShorthandSlots(GuiGraphics graphics, int leftPos, int topPos, int imageWidth, int imageHeight, LocalPlayer player) {
-            graphics.blit(BACK_SLOT, leftPos + BackSlot.X - 1, topPos + BackSlot.Y - 1, 10, 0, 0, 18, 18, 18, 18);
+            graphics.blit(BACK_SLOT, leftPos + BackSlot.getX() - 1, topPos + BackSlot.getY() - 1, 10, 0, 0, 18, 18, 18, 18);
 
             Shorthand shorthand = Shorthand.get(player);
             int hX = leftPos + imageWidth;
@@ -257,7 +248,7 @@ public class CommonClient {
             int selected = slot - toolsSize;
 
             HumanoidArm mainArm = player.getMainArm();
-            ShorthandHUD hud = CLIENT_CONFIG.shorthand_hud_location.get();
+            ShorthandHUD hud = CommonClass.CLIENT_CONFIG.shorthand_hud_location.get();
 
             renderToolBelt(minecraft, gui, selected, slot, player, shorthand, mainArm, hud, width, y);
 
@@ -362,7 +353,7 @@ public class CommonClient {
       }
 
       private static void renderToolBelt(Minecraft minecraft, GuiGraphics gui, int selected, int slot, Player player, Shorthand shorthand, HumanoidArm mainArm, ShorthandHUD hud, int width, int y) {
-            ToolBeltHUD visibility = CLIENT_CONFIG.tool_belt_hud_visibility.get();
+            ToolBeltHUD visibility = CommonClass.CLIENT_CONFIG.tool_belt_hud_visibility.get();
             if (ToolBeltHUD.HIDDEN.equals(visibility))
                   return;
 

@@ -5,7 +5,7 @@ import net.minecraft.world.item.ItemStack;
 
 public class UtilitySlot extends Slot {
       public UtilitySlot(UtilityContainer container, int index) {
-            super(container, index, BackSlot.X, BackSlot.Y - 18 - 18 * index);
+            super(container, index, BackSlot.getX(), BackSlot.getY() - 18 - 18 * index);
       }
 
       @Override
