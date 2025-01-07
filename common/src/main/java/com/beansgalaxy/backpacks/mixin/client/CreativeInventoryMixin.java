@@ -11,6 +11,7 @@ import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
@@ -21,6 +22,7 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -44,20 +46,32 @@ public abstract class CreativeInventoryMixin extends EffectRenderingInventoryScr
                   target = "Lnet/minecraft/client/gui/screens/inventory/CreativeModeInventoryScreen;destroyItemSlot:Lnet/minecraft/world/inventory/Slot;"))
       private void addBackSlot(CreativeModeTab pTab, CallbackInfo ci) {
             AbstractContainerMenu abstractcontainermenu = this.minecraft.player.inventoryMenu;
-            for (Slot slot : abstractcontainermenu.slots) {
+            NonNullList<Slot> slots = abstractcontainermenu.slots;
+            for (int i = 0; i < slots.size(); i++) {
+                  Slot slot = slots.get(i);
                   if (slot instanceof BackSlot backSlot) {
                         CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(backSlot, backSlot.index, 127, 20);
-                        menu.slots.set(backSlot.index, wrapped);
+                        backpacks_setOrAdd(i, wrapped);
+                        return;
                   }
                   if (slot instanceof ShorthandSlot.WeaponSlot shortSlot) {
                         CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(shortSlot, shortSlot.index, -22, shortSlot.getContainerSlot() * 18);
-                        menu.slots.set(shortSlot.index, wrapped);
+                        backpacks_setOrAdd(i, wrapped);
+                        return;
                   }
                   if (slot instanceof ShorthandSlot.ToolSlot toolSlot) {
                         CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(toolSlot, toolSlot.index, -40, toolSlot.getContainerSlot() * 18);
-                        menu.slots.set(toolSlot.index, wrapped);
+                        backpacks_setOrAdd(i, wrapped);
+                        return;
                   }
             }
+      }
+
+      @Unique
+      private void backpacks_setOrAdd(int i, CreativeModeInventoryScreen.SlotWrapper wrapped) {
+            if (i < menu.slots.size())
+                  menu.slots.set(i, wrapped);
+            else menu.slots.add(wrapped);
       }
 
       @Inject(method = "slotClicked", at = @At(value = "INVOKE",

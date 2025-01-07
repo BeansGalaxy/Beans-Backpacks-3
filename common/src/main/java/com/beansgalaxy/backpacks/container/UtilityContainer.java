@@ -10,6 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -111,5 +112,17 @@ public class UtilityContainer implements Container {
       public void clearContent() {
             ItemStack backpack = owner.beans_Backpacks_3$getBody().getFirst();
             backpack.remove(ITraitData.UTILITIES);
+      }
+
+      @Override
+      public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof UtilityContainer container)) return false;
+            return size == container.size && Objects.equals(owner, container.owner);
+      }
+
+      @Override
+      public int hashCode() {
+            return Objects.hash(owner, size);
       }
 }

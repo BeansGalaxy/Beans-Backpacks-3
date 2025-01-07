@@ -25,7 +25,7 @@ public class XpClient implements IClientTraits<XpTraits> {
       public void renderTooltip(XpTraits trait, ItemStack itemStack, PatchedComponentHolder holder, GuiGraphics gui, int mouseX, int mouseY, CallbackInfo ci) {
             if (!trait.isEmpty(holder)) {
                   TraitTooltip<?> tooltip = new TraitTooltip<>(trait, itemStack, holder, Component.empty());
-                  gui.renderTooltip(Minecraft.getInstance().font, List.of(), Optional.of(tooltip), mouseX, mouseY);
+                  gui.renderTooltip(Minecraft.getInstance().font, List.of(Component.empty()), Optional.of(tooltip), mouseX, mouseY);
                   ci.cancel();
             }
       }

@@ -5,11 +5,9 @@ import com.beansgalaxy.backpacks.components.StackableComponent;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
-import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
 import com.beansgalaxy.backpacks.util.DraggingContainer;
 import com.beansgalaxy.backpacks.util.DraggingTrait;
 import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
-import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -18,7 +16,6 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
@@ -76,8 +73,9 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
       }
 
       @Inject(method = "renderTooltip", cancellable = true, at = @At(value = "INVOKE",
-                  target = "Lnet/minecraft/client/gui/GuiGraphics;renderTooltip(Lnet/minecraft/client/gui/Font;Ljava/util/List;Ljava/util/Optional;II)V"))
-      private void backpacks_renderStackable(GuiGraphics pGuiGraphics, int pX, int pY, CallbackInfo ci, @Local ItemStack itemstack) {
+                  target = "Lnet/minecraft/world/inventory/Slot;getItem()Lnet/minecraft/world/item/ItemStack;"))
+      private void backpacks_renderStackable(GuiGraphics pGuiGraphics, int pX, int pY, CallbackInfo ci) {
+            ItemStack itemstack = hoveredSlot.getItem();
             StackableComponent component = itemstack.get(ITraitData.STACKABLE);
             if (component == null)
                   return;
@@ -167,29 +165,6 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
                         drag.backpackDraggedSlot = null;
                   }
                   drag.backpackDraggedSlots.clear();
-            }
-      }
-
-      @Unique
-      private void clickSlot(ItemStorageTraits traits, Slot slot, PatchedComponentHolder holder) {
-            if (drag.backpackDragType == 0) {
-                  ItemStack itemStack = traits.getFirst(holder);
-                  if (itemStack != null && !slot.hasItem()) {
-                        if (AbstractContainerMenu.canItemQuickReplace(slot, itemStack, true) && slot.mayPlace(itemStack)) {
-                              drag.backpackDraggedSlots.put(drag.backpackDraggedSlot, ItemStack.EMPTY);
-                              this.slotClicked(slot, slot.index, 1, ClickType.PICKUP);
-                        }
-                  }
-            } else {
-                  ItemStack stack = slot.getItem();
-                  boolean mayPickup = slot.mayPickup(minecraft.player);
-                  boolean hasItem = slot.hasItem();
-                  boolean canFit = traits.canItemFit(holder, stack);
-                  boolean isFull = traits.isFull(holder);
-                  if (mayPickup && hasItem && canFit && !isFull) {
-                        drag.backpackDraggedSlots.put(drag.backpackDraggedSlot, stack.copyWithCount(1));
-                        this.slotClicked(slot, slot.index, 1, ClickType.PICKUP);
-                  }
             }
       }
 

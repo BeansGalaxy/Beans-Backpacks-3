@@ -22,7 +22,6 @@ dependencies {
     }
 
     modRuntimeOnly "maven.modrinth:energized-power:1.21-2.12.1-fabric"
-//    modImplementation "maven.modrinth:trinkets:3.10.0"
 
 //    modRuntimeOnly "maven.modrinth:isometric-renders:0.4.7+1.21"
 //    modRuntimeOnly "io.wispforest:worldmesher:0.4.6+1.21"
