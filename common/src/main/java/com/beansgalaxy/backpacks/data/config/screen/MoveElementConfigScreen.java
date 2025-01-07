@@ -1,11 +1,18 @@
 package com.beansgalaxy.backpacks.data.config.screen;
 
+import com.beansgalaxy.backpacks.data.config.options.Orientation;
+import com.beansgalaxy.backpacks.data.config.types.EnumConfigVariant;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import org.apache.commons.lang3.function.TriConsumer;
 
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 public class MoveElementConfigScreen extends Screen {
@@ -15,16 +22,17 @@ public class MoveElementConfigScreen extends Screen {
       private final int bgV;
       private final int bgWidth;
       private final int bgHeight;
-      private final BiConsumer<Integer, Integer> onSave;
+      private final TriConsumer<Integer, Integer, Orientation> onSave;
       private final int elementW;
       private final int elementH;
-      private final int childSlots;
       private int elementX;
       private int elementY;
       private int topPos;
       private int leftPos;
+      private final int childSlots;
+      private Orientation orientation;
 
-      public MoveElementConfigScreen(Screen lastScreen, ResourceLocation background, BiConsumer<Integer, Integer> onSave, int elementX, int elementY, int elementW, int elementH, int bgWidth, int bgHeight, int bgU, int bgV, int childSlots) {
+      public MoveElementConfigScreen(Screen lastScreen, ResourceLocation background, TriConsumer<Integer, Integer, Orientation> onSave, int elementX, int elementY, int elementW, int elementH, int bgWidth, int bgHeight, int bgU, int bgV, int childSlots, Orientation orientation) {
             super(Component.empty());
             this.lastScreen = lastScreen;
             this.background = background;
@@ -38,11 +46,14 @@ public class MoveElementConfigScreen extends Screen {
             this.elementX = elementX;
             this.elementY = elementY;
             this.childSlots = childSlots;
+            this.orientation = orientation;
       }
 
       @Override
       public boolean mouseDragged(double x1, double y1, int i, double x2, double y2) {
-            if (i == 0) {
+            Optional<GuiEventListener> childAt = getChildAt(x1, y1);
+
+            if (childAt.isEmpty() && i == 0) {
                   elementX = (int) (x1 - leftPos) - elementW / 2;
                   elementY = (int) (y1 - topPos) - elementH / 2;
             }
@@ -58,7 +69,7 @@ public class MoveElementConfigScreen extends Screen {
 
             int center = width / 2;
             Button save = Button.builder(Component.translatable("screen.beansbackpacks.move_element.save_and_close"), in -> {
-                  onSave.accept(elementX, elementY);
+                  onSave.accept(elementX, elementY, orientation);
                   onClose();
             }).bounds(center + 5, height - 26, 80, 20).build();
 
@@ -66,8 +77,20 @@ public class MoveElementConfigScreen extends Screen {
                   onClose();
             }).bounds(center - 85, height - 26, 80, 20).build();
 
+            Button rotate = Button.builder(Component.translatable("screen.beansbackpacks.move_element.rotate"), in -> {
+                  Orientation lastValue = Orientation.RIGHT;
+                  for (Orientation value : Orientation.values()) {
+                        if (value == orientation) {
+                              orientation = lastValue;
+                              return;
+                        }
+                        else lastValue = value;
+                  }
+            }).bounds(center + 95, height - 26, 20, 20).build();
+
             addRenderableWidget(save);
             addRenderableWidget(exit);
+            addRenderableWidget(rotate);
       }
 
       @Override
@@ -81,16 +104,29 @@ public class MoveElementConfigScreen extends Screen {
             int eleX = leftPos + elementX;
             int eleY = topPos + elementY;
             gui.fill(eleX, eleY, elementW + eleX, elementH + eleY, 300, 0xFFEE3333);
+            boolean positive = orientation.isPositive();
             for (int i = 0; i < childSlots; i++) {
-                  int chiY = eleY - (elementH + 2) * (i + 1);
-                  gui.fill(eleX, chiY, elementW + eleX, elementH + chiY, 300, 0xFFDDCC33);
+                  int chiY;
+                  int chiX;
+                  if (orientation.isVertical()) {
+                        int mod = (elementH + 2) * (i + 1);
+                        chiY = positive ? eleY + mod : eleY - mod;
+                        chiX = eleX;
+                  }
+                  else {
+                        chiY = eleY;
+                        int mod = (elementW + 2) * (i + 1);
+                        chiX = positive ? eleX + mod : eleX - mod;
+                  }
+
+                  gui.fill(chiX, chiY, elementW + chiX, elementH + chiY, 300, 0xFFDDCC33);
             }
             gui.blit(background, leftPos, topPos, bgU, bgV, bgWidth, bgHeight);
             super.render(gui, x, y, delta);
       }
 
       public static class Builder {
-            private BiConsumer<Integer, Integer> onSave = (x, y) -> {};
+            private TriConsumer<Integer, Integer, Orientation> onSave = (x, y, o) -> {};
             private ResourceLocation background = null;
             private int elementX = 0;
             private int elementY = 0;
@@ -101,6 +137,7 @@ public class MoveElementConfigScreen extends Screen {
             private int bgU = 0;
             private int bgV = 0;
             private int childSlots = 0;
+            private Orientation orientation;
 
             public static Builder create() {
                   return new Builder();
@@ -140,13 +177,18 @@ public class MoveElementConfigScreen extends Screen {
                   return this;
             }
 
-            public Builder onSave(BiConsumer<Integer, Integer> onClose) {
+            public Builder onSave(TriConsumer<Integer, Integer, Orientation> onClose) {
                   this.onSave = onClose;
                   return this;
             }
 
             public MoveElementConfigScreen build(Screen lastScreen) {
-                  return new MoveElementConfigScreen(lastScreen, background, onSave, elementX, elementY, elementW, elementH, bgW, bgH, bgU, bgV, childSlots);
+                  return new MoveElementConfigScreen(lastScreen, background, onSave, elementX, elementY, elementW, elementH, bgW, bgH, bgU, bgV, childSlots, orientation);
+            }
+
+            public Builder orientation(Orientation orientation) {
+                  this.orientation = orientation;
+                  return this;
             }
       }
 }

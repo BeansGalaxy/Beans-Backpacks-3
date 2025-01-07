@@ -23,7 +23,7 @@ public class ClientConfigRows extends ConfigRows {
       private List<ConfigLabel> getRows() {
             ClientConfig config = (ClientConfig) this.config;
             return List.of(
-                        new MoveBackSlotConfigRow(config.back_slot_pos),
+                        new MoveBackSlotConfigRow(config.back_slot_pos, config.back_and_utility_direction),
                         new EnumConfigRow<>(config.shorthand_hud_location, ShorthandHUD.values()),
                         new EnumConfigRow<>(config.tool_belt_hud_visibility, ToolBeltHUD.values()),
                         new ConfigLabel(Component.translatable("config.beansbackpacks.client.player-render")),

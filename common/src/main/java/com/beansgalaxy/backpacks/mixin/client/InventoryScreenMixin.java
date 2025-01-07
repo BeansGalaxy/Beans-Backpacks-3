@@ -29,7 +29,7 @@ public abstract class InventoryScreenMixin extends EffectRenderingInventoryScree
 
       @Inject(method = "hasClickedOutside", at = @At("HEAD"), cancellable = true)
       private void hasClickedShorthand(double mouseX, double mouseY, int leftPos, int topPos, int in4, CallbackInfoReturnable<Boolean> cir) {
-            if (hoveredSlot instanceof ShorthandSlot)
+            if (hoveredSlot != null)
                   cir.setReturnValue(false);
       }
 }

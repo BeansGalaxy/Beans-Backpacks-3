@@ -1,6 +1,7 @@
 package com.beansgalaxy.backpacks.data.config.screen;
 
 import com.beansgalaxy.backpacks.Constants;
+import com.beansgalaxy.backpacks.data.config.options.Orientation;
 import com.beansgalaxy.backpacks.data.config.types.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -493,7 +494,7 @@ public abstract class ConfigRows extends ContainerObjectSelectionList<ConfigRows
             private final ListConfigVariant<Integer> value;
             private final Button button;
 
-            public MoveBackSlotConfigRow(ListConfigVariant<Integer> value) {
+            public MoveBackSlotConfigRow(ListConfigVariant<Integer> value, EnumConfigVariant<Orientation> orientation) {
                   super(Component.translatableWithFallback("screen.beansbackpacks.config." + value.name(), value.name()));
                   this.value = value;
                   this.button = Button.builder(Component.translatable("screen.beansbackpacks.config.back_slot_pos.edit"), in -> {
@@ -503,9 +504,11 @@ public abstract class ConfigRows extends ContainerObjectSelectionList<ConfigRows
                                     .elementSize(16, 16)
                                     .elementPos(value.get(0), value.get(1))
                                     .childSlots(2)
-                                    .onSave((x, y) -> {
+                                    .orientation(orientation.get())
+                                    .onSave((x, y, o) -> {
                                           value.get().set(0, x);
                                           value.get().set(1, y);
+                                          orientation.set(o);
                                     }).build(ConfigRows.this.screen);
                         minecraft.setScreen(screen);
                   }).bounds(0, 0, 70, 20).build();

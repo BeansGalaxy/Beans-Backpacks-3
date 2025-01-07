@@ -5,6 +5,7 @@ import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.access.EquipmentSlotAccess;
 import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
+import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.resources.ResourceLocation;
@@ -37,19 +38,29 @@ public class BackSlot extends Slot implements EquipmentSlotAccess {
       @Override
       public boolean mayPlace(ItemStack stack) {
             boolean standardCheck = stack.isEmpty();
-            Boolean orElse = EquipableComponent.get(stack).map(equipable ->
+            if (standardCheck)
+                  return true;
+
+            return EquipableComponent.get(stack).map(equipable ->
                         equipable.slots().test(EquipmentSlot.BODY)
             ).orElse(false);
-            return standardCheck || orElse;
       }
 
       @Override
       public boolean mayPickup(Player player) {
             ItemStack stack = getItem();
-            boolean standardCheck = stack.isEmpty();
+            if (stack.isEmpty())
+                  return true;
+
+            UtilityComponent utilities = stack.get(ITraitData.UTILITIES);
+            if (utilities != null)
+                  return false;
+
             boolean equipment = EquipableComponent.testIfPresent(stack, EquipableComponent::traitRemovable);
-            boolean emptyTrait = !Traits.testIfPresent(stack, traits -> !traits.isEmpty(stack));
-            return standardCheck || equipment || emptyTrait;
+            if (equipment)
+                  return true;
+
+            return !Traits.testIfPresent(stack, traits -> !traits.isEmpty(stack));
       }
 
       @Override

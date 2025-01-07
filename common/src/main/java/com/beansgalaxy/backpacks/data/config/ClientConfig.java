@@ -1,6 +1,7 @@
 package com.beansgalaxy.backpacks.data.config;
 
 import com.beansgalaxy.backpacks.Constants;
+import com.beansgalaxy.backpacks.data.config.options.Orientation;
 import com.beansgalaxy.backpacks.data.config.options.ToolBeltHUD;
 import com.beansgalaxy.backpacks.data.config.screen.IConfig;
 import com.beansgalaxy.backpacks.data.config.types.*;
@@ -20,6 +21,9 @@ public class ClientConfig implements IConfig {
       public BoolConfigVariant disable_equipable_render;
       public BoolConfigVariant disable_shorthand_render;
       public ListConfigVariant<Integer> back_slot_pos;
+      public EnumConfigVariant<Orientation> back_and_utility_direction;
+//      public ListConfigVariant<Integer> shorthand_slot_pos;
+//      public EnumConfigVariant<Orientation> shorthand_slots_direction;
 
       private final ConfigLine[] LINES = new ConfigLine[] {
                   shorthand_hud_location = new EnumConfigVariant<>("shorthand_hud_location", ShorthandHUD.NEAR_CENTER, ShorthandHUD.values()),
@@ -31,7 +35,12 @@ public class ClientConfig implements IConfig {
                   disable_equipable_render = new BoolConfigVariant("disable_backpack_render", false, "Disables backpacks and \"beansbackpacks:equipable\" rendering on the player"),
                   disable_shorthand_render = new BoolConfigVariant("disable_shorthand_render", false, "Disables shorthand item rendering on the player's back"),
                   back_slot_pos = ListConfigVariant.create(String::valueOf, JsonElement::getAsInt)
-                              .defau(77, 44).valid(in -> in.size() == 2).build("back_slot_pos")
+                              .defau(77, 44).valid(in -> in.size() == 2).build("back_slot_pos"),
+                  back_and_utility_direction = new EnumConfigVariant<>("back_and_utility_direction", Orientation.UP, Orientation.values())
+//                  shorthand_slot_pos = ListConfigVariant.create(String::valueOf, JsonElement::getAsInt)
+//                              .defau(77, 44).valid(in -> in.size() == 2).build("shorthand_slot_pos"),
+//                  shorthand_slots_direction = new EnumConfigVariant<>("shorthand_slots_direction", Orientation.LEFT, Orientation.values())
+
       };
 
       @Override
