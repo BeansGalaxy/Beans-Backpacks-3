@@ -38,7 +38,7 @@ public class BatteryTraits extends GenericTraits {
 
       @Override
       public IClientTraits<? extends GenericTraits> client() {
-            return null;
+            return BatteryClient.INSTANCE;
       }
 
       @Override
