@@ -1,0 +1,34 @@
+{
+    "sources": [
+        {
+            "type": "directory",
+            "source": "gui/clock",
+            "prefix": "clock"
+        },
+        {
+            "type": "directory",
+            "source": "gui/compass/background",
+            "prefix": "compass_background"
+        },
+        {
+            "type": "directory",
+            "source": "gui/compass/default",
+            "prefix": "compass_default"
+        },
+        {
+            "type": "directory",
+            "source": "gui/compass/lodestone",
+            "prefix": "compass_lodestone"
+        },
+        {
+            "type": "directory",
+            "source": "gui/recovery/background",
+            "prefix": "recovery_background"
+        },
+        {
+            "type": "directory",
+            "source": "gui/recovery/default",
+            "prefix": "recovery_default"
+        }
+    ]
+}

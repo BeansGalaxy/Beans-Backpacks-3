@@ -10,18 +10,24 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.PrimitiveCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.*;
+import it.unimi.dsi.fastutil.objects.ObjectCollection;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
 public class UtilityComponent {
       public static final UtilityComponent BLANK = new UtilityComponent(((Void) null)) {
@@ -31,7 +37,6 @@ public class UtilityComponent {
       public static final String NAME = "utilities";
 
       private final Int2ObjectMap<ItemStack> slots;
-      private final List<Type> utilities;
 
       public UtilityComponent(Int2ObjectArrayMap<ItemStack> map) {
             map.defaultReturnValue(ItemStack.EMPTY);
@@ -43,12 +48,10 @@ public class UtilityComponent {
             });
 
             this.slots = Int2ObjectMaps.unmodifiable(map);
-            this.utilities = builder.build();
       }
 
       private UtilityComponent(Void ignored) {
             this.slots = new Int2ValueMap<>(ItemStack.EMPTY);
-            this.utilities = ImmutableList.of();
       }
 
       public static Optional<Mutable> get(ItemStack stack) {
@@ -72,20 +75,6 @@ public class UtilityComponent {
             UtilityComponent component = stack.getOrDefault(ITraitData.UTILITIES, UtilityComponent.BLANK);
             Mutable mutable = new Mutable(size, component, stack);
             return Optional.of(mutable);
-      }
-
-      public static boolean playerHas(Player player, Type... utilities) {
-            ItemStack backpack = player.getItemBySlot(EquipmentSlot.BODY);
-            UtilityComponent component = backpack.get(ITraitData.UTILITIES);
-            if (component == null)
-                  return false;
-
-            for (Type utility : utilities) {
-                  if (component.utilities.contains(utility))
-                        return true;
-            }
-
-            return false;
       }
 
       public static byte getSize(ItemStack stack) {
@@ -122,7 +111,17 @@ public class UtilityComponent {
       }
 
       public boolean has(Type type) {
-            return this.utilities.contains(type);
+            return get(type) != null;
+      }
+
+      @Nullable
+      public ItemStack get(Type type) {
+            ObjectCollection<ItemStack> values = this.slots.values();
+            for (ItemStack value : values) {
+                  if (type.test(value))
+                        return value;
+            }
+            return null;
       }
 
       @NotNull
@@ -146,9 +145,30 @@ public class UtilityComponent {
             slots.clear();
       }
 
+      public Iterator<ItemStack> iterator() {
+            return slots.values().iterator();
+      }
+
       public enum Type {
-            SPYGLASS,
-            NONE
+            SPYGLASS(Items.SPYGLASS),
+            CLOCK(Items.CLOCK),
+            COMPASS(Items.COMPASS),
+            RECOVERY(Items.RECOVERY_COMPASS),
+            LODESTONE(stack -> stack.is(Items.COMPASS) && stack.has(DataComponents.LODESTONE_TRACKER)),
+            NONE(Items.AIR);
+
+            private final Predicate<ItemStack> predicate;
+            Type(Item item) {
+                  this.predicate = stack -> stack.is(item);
+            }
+
+            Type(Predicate<ItemStack> predicate) {
+                  this.predicate = predicate;
+            }
+
+            public boolean test(ItemStack item) {
+                  return predicate.test(item);
+            }
       }
 
       public static class Mutable {
@@ -184,12 +204,12 @@ public class UtilityComponent {
       public boolean equals(Object o) {
             if (this == o) return true;
             if (!(o instanceof UtilityComponent component)) return false;
-            return Objects.equals(slots, component.slots) && Objects.equals(utilities, component.utilities);
+            return Objects.equals(slots, component.slots);
       }
 
       @Override
       public int hashCode() {
-            return Objects.hash(slots, utilities);
+            return Objects.hash(slots);
       }
 
       // ===================================================================================================================== CODECS
