@@ -54,6 +54,7 @@ public abstract class InventoryMixin implements BackData {
                         carried.inventoryTick(level, player, -1, false)
             );
             getShorthand().tick(instance);
+            getUtility().tick(instance);
 
             for (Slot slot : player.containerMenu.slots) {
                   ItemStack stack = slot.getItem();

@@ -1,0 +1,6 @@
+{
+	"parent": "beansbackpacks:item/utilities/compass/template",
+	"textures": {
+		"face": "beansbackpacks:item/utilities/compass/2"
+	}
+}

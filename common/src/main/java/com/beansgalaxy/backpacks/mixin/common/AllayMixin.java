@@ -19,6 +19,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.PathfinderMob;
@@ -190,8 +191,9 @@ public abstract class AllayMixin extends PathfinderMob implements ViewableAccess
                   Traits.get(toStack()).ifPresent(traits -> traits.sound().at(AllayMixin.this, type));
             }
 
-            @Override public int getId() {
-                  return AllayMixin.this.getId();
+            @Override
+            public Entity entity() {
+                  return AllayMixin.this;
             }
 
             @Override protected PatchedComponentHolder holder() {

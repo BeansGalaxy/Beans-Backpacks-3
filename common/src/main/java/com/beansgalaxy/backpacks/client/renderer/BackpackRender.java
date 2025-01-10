@@ -21,17 +21,15 @@ import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelManager;
-import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.client.resources.model.*;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.armortrim.ArmorTrim;
 import net.minecraft.world.item.component.DyedItemColor;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
 
 public interface BackpackRender {
 
@@ -47,13 +45,7 @@ public interface BackpackRender {
       BlockRenderDispatcher blockRenderer();
 
       default void renderTexture(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, ResourceLocation texture, ItemStack itemStack, ViewableBackpack viewable) {
-            UtilityComponent utilities = itemStack.get(ITraitData.UTILITIES);
-            if (utilities != null && !utilities.isBlank()) {
-                  ItemStack first = utilities.get(0);
-                  renderUtilities(pose, pBufferSource, pCombinedLight, first, viewable, true);
-                  ItemStack second = utilities.get(1);
-                  renderUtilities(pose, pBufferSource, pCombinedLight, second, viewable, false);
-            }
+            tryRenderUtilities(pose, pBufferSource, pCombinedLight, itemStack, viewable);
 
             if (texture.equals(ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "leather"))) {
                   builtInLeatherModel(pose, pBufferSource, pCombinedLight, itemStack);
@@ -87,6 +79,25 @@ public interface BackpackRender {
             }
       }
 
+      private void tryRenderUtilities(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, ItemStack itemStack, ViewableBackpack viewable) {
+            UtilityComponent utilities = itemStack.get(ITraitData.UTILITIES);
+            if (utilities != null && !utilities.isBlank()) {
+                  ItemStack first = utilities.get(0);
+                  ItemStack second = utilities.get(1);
+
+                  renderUtilities(pose, pBufferSource, pCombinedLight, first, viewable, true);
+                  renderUtilities(pose, pBufferSource, pCombinedLight, second, viewable, false);
+
+            }
+      }
+
+      private void renderConduit(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, ItemStack first, ClientLevel level) {
+            Matrix4f posed = pose.last().pose();
+            pose.pushPose();
+            itemRenderer().renderStatic(null, first, ItemDisplayContext.HEAD, false, pose, pBufferSource, level, pCombinedLight, OverlayTexture.NO_OVERLAY, 0);
+            pose.popPose();
+      }
+
       private void renderUtilities(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, ItemStack stack, ViewableBackpack viewable, boolean rightSide) {
             if (stack.isEmpty())
                   return;
@@ -95,9 +106,8 @@ public interface BackpackRender {
             if (model == null)
                   return;
 
-            ItemDisplayContext displayContext = ItemDisplayContext.FIXED;
-
             pose.pushPose();
+            ItemDisplayContext displayContext = ItemDisplayContext.FIXED;
             model.getTransforms().getTransform(displayContext).apply(!rightSide, pose);
             pose.scale(.5f, .5f, .5f);
             if (rightSide) {
@@ -115,13 +125,27 @@ public interface BackpackRender {
             double y = fallPitch * 0.02;
             pose.translate(0, y, -fallPitch * 0.004);
             pose.mulPose(Axis.XP.rotationDegrees(fallPitch * 2));
+
             VertexConsumer buffer = pBufferSource.getBuffer(Sheets.cutoutBlockSheet());
             this.blockRenderer().getModelRenderer().renderModel(pose.last(), buffer, null, model, 1.0F, 1.0F, 1.0F, pCombinedLight, OverlayTexture.NO_OVERLAY);
+
+
             pose.popPose();
       }
 
       default BakedModel resolveUtilitiesModel(ItemStack stack) {
-            ItemModelShaper itemModelShaper = itemRenderer().getItemModelShaper();
+            ItemModelShaper itemModelShaper = this.itemRenderer().getItemModelShaper();
+            if (stack.is(Items.WHITE_BANNER)) {
+                  ModelManager modelmanager = itemModelShaper.getModelManager();
+                  ModelResourceLocation modelLocation = Services.PLATFORM.getModelVariant(ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "backpack/ominous_banner"));
+                  return modelmanager.getModel(modelLocation);
+            }
+            if (stack.is(Items.CONDUIT)) {
+                  ModelManager modelmanager = itemModelShaper.getModelManager();
+                  ModelResourceLocation modelLocation = Services.PLATFORM.getModelVariant(ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "backpack/conduit"));
+                  return modelmanager.getModel(modelLocation);
+            }
+
             BakedModel itemModel = itemModelShaper.getItemModel(stack);
             BakedModel resolve = itemModel.getOverrides().resolve(itemModel, CommonClient.UTILITY_DISPLAY_STAND_IN, null, null, 0);
             if (resolve == null)

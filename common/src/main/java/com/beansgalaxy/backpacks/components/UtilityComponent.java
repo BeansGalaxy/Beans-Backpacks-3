@@ -11,8 +11,11 @@ import com.mojang.serialization.codecs.PrimitiveCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.*;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -110,6 +113,27 @@ public class UtilityComponent {
             return false;
       }
 
+      public static boolean consumeOminous(Player player, Runnable runnable) {
+            ItemStack backpack = player.getItemBySlot(EquipmentSlot.BODY);
+            Optional<Mutable> muteOptional = get(backpack);
+            if (muteOptional.isEmpty())
+                  return false;
+
+            Mutable mutable = muteOptional.get();
+            for (Int2ObjectMap.Entry<ItemStack> entry : mutable.slots.int2ObjectEntrySet()) {
+                  ItemStack value = entry.getValue();
+                  if (!Type.OMINOUS.test(value))
+                        continue;
+
+                  value.shrink(1);
+                  mutable.freeze();
+                  runnable.run();
+                  return true;
+            }
+
+            return false;
+      }
+
       public boolean has(Type type) {
             return get(type) != null;
       }
@@ -133,6 +157,16 @@ public class UtilityComponent {
             return slots.get(i);
       }
 
+      public static Type getType(ItemStack stack) {
+            for (Type value : Type.values()) {
+                  if (value.test(stack)) {
+                        return value;
+                  }
+            }
+
+            return Type.NONE;
+      }
+
       public boolean isEmpty() {
             return slots.isEmpty();
       }
@@ -149,12 +183,24 @@ public class UtilityComponent {
             return slots.values().iterator();
       }
 
+      private static final Component OMINOUS_NAME = Component.translatable("block.minecraft.ominous_banner").withStyle(ChatFormatting.GOLD);
+
       public enum Type {
             SPYGLASS(Items.SPYGLASS),
             CLOCK(Items.CLOCK),
             COMPASS(Items.COMPASS),
             RECOVERY(Items.RECOVERY_COMPASS),
             LODESTONE(stack -> stack.is(Items.COMPASS) && stack.has(DataComponents.LODESTONE_TRACKER)),
+            CONDUIT(Items.CONDUIT),
+            OMINOUS(stack -> {
+                  if (!stack.is(Items.WHITE_BANNER) || !stack.has(DataComponents.HIDE_ADDITIONAL_TOOLTIP))
+                        return false;
+
+                  Component component = stack.get(DataComponents.ITEM_NAME);
+                  return component != null && component.equals(OMINOUS_NAME);
+            }),
+            ROCKET(Items.FIREWORK_ROCKET),
+            TOTEM(Items.TOTEM_OF_UNDYING),
             NONE(Items.AIR);
 
             private final Predicate<ItemStack> predicate;

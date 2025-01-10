@@ -3,6 +3,7 @@ package com.beansgalaxy.backpacks.util;
 import com.beansgalaxy.backpacks.access.ViewableAccessor;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
@@ -107,7 +108,11 @@ public abstract class ViewableBackpack implements PatchedComponentHolder {
 
       public abstract void playSound(ModSound.Type type);
 
-      public abstract int getId();
+      public abstract Entity entity();
+
+      public int getId() {
+            return entity().getId();
+      }
 
       protected abstract PatchedComponentHolder holder();
 

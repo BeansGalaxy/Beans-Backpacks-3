@@ -92,8 +92,8 @@ public class BackpackEntity extends Entity implements PatchedComponentHolder {
                   getTraits().ifPresent(traits -> traits.sound().at(BackpackEntity.this, type));
             }
 
-            @Override public int getId() {
-                  return BackpackEntity.this.getId();
+            @Override public Entity entity() {
+                  return BackpackEntity.this;
             }
 
             @Override protected PatchedComponentHolder holder() {

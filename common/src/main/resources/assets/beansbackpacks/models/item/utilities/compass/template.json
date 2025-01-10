@@ -1,0 +1,14 @@
+{
+	"parent": "beansbackpacks:item/utilities/clock/template",
+	"textures": {
+		"clock": "beansbackpacks:item/utilities/compass",
+		"face": "beansbackpacks:item/utilities/compass/0"
+	},
+	"display": {
+		"fixed": {
+			"rotation": [0, 180, 0],
+			"translation": [3.5, 8, -4],
+			"scale": [2, 2, 2]
+		}
+	}
+}

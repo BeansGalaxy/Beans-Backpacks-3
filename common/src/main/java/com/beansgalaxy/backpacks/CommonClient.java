@@ -196,13 +196,12 @@ public class CommonClient {
 
 // ===================================================================================================================== SHORTHAND CLIENT
 
-
       public static float getHandHeight(float mainHandHeight) {
             return 1f - mainHandHeight;
       }
 
-      private static final ResourceLocation BACK_SLOT = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/slots/back_slot.png");
-      private static final ResourceLocation UTIL_SLOT = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/slots/util_slot.png");
+      public static final ResourceLocation BACK_SLOT = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/slots/back_slot.png");
+      public static final ResourceLocation UTIL_SLOT = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/slots/util_slot.png");
       private static final ResourceLocation SHORTHAND_START = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/slots/shorthand/start.png");
       private static final ResourceLocation SHORTHAND_STOP = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/slots/shorthand/stop.png");
       private static final ResourceLocation SHORTHAND_END = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/slots/shorthand/end.png");

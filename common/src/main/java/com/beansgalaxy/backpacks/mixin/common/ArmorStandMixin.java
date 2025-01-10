@@ -18,6 +18,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -195,8 +196,8 @@ public abstract class ArmorStandMixin extends LivingEntity implements ViewableAc
                   Traits.get(toStack()).ifPresent(traits -> traits.sound().at(instance, type));
             }
 
-            @Override public int getId() {
-                  return instance.getId();
+            @Override public Entity entity() {
+                  return instance;
             }
 
             @Override protected PatchedComponentHolder holder() {

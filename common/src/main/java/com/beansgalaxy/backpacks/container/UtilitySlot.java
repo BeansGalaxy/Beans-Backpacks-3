@@ -1,6 +1,7 @@
 package com.beansgalaxy.backpacks.container;
 
 import com.beansgalaxy.backpacks.CommonClass;
+import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.data.config.options.Orientation;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -36,7 +37,7 @@ public class UtilitySlot extends Slot {
 
       @Override
       public boolean mayPlace(ItemStack pStack) {
-            return super.mayPlace(pStack);
+            return UtilityComponent.getType(pStack) != UtilityComponent.Type.NONE;
       }
 
       @Override

@@ -1,18 +1,20 @@
 package com.beansgalaxy.backpacks.mixin.client;
 
+import com.beansgalaxy.backpacks.CommonClient;
+import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
-import com.beansgalaxy.backpacks.container.BackSlot;
-import com.beansgalaxy.backpacks.container.Shorthand;
-import com.beansgalaxy.backpacks.container.ShorthandSlot;
+import com.beansgalaxy.backpacks.container.*;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
 import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -42,6 +44,42 @@ public abstract class CreativeInventoryMixin extends EffectRenderingInventoryScr
                   cir.setReturnValue(false);
       }
 
+      private static final ResourceLocation LARGE_SLOT = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "slots/creative_large");
+      private static final ResourceLocation SMALL_SLOT = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "slots/creative_small");
+
+      @Override
+      protected void renderSlot(GuiGraphics gui, Slot slot) {
+            if (slot instanceof BackSlot || slot instanceof ShorthandSlot.WeaponSlot) {
+                  gui.blitSprite(LARGE_SLOT, leftPos + slot.x - 1, topPos + slot.y - 1, 18, 18);
+            }
+            else if (slot instanceof ShorthandSlot.ToolSlot || slot instanceof UtilitySlot) {
+                  gui.blitSprite(SMALL_SLOT, leftPos + slot.x - 1, topPos + slot.y - 1, 18, 18);
+            }
+            super.renderSlot(gui, slot);
+      }
+
+      @Inject(method = "renderBg", at = @At("TAIL"))
+      private void backpacks_renderBg(GuiGraphics gui, float pPartialTick, int pMouseX, int pMouseY, CallbackInfo ci) {
+            if (selectedTab.getType() == CreativeModeTab.Type.INVENTORY) {
+                  gui.blitSprite(LARGE_SLOT, leftPos + 127 - 1, topPos + 20 - 1, 18, 18);
+                  UtilityContainer utilities = UtilityContainer.get(minecraft.player);
+                  for (byte b = 0; b < utilities.size; b++) {
+                        gui.blitSprite(SMALL_SLOT, leftPos - 58 - 1, topPos + (b * 18) - 1, 18, 18);
+                  }
+
+                  Shorthand shorthand = Shorthand.get(minecraft.player);
+                  int weaponsSize = shorthand.weapons.getContainerSize();
+                  for (int i = 0; i < weaponsSize; i++) {
+                        gui.blitSprite(LARGE_SLOT, leftPos - 22 - 1, topPos + (i * 18) - 1, 18, 18);
+                  }
+
+                  int toolsSize = shorthand.tools.getContainerSize();
+                  for (int i = 0; i < toolsSize; i++) {
+                        gui.blitSprite(SMALL_SLOT, leftPos - 40 - 1, topPos + (i * 18) - 1, 18, 18);
+                  }
+            }
+      }
+
       @Inject(method = "selectTab", at = @At(value = "FIELD", shift = At.Shift.BEFORE, ordinal = 0,
                   target = "Lnet/minecraft/client/gui/screens/inventory/CreativeModeInventoryScreen;destroyItemSlot:Lnet/minecraft/world/inventory/Slot;"))
       private void addBackSlot(CreativeModeTab pTab, CallbackInfo ci) {
@@ -52,17 +90,21 @@ public abstract class CreativeInventoryMixin extends EffectRenderingInventoryScr
                   if (slot instanceof BackSlot backSlot) {
                         CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(backSlot, backSlot.index, 127, 20);
                         backpacks_setOrAdd(i, wrapped);
-                        return;
+                        continue;
+                  }
+                  if (slot instanceof UtilitySlot utilSlot) {
+                        CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(utilSlot, utilSlot.index, -58, utilSlot.getContainerSlot() * 18);
+                        backpacks_setOrAdd(i, wrapped);
                   }
                   if (slot instanceof ShorthandSlot.WeaponSlot shortSlot) {
                         CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(shortSlot, shortSlot.index, -22, shortSlot.getContainerSlot() * 18);
                         backpacks_setOrAdd(i, wrapped);
-                        return;
+                        continue;
                   }
                   if (slot instanceof ShorthandSlot.ToolSlot toolSlot) {
                         CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(toolSlot, toolSlot.index, -40, toolSlot.getContainerSlot() * 18);
                         backpacks_setOrAdd(i, wrapped);
-                        return;
+                        continue;
                   }
             }
       }

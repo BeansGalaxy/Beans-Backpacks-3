@@ -1,0 +1,19 @@
+{
+	"parent": "beansbackpacks:item/utilities/clock/template",
+	"textures": {
+		"face": "beansbackpacks:item/utilities/recovery_compass/0"
+	},
+	"overrides": [
+		{ "predicate": { "angle": 0.0 }, "model": "beansbackpacks:item/utilities/recovery_compass/0" },
+		{ "predicate": { "angle": 0.1 }, "model": "beansbackpacks:item/utilities/recovery_compass/1" },
+		{ "predicate": { "angle": 0.2 }, "model": "beansbackpacks:item/utilities/recovery_compass/2" },
+		{ "predicate": { "angle": 0.3 }, "model": "beansbackpacks:item/utilities/recovery_compass/3" },
+		{ "predicate": { "angle": 0.4 }, "model": "beansbackpacks:item/utilities/recovery_compass/4" },
+		{ "predicate": { "angle": 0.5 }, "model": "beansbackpacks:item/utilities/recovery_compass/5" },
+		{ "predicate": { "angle": 0.6 }, "model": "beansbackpacks:item/utilities/recovery_compass/6" },
+		{ "predicate": { "angle": 0.7 }, "model": "beansbackpacks:item/utilities/recovery_compass/7" },
+		{ "predicate": { "angle": 0.8 }, "model": "beansbackpacks:item/utilities/recovery_compass/8" },
+		{ "predicate": { "angle": 0.9 }, "model": "beansbackpacks:item/utilities/recovery_compass/9" },
+		{ "predicate": { "angle": 1.0 }, "model": "beansbackpacks:item/utilities/recovery_compass/0" }
+	]
+}

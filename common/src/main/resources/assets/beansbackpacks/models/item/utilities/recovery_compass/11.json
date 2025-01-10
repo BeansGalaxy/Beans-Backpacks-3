@@ -1,0 +1,6 @@
+{
+	"parent": "beansbackpacks:item/utilities/recovery_compass/template",
+	"textures": {
+		"face": "beansbackpacks:item/utilities/recovery_compass/11"
+	}
+}

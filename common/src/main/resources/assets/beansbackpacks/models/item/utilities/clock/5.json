@@ -1,0 +1,6 @@
+{
+	"parent": "beansbackpacks:item/utilities/clock/template",
+	"textures": {
+		"face": "beansbackpacks:item/utilities/clock/5"
+	}
+}

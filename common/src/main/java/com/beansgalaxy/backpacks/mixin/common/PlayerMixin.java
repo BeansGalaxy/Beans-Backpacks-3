@@ -81,8 +81,8 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
                   Traits.get(toStack()).ifPresent(traits -> traits.sound().at(instance, type));
             }
 
-            @Override public int getId() {
-                  return instance.getId();
+            @Override public Entity entity() {
+                  return instance;
             }
 
             @Override protected PatchedComponentHolder holder() {
