@@ -4,10 +4,11 @@
   },
   "equipable": {
     "slots": "body",
-    "backpack_texture": "beansbackpacks:copper",
+    "backpack_texture": "copper_backpacks:copper",
     "sound_event": ["beansbackpacks:metal_equip", "beansbackpacks:metal_place"]
   },
   "placeable": {
-    "backpack_texture": "beansbackpacks:copper"
-  }
+    "backpack_texture": "copper_backpacks:copper"
+  },
+  "utilities": 1
 }

@@ -16,7 +16,7 @@
   "result": {
     "id": "beansbackpacks:gold_backpack",
     "components": {
-      "beansbackpacks:reference": "beansbackpacks:copper_backpack",
+      "beansbackpacks:reference": "copper_backpacks:copper_backpack",
       "minecraft:item_name": "{\"type\": \"translatable\", \"translate\": \"item.beansbackpacks.copper_backpack\"}",
       "minecraft:custom_model_data": 1
     },
