@@ -7,15 +7,23 @@ import com.beansgalaxy.backpacks.screen.BackpackScreen;
 import com.beansgalaxy.backpacks.screen.TinyClickType;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
+import com.beansgalaxy.backpacks.util.SplitText;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.FormattedCharSink;
+import net.minecraft.util.StringDecomposer;
+import net.minecraft.util.StringUtil;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -24,6 +32,8 @@ import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.math.Fraction;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class BundleScreen extends BackpackScreen {
@@ -82,7 +92,8 @@ public class BundleScreen extends BackpackScreen {
 
             clearSlots();
             int width = columns * 18;
-            int left = leftPos - 18 - width;
+            int right = leftPos - 18;
+            int left = right - width;
             int top = traitTop() - 11 - ((rows - 1) / 2) * 10;
             int i = hasSpace ? -1 : 0;
 
@@ -105,21 +116,30 @@ public class BundleScreen extends BackpackScreen {
             }
 
             int fontWidth = font.width(title);
-            int fontHeight = 9;
+            int fontHeight = 10;
             PoseStack pose = gui.pose();
             pose.pushPose();
             pose.translate(0, 0, 100);
+
             if (fontWidth > width) {
-                  List<FormattedCharSequence> split = font.split(title, width);
-                  int height = split.size() * 9;
+                  FormattedCharSequence text = title.getVisualOrderText();
+                  SplitText splitText = new SplitText(text);
+                  splitText.split();
+                  ArrayList<FormattedCharSequence> split = new ArrayList<>();
+                  int newWidth = splitText.noCropWidth(font, width, split);
+                  left = left + width - newWidth;
+                  width = newWidth;
+
+                  int height = split.size() * 10;
                   int splitRow = height;
                   for (FormattedCharSequence sequence : split) {
-                        gui.drawString(minecraft.font, sequence, left + 1, top - splitRow, 0xFFFFFFFF);
-                        splitRow = splitRow - 9;
+                        int seqWidth = font.width(sequence);
+                        gui.drawString(minecraft.font, sequence, right - seqWidth, top - splitRow, 0xFFFFFFFF);
+                        splitRow = splitRow - 10;
                   }
                   fontHeight = height;
             }
-            else gui.drawString(minecraft.font, title, left + 1, top - 9, 0xFFFFFFFF);
+            else gui.drawString(minecraft.font, title, right - fontWidth, top - 10, 0xFFFFFFFF);
 
             pose.popPose();
 
@@ -128,7 +148,7 @@ public class BundleScreen extends BackpackScreen {
             this.traitW = width;
             this.traitH = rows * 18 + fontHeight;
 
-            TooltipRenderUtil.renderTooltipBackground(gui, left, top - 1 - fontHeight, width, rows * 18 + 2 + fontHeight, 1);
+            TooltipRenderUtil.renderTooltipBackground(gui, left - 1, top - 1 - fontHeight, width + 2, rows * 18 + 3 + fontHeight, 1);
 
             for (TraitSlot slot : slots) {
                   slot.render(gui, pMouseX, pMouseY, pPartialTick);
