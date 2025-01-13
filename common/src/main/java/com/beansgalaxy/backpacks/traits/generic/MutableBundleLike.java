@@ -65,6 +65,35 @@ public class MutableBundleLike<T extends BundleLikeTraits> implements MutableIte
             return addItem(other, 0, player);
       }
 
+      @Override
+      public void moveItemsTo(MutableItemStorage to, Player player, boolean fullStack) {
+            int selectedSlot = getSelectedSlot(player);
+            ItemStack stack = getItemStacks().get(selectedSlot);
+            int toAdd = to.getMaxAmountToAdd(stack);
+            if (toAdd > 0) {
+                  ItemStack moved;
+                  if (!fullStack) {
+                        moved = stack.copyWithCount(1);
+                        stack.shrink(1);
+                  }
+                  else {
+                        int count = stack.getCount();
+                        if (count < toAdd) {
+                              int min = Math.min(count, toAdd);
+                              moved = stack.copyWithCount(min);
+                              stack.shrink(min);
+                        }
+                        else moved = removeItem(selectedSlot);
+                  }
+
+                  to.addItem(moved, player);
+                  this.push();
+                  to.push();
+
+                  sound().at(player, ModSound.Type.REMOVE);
+            }
+      }
+
       public ItemStack addItem(ItemStack inserted, int slot, @Nullable Player player) {
             if (!traits.canItemFit(holder, inserted))
                   return null;

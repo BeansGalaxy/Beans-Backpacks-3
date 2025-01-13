@@ -1,11 +1,14 @@
 package com.beansgalaxy.backpacks.screen;
 
+import net.minecraft.world.entity.EquipmentSlot;
+
 public enum TinyClickType {
       LEFT(-1),
       RIGHT(-1),
       SHIFT(-1),
-      SWAP_SHIFT(-1),
+      I_SHIFT(-1),
       ACTION(-1),
+      DROP(-1),
       H_0(0),
       H_1(1),
       H_2(2),
@@ -18,9 +21,11 @@ public enum TinyClickType {
       ;
 
       public final int hotbarSlot;
+      public final EquipmentSlot equipmentSlot;
 
-      TinyClickType(int hotbarSlot) {
-            this.hotbarSlot = hotbarSlot;
+      TinyClickType(int slot) {
+            hotbarSlot = slot;
+            equipmentSlot = null;
       }
 
       public boolean isHotbar() {
@@ -47,10 +52,14 @@ public enum TinyClickType {
       }
 
       public boolean isShift() {
-            return this == SHIFT || this == SWAP_SHIFT;
+            return this == SHIFT || this == I_SHIFT;
       }
 
       public boolean isAction() {
             return this == ACTION;
+      }
+
+      public boolean isDrop() {
+            return this == DROP;
       }
 }

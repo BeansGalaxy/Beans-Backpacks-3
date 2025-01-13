@@ -1,7 +1,7 @@
 package com.beansgalaxy.backpacks.traits.chest;
 
 import com.beansgalaxy.backpacks.traits.IEntityTraits;
-import com.beansgalaxy.backpacks.traits.chest.screen.EntityChestScreen;
+import com.beansgalaxy.backpacks.traits.chest.screen.ChestScreen;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
@@ -14,7 +14,7 @@ public class ChestEntity implements IEntityTraits<ChestTraits> {
       @Override
       public InteractionResult interact(BackpackEntity backpackEntity, ChestTraits traits, Player player, InteractionHand hand) {
             if (player.level().isClientSide) {
-                  EntityChestScreen.openScreen(backpackEntity.viewable, traits);
+                  ChestScreen.openScreen(backpackEntity.viewable, traits, player);
             }
             return InteractionResult.SUCCESS;
       }

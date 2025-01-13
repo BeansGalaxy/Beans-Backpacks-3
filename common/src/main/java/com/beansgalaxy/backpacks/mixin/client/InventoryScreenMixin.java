@@ -23,7 +23,6 @@ public abstract class InventoryScreenMixin extends EffectRenderingInventoryScree
 
       @Inject(method = "renderBg", at = @At("TAIL"))
       private void renderShortHandSlots(GuiGraphics graphics, float f, int $$2, int $$3, CallbackInfo ci) {
-            int[] UV = {};
             CommonClient.renderShorthandSlots(graphics, leftPos, topPos, imageWidth, imageHeight, minecraft.player);
       }
 

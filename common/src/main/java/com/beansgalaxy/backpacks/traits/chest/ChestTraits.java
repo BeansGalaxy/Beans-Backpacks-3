@@ -8,7 +8,7 @@ import com.beansgalaxy.backpacks.screen.TinyClickType;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.Traits;
-import com.beansgalaxy.backpacks.traits.chest.screen.EntityChestScreen;
+import com.beansgalaxy.backpacks.traits.chest.screen.ChestScreen;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
 import com.beansgalaxy.backpacks.traits.generic.MutableItemStorage;
@@ -169,110 +169,57 @@ public class ChestTraits extends ItemStorageTraits {
 
       @Override
       public void hotkeyUse(Slot slot, EquipmentSlot selectedEquipment, int button, ClickType actionType, Player player, CallbackInfo ci) {
-            if (selectedEquipment == null) {
-                  PatchedComponentHolder holder = PatchedComponentHolder.of(slot.getItem());
-                  ChestMutable mutable = mutable(holder);
-                  if (mutable.isEmpty()) {
+            if (selectedEquipment == null)
+                  return;
+
+            ItemStack backpack = player.getItemBySlot(selectedEquipment);
+            PatchedComponentHolder holder = PatchedComponentHolder.of(backpack);
+            ChestMutable mutable = mutable(holder);
+            if (mutable.isFull())
+                  return;
+
+            if (ClickType.PICKUP_ALL.equals(actionType)) {
+                  List<ItemStack> stacks = mutable.getItemStacks();
+                  ItemStack carried = player.containerMenu.getCarried();
+                  if (stacks.isEmpty()
+                  || !ItemStack.isSameItemSameComponents(carried, stacks.getFirst())
+                  || !canItemFit(holder, carried)
+                  ) {
                         ci.cancel();
                         return;
                   }
 
                   Inventory inventory = player.getInventory();
-                  if (ClickType.PICKUP_ALL.equals(actionType)) {
-                        ItemStack carried = player.containerMenu.getCarried();
-                        List<ItemStack> stacks = mutable.getItemStacks();
-                        ItemStack selectedStack = stacks.getFirst();
-                        if (!ItemStack.isSameItemSameComponents(carried, selectedStack) || !canItemFit(holder, carried)) {
-                              ci.cancel();
-                              return;
-                        }
-
-                        for (int i = stacks.size() - 1; i >= 0  && !mutable.isFull(); i--) {
-                              ItemStack stack = stacks.get(i);
-                              boolean same = ItemStack.isSameItemSameComponents(carried, stack);
-                              if (same) {
-                                    int stackableSlot = inventory.getSlotWithRemainingSpace(stack);
-                                    if (stackableSlot == -1) {
-                                          stackableSlot = inventory.getFreeSlot();
-                                    }
-                                    if (stackableSlot == -1)
-                                          continue;
-
-                                    ItemStack removed = mutable.removeItem(i);
-                                    if (inventory.add(-1, removed)) {
-                                          ci.cancel();
-                                    }
+                  NonNullList<ItemStack> items = inventory.items;
+                  for (int i = items.size() - 1; i >= 0  && !mutable.isFull(); i--) {
+                        ItemStack stack = items.get(i);
+                        if (ItemStack.isSameItemSameComponents(carried, stack)) {
+                              int toAdd = mutable.getMaxAmountToAdd(stack.copy());
+                              int count = Math.min(stack.getMaxStackSize(), toAdd);
+                              ItemStack removed = stack.copyWithCount(count);
+                              stack.shrink(count);
+                              if (mutable.addItem(removed, player) != null) {
+                                    ci.cancel();
                               }
                         }
-
-                        boolean cancelled = ci.isCancelled();
-                        if (cancelled) {
-                              sound().atClient(player, ModSound.Type.REMOVE);
-                              mutable.push();
-                        }
-                        return;
                   }
 
-                  ItemStack stack = mutable.removeItem(0);
-                  int stackableSlot = inventory.getSlotWithRemainingSpace(stack);
-                  if (stackableSlot == -1) {
-                        stackableSlot = inventory.getFreeSlot();
+                  boolean cancelled = ci.isCancelled();
+                  if (cancelled) {
+                        sound().atClient(player, ModSound.Type.INSERT);
+                        mutable.push();
                   }
-                  if (stackableSlot != -1 && inventory.add(-1, stack)) {
-                        sound().atClient(player, ModSound.Type.REMOVE);
+                  return;
+            }
+
+            if (canItemFit(holder, slot.getItem())) {
+                  ItemStack slotItem = slot.getItem().copy();
+                  int toAdd = mutable.getMaxAmountToAdd(slotItem);
+                  ItemStack removed = slot.remove(toAdd);
+                  if (mutable.addItem(removed, player) != null) {
+                        sound().atClient(player, ModSound.Type.INSERT);
                         mutable.push();
                         ci.cancel();
-                  }
-            } else {
-                  ItemStack backpack = player.getItemBySlot(selectedEquipment);
-                  PatchedComponentHolder holder = PatchedComponentHolder.of(backpack);
-                  ChestMutable mutable = mutable(holder);
-                  if (mutable.isFull())
-                        return;
-
-                  if (ClickType.PICKUP_ALL.equals(actionType)) {
-                        List<ItemStack> stacks = mutable.getItemStacks();
-                        ItemStack carried = player.containerMenu.getCarried();
-                        if (stacks.isEmpty()
-                        || !ItemStack.isSameItemSameComponents(carried, stacks.getFirst())
-                        || !canItemFit(holder, carried)
-                        ) {
-                              ci.cancel();
-                              return;
-                        }
-
-                        Inventory inventory = player.getInventory();
-                        NonNullList<ItemStack> items = inventory.items;
-                        for (int i = items.size() - 1; i >= 0  && !mutable.isFull(); i--) {
-                              ItemStack stack = items.get(i);
-                              if (ItemStack.isSameItemSameComponents(carried, stack)) {
-                                    int toAdd = mutable.getMaxAmountToAdd(stack.copy());
-                                    int count = Math.min(stack.getMaxStackSize(), toAdd);
-                                    ItemStack removed = stack.copyWithCount(count);
-                                    stack.shrink(count);
-                                    if (mutable.addItem(removed, player) != null) {
-                                          ci.cancel();
-                                    }
-                              }
-                        }
-
-                        boolean cancelled = ci.isCancelled();
-                        if (cancelled) {
-                              sound().atClient(player, ModSound.Type.INSERT);
-                              mutable.push();
-                        }
-                        return;
-                  }
-
-                  if (canItemFit(holder, slot.getItem())) {
-                        ItemStack slotItem = slot.getItem().copy();
-                        int toAdd = mutable.getMaxAmountToAdd(slotItem);
-                        ItemStack removed = slot.remove(toAdd);
-                        if (mutable.addItem(removed, player) != null) {
-                              sound().atClient(player, ModSound.Type.INSERT);
-                              mutable.push();
-                              ci.cancel();
-                        }
                   }
             }
       }
@@ -506,6 +453,13 @@ public class ChestTraits extends ItemStorageTraits {
                   }
             }
 
+            if (clickType.isDrop()) {
+                  ItemStack stack = mutable.removeItem(index);
+                  player.drop(stack, true);
+                  mutable.push();
+                  return;
+            }
+
             List<ItemStack> stacks = mutable.getItemStacks();
             ItemStack carried = carriedAccess.get();
             ItemStack stack = stacks.get(index);
@@ -570,7 +524,7 @@ public class ChestTraits extends ItemStorageTraits {
       @Override public void onPlayerInteract(LivingEntity owner, Player player, ItemStack backpack, CallbackInfoReturnable<InteractionResult> cir) {
             if (player.level().isClientSide) {
                   ViewableBackpack viewable = ViewableBackpack.get(owner);
-                  EntityChestScreen.openScreen(viewable, this);
+                  ChestScreen.openScreen(viewable, this, player);
             }
             cir.setReturnValue(InteractionResult.SUCCESS);
       }

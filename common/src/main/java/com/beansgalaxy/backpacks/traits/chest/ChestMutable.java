@@ -66,6 +66,11 @@ public class ChestMutable implements MutableItemStorage {
       }
 
       @Override
+      public void moveItemsTo(MutableItemStorage to, Player player, boolean fullStack) {
+
+      }
+
+      @Override
       public ItemStack removeItem(int slot) {
             NonNullList<ItemStack> items = getItemStacks();
             ItemStack itemstack = items.get(slot);
@@ -103,11 +108,15 @@ public class ChestMutable implements MutableItemStorage {
 
       @Override
       public int getMaxAmountToAdd(ItemStack stack) {
-            return getItemStacks().stream().mapToInt(stacks ->
-                        !stacks.isEmpty() && ItemStack.isSameItemSameComponents(stack, stacks)
-                                    ? stacks.getMaxStackSize() - stacks.getCount()
-                                    : 0
-            ).sum();
+            return getItemStacks().stream().mapToInt(stacks -> {
+                  if (stacks.isEmpty())
+                        return stack.getMaxStackSize();
+
+                  if (ItemStack.isSameItemSameComponents(stacks, stack))
+                        return Math.min(stacks.getMaxStackSize() - stacks.getCount(), stack.getCount());
+
+                  return 0;
+            }).sum();
       }
 
       @Override

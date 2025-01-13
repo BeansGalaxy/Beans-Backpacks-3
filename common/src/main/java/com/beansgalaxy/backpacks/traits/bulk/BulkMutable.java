@@ -61,6 +61,20 @@ public class BulkMutable implements MutableItemStorage {
             return addItem(inserted);
       }
 
+      @Override
+      public void moveItemsTo(MutableItemStorage to, Player player, boolean fullStack) {
+            BulkStacks bulkStacks = bulkList.get();
+            EmptyStack first = bulkStacks.emptyStacks.getFirst();
+            ItemStack stack = first.withItem(bulkStacks.itemHolder);
+            int toAdd = to.getMaxAmountToAdd(stack);
+            if (toAdd > 0) {
+                  ItemStack moved = removeItem(0);
+                  to.addItem(moved, player);
+                  this.push();
+                  to.push();
+            }
+      }
+
       @Nullable
       public ItemStack addItem(ItemStack inserted) {
             BulkStacks bulkList = this.bulkList.get();

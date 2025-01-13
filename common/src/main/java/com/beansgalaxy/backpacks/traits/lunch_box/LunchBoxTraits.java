@@ -120,11 +120,6 @@ public class LunchBoxTraits extends BundleLikeTraits {
       }
 
       @Override
-      public void tinyMenuClick(PatchedComponentHolder holder, int index, TinyClickType clickType, SlotAccess carriedAccess, Player player) {
-            super.tinyMenuClick(holder, index, clickType, carriedAccess, player);
-      }
-
-      @Override
       public boolean canItemFit(PatchedComponentHolder holder, ItemStack inserted) {
             return inserted.has(DataComponents.FOOD) && super.canItemFit(holder, inserted);
       }

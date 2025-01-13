@@ -5,7 +5,6 @@ import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
@@ -119,4 +118,5 @@ public abstract class ViewableBackpack implements PatchedComponentHolder {
       public abstract ItemStack toStack();
 
       public abstract boolean shouldClose();
+
 }

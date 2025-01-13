@@ -22,7 +22,7 @@ public class BundleEntity implements IEntityTraits<BundleLikeTraits> {
       @Override
       public InteractionResult interact(BackpackEntity backpackEntity, BundleLikeTraits traits, Player player, InteractionHand hand) {
             if (player.level().isClientSide)
-                  BundleScreen.openScreen(backpackEntity.viewable, traits);
+                  BundleScreen.openScreen(player, backpackEntity.viewable, traits);
 
             return InteractionResult.SUCCESS;
       }

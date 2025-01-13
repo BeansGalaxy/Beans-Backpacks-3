@@ -21,7 +21,7 @@ public class LunchBoxEntity extends BundleEntity {
       @Override
       public InteractionResult interact(BackpackEntity backpackEntity, BundleLikeTraits traits, Player player, InteractionHand hand) {
             if (player.level().isClientSide)
-                  LunchBoxScreen.openScreen(backpackEntity.viewable, traits);
+                  LunchBoxScreen.openScreen(backpackEntity.viewable, traits, player);
 
             return InteractionResult.SUCCESS;
       }

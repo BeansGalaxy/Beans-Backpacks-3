@@ -15,7 +15,6 @@ import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.component.DataComponentHolder;
 import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -35,10 +34,7 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public abstract class BundleLikeTraits extends ItemStorageTraits {
       private final int size;
@@ -573,7 +569,13 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
             if (clickType.isShift()) {
                   Inventory inventory = player.getInventory();
                   ItemStack stack = mutable.removeItem(index);
-                  for (int i = 0; i < 9; i++) {
+                  int size = inventory.items.size();
+
+                  int i = 9;
+                  do {
+                        if (i == size)
+                              i = 0;
+
                         ItemStack hotbar = inventory.items.get(i);
                         if (ItemStack.isSameItemSameComponents(stack, hotbar)) {
                               int add = Math.min(hotbar.getMaxStackSize() - hotbar.getCount(), stack.getCount());
@@ -586,9 +588,14 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                               sound().at(player, ModSound.Type.INSERT);
                               return;
                         }
-                  }
 
-                  for (int i = 0; i < 9; i++) {
+                        i++;
+                  } while (i != 9);
+
+                  do {
+                        if (i == size)
+                              i = 0;
+
                         ItemStack hotbar = inventory.items.get(i);
                         if (hotbar.isEmpty()) {
                               int add = Math.min(stack.getMaxStackSize(), stack.getCount());
@@ -601,8 +608,9 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                               sound().at(player, ModSound.Type.INSERT);
                               return;
                         }
-                  }
-                  return;
+
+                        i++;
+                  } while (i != 9);
             }
 
             if (clickType.isAction()) {
@@ -627,6 +635,13 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
 
                         return stack.isEmpty();
                   }));
+            }
+
+            if (clickType.isDrop()) {
+                  ItemStack stack = mutable.removeItem(index);
+                  player.drop(stack, true);
+                  mutable.push();
+                  return;
             }
 
             List<ItemStack> stacks = mutable.getItemStacks();
@@ -703,10 +718,10 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
       }
 
       @Override
-      public void tinyHotbarClick(PatchedComponentHolder holder, int index, TinyClickType clickType, InventoryMenu menu, Player player) {
-            if (TinyClickType.SWAP_SHIFT.equals(clickType)) {
-                  NonNullList<ItemStack> stacks = player.getInventory().items;
-                  ItemStack hotbar = stacks.get(index);
+      public void tinyHotbarClick(PatchedComponentHolder holder, int slotId, TinyClickType clickType, InventoryMenu menu, Player player) {
+            if (TinyClickType.I_SHIFT.equals(clickType)) {
+                  Slot slot = menu.getSlot(slotId);
+                  ItemStack hotbar = slot.getItem();
                   MutableBundleLike<?> mutable = mutable(holder);
                   if (mutable.addItem(hotbar, mutable.getItemStacks().size(), player) != null) {
                         sound().atClient(player, ModSound.Type.INSERT);
@@ -715,14 +730,14 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                   return;
             }
 
-            super.tinyHotbarClick(holder, index, clickType, menu, player);
+            super.tinyHotbarClick(holder, slotId, clickType, menu, player);
       }
 
       @Override
       public void onPlayerInteract(LivingEntity owner, Player player, ItemStack backpack, CallbackInfoReturnable<InteractionResult> cir) {
             if (player.level().isClientSide) {
                   ViewableBackpack viewable = ViewableBackpack.get(owner);
-                  BundleScreen.openScreen(viewable, this);
+                  BundleScreen.openScreen(player, viewable, this);
             }
             cir.setReturnValue(InteractionResult.SUCCESS);
       }

@@ -1,5 +1,6 @@
 package com.beansgalaxy.backpacks.traits.generic;
 
+import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
 import com.beansgalaxy.backpacks.screen.TinyClickType;
 import com.beansgalaxy.backpacks.traits.ITraitData;
@@ -10,7 +11,6 @@ import com.beansgalaxy.backpacks.util.DraggingTrait;
 import com.beansgalaxy.backpacks.util.ModSound;
 import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponentHolder;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket;
@@ -99,6 +99,30 @@ public abstract class ItemStorageTraits extends GenericTraits implements Draggin
             return !stack.isEmpty() && get(stack).map(predicate::test).orElse(false);
       }
 
+      protected static boolean tryMoveItems(MutableItemStorage to, ItemStack from, Player player) {
+            if (to.isFull())
+                  return false;
+
+            MutableItemStorage other;
+            Optional<ItemStorageTraits> optional = ItemStorageTraits.get(from);
+            if (optional.isEmpty()) {
+                  EnderTraits enderTraits = from.get(Traits.ENDER);
+                  if (enderTraits == null)
+                        return false;
+
+                  if (enderTraits.getTrait(player.level()) instanceof ItemStorageTraits traits)
+                        other = traits.mutable(enderTraits);
+                  else return false;
+            }
+            else other = optional.get().mutable(PatchedComponentHolder.of(from));
+
+            if (other.isEmpty())
+                  return false;
+
+            other.moveItemsTo(to, player, true);
+            return true;
+      }
+
       public abstract MutableItemStorage mutable(PatchedComponentHolder holder);
 
       public abstract void hotkeyUse(Slot slot, EquipmentSlot selectedEquipment, int button, ClickType actionType, Player player, CallbackInfo ci);
@@ -178,26 +202,28 @@ public abstract class ItemStorageTraits extends GenericTraits implements Draggin
       @Nullable
       public abstract ItemStack getFirst(PatchedComponentHolder backpack);
 
-      public void tinyHotbarClick(PatchedComponentHolder holder, int index, TinyClickType clickType, InventoryMenu menu, Player player) {
-            NonNullList<ItemStack> stacks = player.getInventory().items;
+      public void tinyHotbarClick(PatchedComponentHolder holder, int slotId, TinyClickType clickType, InventoryMenu menu, Player player) {
+            Slot slot = menu.getSlot(slotId);
+            ItemStack hotbar = slot.getItem();
+            if (ItemStorageTraits.tryMoveItems(mutable(holder), hotbar, player))
+                  return;
+
             if (clickType.isAction()) {
-                  ItemStack stack = stacks.get(index);
-                  ItemStorageTraits.runIfEquipped(player, ((storageTraits, slot) -> {
-                        ItemStack backpack = player.getItemBySlot(slot);
+                  ItemStorageTraits.runIfEquipped(player, ((storageTraits, equipment) -> {
+                        ItemStack backpack = player.getItemBySlot(equipment);
                         MutableItemStorage itemStorage = storageTraits.mutable(PatchedComponentHolder.of(backpack));
-                        if (canItemFit(PatchedComponentHolder.of(backpack), stack)) {
-                              if (itemStorage.addItem(stack, player) != null) {
+                        if (canItemFit(PatchedComponentHolder.of(backpack), hotbar)) {
+                              if (itemStorage.addItem(hotbar, player) != null) {
                                     sound().atClient(player, ModSound.Type.INSERT);
                                     itemStorage.push();
                               }
                         }
 
-                        return stack.isEmpty();
+                        return hotbar.isEmpty();
                   }));
             }
 
             if (clickType.isShift()) {
-                  ItemStack hotbar = stacks.get(index);
                   MutableItemStorage mutable = mutable(holder);
                   if (mutable.addItem(hotbar, player) != null) {
                         sound().atClient(player, ModSound.Type.INSERT);
@@ -206,42 +232,40 @@ public abstract class ItemStorageTraits extends GenericTraits implements Draggin
                   return;
             }
 
-            ItemStack stack = stacks.get(index);
             ItemStack carried = menu.getCarried();
-
-            if (stack.isEmpty() && carried.isEmpty())
+            if (hotbar.isEmpty() && carried.isEmpty())
                   return;
 
-            if (!stack.isEmpty() && !carried.isEmpty()) {
-                  if (ItemStack.isSameItemSameComponents(stack, carried)) {
+            if (!hotbar.isEmpty() && !carried.isEmpty()) {
+                  if (ItemStack.isSameItemSameComponents(hotbar, carried)) {
                         int count = clickType.isRight()
                                     ? 1
                                     : carried.getCount();
 
-                        int toAdd = Math.min(stack.getMaxStackSize() - stack.getCount(), count);
-                        stack.grow(toAdd);
+                        int toAdd = Math.min(hotbar.getMaxStackSize() - hotbar.getCount(), count);
+                        hotbar.grow(toAdd);
                         carried.shrink(toAdd);
                   }
                   else {
-                        stacks.set(index, carried);
-                        menu.setCarried(stack);
+                        slot.set(carried);
+                        menu.setCarried(hotbar);
                   }
             }
             else if (clickType.isRight()) {
-                  if (stack.isEmpty()) {
+                  if (hotbar.isEmpty()) {
                         ItemStack copy = carried.copyWithCount(1);
                         carried.shrink(1);
-                        stacks.set(index, copy);
+                        slot.set(copy);
                   }
                   else {
-                        int count = Mth.ceil((float) stack.getCount() / 2);
-                        ItemStack split = stack.split(count);
+                        int count = Mth.ceil((float) hotbar.getCount() / 2);
+                        ItemStack split = hotbar.split(count);
                         menu.setCarried(split);
                   }
             }
             else {
-                  stacks.set(index, carried);
-                  menu.setCarried(stack);
+                  slot.set(carried);
+                  menu.setCarried(hotbar);
             }
       }
 
