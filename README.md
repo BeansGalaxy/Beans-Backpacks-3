@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.6a NeoForge
+
+- **Hot Fix**
+  - The `beansbackpacks:battery` Trait was missing client methods which caused the game to crash while trying to render item decorations
+
+## 0.6 Fabric <br> 0.6 NeoForge
+
+- **Added Utility Slots to Backpacks**
+  - Leather, Iron & Gold Backpacks add 1 Utility Slot
+  - Netherite Backpacks add 2
+  - Utility Slots activate unique upgrades while the desired item is equipped
+    - Rockets: While flying with an elytra, pressing jump will give you a boost
+    - Totems: Upon death, the totem will save you
+    - Spyglass: Pressing `B` will zoom in
+    - More to come! [Check out this](https://github.com/BeansGalaxy/Beans-Backpacks-3/issues/19) to leave any suggestions
+- **Config**
+  - The Back Slot is now movable in the Client Config
+  - Added the Copper Backpacks Feature to the Features page
+- **Miscellaneous**
+  - Tweaked the vanilla spyglass overlay
+  - Fixed a bug causing Minecraft to crash while opening the creative inventory with trinkets installed
+
 ## 0.5 Fabric <br> 0.5 NeoForge
 
 - **Shorthand**
