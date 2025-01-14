@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.7 Fabric <br> 0.7 NeoForge
+
+- **Major Changes**
+  - The Feature "Backpacks Expirments" are no longer enabled by default
+    - Disables Expirmental Items; Copper Leggings, Vial o' Experience, Bulk Bundle
+- **More Utilities**
+  - Compasses, including Respawn & Lodestone linked, display a hud element
+  - Clocks display a hud element
+  - Conduits
+    - Grants *Conduit Power I* while in water or while raining
+    - Equip 2 Conduits for *Conduit Power II*
+  - Ominous Banners
+    - Grants *Bad Omen I* for 5 minutes
+    - Condumed when entering Villages or Trial Chambers
+  - Each Utility has a unique model when equipped
+- **Overhauled Backpack Menus**
+  - Players can access their entire inventory while in the backpack screen
+  - Shift, Ctrl, Q to Drop all work with these screens
+  - Use Shift on Bundles in the Inventory to move items to the Backpack
+- **Miscellaneous**
+  - The "Copper Backpacks" Feature's resources have been seperated from the base resources
+
 ## 0.6a NeoForge
 
 - **Hot Fix**
