@@ -1,5 +1,6 @@
 package com.beansgalaxy.backpacks;
 
+import com.beansgalaxy.backpacks.container.Shorthand;
 import com.beansgalaxy.backpacks.data.config.ClientConfig;
 import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.traits.ITraitData;
@@ -61,9 +62,9 @@ public class CommonClass {
 
 
       public static final Holder<Attribute> TOOL_BELT_ATTRIBUTE = Services.PLATFORM.register("player.tool_belt",
-                new RangedAttribute("attribute.name.player.tool_belt", 2, 0, 5).setSyncable(true));
+                new RangedAttribute("attribute.name.player.tool_belt", Shorthand.TOOL_DEFAU, 0, Shorthand.TOOL_MAX).setSyncable(true));
       public static final Holder<Attribute> SHORTHAND_ATTRIBUTE = Services.PLATFORM.register("player.shorthand",
-                new RangedAttribute("attribute.name.player.shorthand", 1, 0, 4).setSyncable(true));
+                new RangedAttribute("attribute.name.player.shorthand", Shorthand.WEAPON_DEFAU, 0, Shorthand.WEAPON_MAX).setSyncable(true));
       public static final ClientConfig CLIENT_CONFIG = new ClientConfig();
 
       public static void init() {

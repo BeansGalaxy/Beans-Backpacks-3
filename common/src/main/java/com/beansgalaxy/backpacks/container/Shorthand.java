@@ -14,6 +14,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import java.util.Iterator;
 
 public class Shorthand {
+      public static final int WEAPON_DEFAU = 1;
+      public static final int TOOL_DEFAU = 2;
+      public static final int WEAPON_MAX = 4;
+      public static final int TOOL_MAX = 5;
+
       public final ShortContainer.Tools tools = new ShortContainer.Tools(this);
       public final ShortContainer.Weapon weapons = new ShortContainer.Weapon(this);
 

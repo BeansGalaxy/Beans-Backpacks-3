@@ -2,6 +2,7 @@ package com.beansgalaxy.backpacks.data.config;
 
 import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.Constants;
+import com.beansgalaxy.backpacks.container.Shorthand;
 import com.beansgalaxy.backpacks.data.config.screen.IConfig;
 import com.beansgalaxy.backpacks.data.config.types.*;
 import net.minecraft.core.Holder;
@@ -27,8 +28,8 @@ public class CommonConfig implements IConfig {
       public BoolConfigVariant do_nbt_stacking;
 
       private final ConfigLine[] LINES = new ConfigLine[] {
-                  tool_belt_size = new IntConfigVariant("tool_belt_size", 2, 0, 5),
-                  shorthand_size = new IntConfigVariant("shorthand_size", 1, 0, 4),
+                  tool_belt_size = new IntConfigVariant("tool_belt_size", Shorthand.TOOL_DEFAU, 0, Shorthand.TOOL_MAX),
+                  shorthand_size = new IntConfigVariant("shorthand_size", Shorthand.WEAPON_DEFAU, 0, Shorthand.WEAPON_MAX),
                   tool_belt_additions = HSetConfigVariant.Builder.create(Constants::itemShortString, in -> BuiltInRegistries.ITEM.get(ResourceLocation.parse(in)))
                               .isValid(in -> BuiltInRegistries.ITEM.containsKey(ResourceLocation.parse(in)))
                               .build("tool_belt_additions"),
