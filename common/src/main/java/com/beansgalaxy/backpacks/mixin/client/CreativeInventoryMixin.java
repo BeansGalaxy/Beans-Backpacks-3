@@ -63,7 +63,7 @@ public abstract class CreativeInventoryMixin extends EffectRenderingInventoryScr
                   gui.blitSprite(LARGE_SLOT, leftPos + 127 - 1, topPos + 20 - 1, 18, 18);
                   UtilityContainer utilities = UtilityContainer.get(minecraft.player);
                   for (byte b = 0; b < utilities.size; b++) {
-                        gui.blitSprite(SMALL_SLOT, leftPos - 58 - 1, topPos + (b * 18) - 1, 18, 18);
+                        gui.blitSprite(SMALL_SLOT, leftPos - 58 + 16, topPos + (b * 18) - 1, 18, 18);
                   }
 
                   Shorthand shorthand = Shorthand.get(minecraft.player);
@@ -87,7 +87,7 @@ public abstract class CreativeInventoryMixin extends EffectRenderingInventoryScr
                               backpacks_setOrAdd(i, wrapped);
                         }
                         case UtilitySlot utilSlot -> {
-                              CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(utilSlot, utilSlot.index, -40, utilSlot.getContainerSlot() * 18);
+                              CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(utilSlot, utilSlot.index, -41, utilSlot.getContainerSlot() * 18);
                               backpacks_setOrAdd(i, wrapped);
                         }
                         case ShorthandSlot shortSlot -> {
