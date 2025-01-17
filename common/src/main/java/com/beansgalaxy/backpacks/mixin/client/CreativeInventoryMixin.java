@@ -48,10 +48,10 @@ public abstract class CreativeInventoryMixin extends EffectRenderingInventoryScr
 
       @Override
       protected void renderSlot(GuiGraphics gui, Slot slot) {
-            if (slot instanceof BackSlot || slot instanceof ShorthandSlot.WeaponSlot) {
+            if (slot instanceof BackSlot || slot instanceof ShorthandSlot) {
                   gui.blitSprite(LARGE_SLOT, leftPos + slot.x - 1, topPos + slot.y - 1, 18, 18);
             }
-            else if (slot instanceof ShorthandSlot.ToolSlot || slot instanceof UtilitySlot) {
+            else if (slot instanceof UtilitySlot) {
                   gui.blitSprite(SMALL_SLOT, leftPos + slot.x - 1, topPos + slot.y - 1, 18, 18);
             }
             super.renderSlot(gui, slot);
@@ -67,14 +67,9 @@ public abstract class CreativeInventoryMixin extends EffectRenderingInventoryScr
                   }
 
                   Shorthand shorthand = Shorthand.get(minecraft.player);
-                  int weaponsSize = shorthand.weapons.getContainerSize();
+                  int weaponsSize = shorthand.getContainerSize();
                   for (int i = 0; i < weaponsSize; i++) {
                         gui.blitSprite(LARGE_SLOT, leftPos - 22 - 1, topPos + (i * 18) - 1, 18, 18);
-                  }
-
-                  int toolsSize = shorthand.tools.getContainerSize();
-                  for (int i = 0; i < toolsSize; i++) {
-                        gui.blitSprite(SMALL_SLOT, leftPos - 40 - 1, topPos + (i * 18) - 1, 18, 18);
                   }
             }
       }
@@ -86,24 +81,20 @@ public abstract class CreativeInventoryMixin extends EffectRenderingInventoryScr
             NonNullList<Slot> slots = abstractcontainermenu.slots;
             for (int i = 0; i < slots.size(); i++) {
                   Slot slot = slots.get(i);
-                  if (slot instanceof BackSlot backSlot) {
-                        CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(backSlot, backSlot.index, 127, 20);
-                        backpacks_setOrAdd(i, wrapped);
-                        continue;
-                  }
-                  if (slot instanceof UtilitySlot utilSlot) {
-                        CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(utilSlot, utilSlot.index, -58, utilSlot.getContainerSlot() * 18);
-                        backpacks_setOrAdd(i, wrapped);
-                  }
-                  if (slot instanceof ShorthandSlot.WeaponSlot shortSlot) {
-                        CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(shortSlot, shortSlot.index, -22, shortSlot.getContainerSlot() * 18);
-                        backpacks_setOrAdd(i, wrapped);
-                        continue;
-                  }
-                  if (slot instanceof ShorthandSlot.ToolSlot toolSlot) {
-                        CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(toolSlot, toolSlot.index, -40, toolSlot.getContainerSlot() * 18);
-                        backpacks_setOrAdd(i, wrapped);
-                        continue;
+                  switch (slot) {
+                        case BackSlot backSlot -> {
+                              CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(backSlot, backSlot.index, 127, 20);
+                              backpacks_setOrAdd(i, wrapped);
+                        }
+                        case UtilitySlot utilSlot -> {
+                              CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(utilSlot, utilSlot.index, -40, utilSlot.getContainerSlot() * 18);
+                              backpacks_setOrAdd(i, wrapped);
+                        }
+                        case ShorthandSlot shortSlot -> {
+                              CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(shortSlot, shortSlot.index, -22, shortSlot.getContainerSlot() * 18);
+                              backpacks_setOrAdd(i, wrapped);
+                        }
+                        default -> {}
                   }
             }
       }

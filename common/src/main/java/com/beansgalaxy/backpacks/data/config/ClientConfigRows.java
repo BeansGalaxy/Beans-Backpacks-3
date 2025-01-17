@@ -1,5 +1,6 @@
 package com.beansgalaxy.backpacks.data.config;
 
+import com.beansgalaxy.backpacks.data.config.options.ShorthandControl;
 import com.beansgalaxy.backpacks.data.config.options.ToolBeltHUD;
 import com.beansgalaxy.backpacks.data.config.screen.ConfigRows;
 import com.beansgalaxy.backpacks.data.config.screen.ConfigScreen;
@@ -26,6 +27,7 @@ public class ClientConfigRows extends ConfigRows {
                         new MoveBackSlotConfigRow(config.back_slot_pos, config.back_and_utility_direction),
                         new EnumConfigRow<>(config.shorthand_hud_location, ShorthandHUD.values()),
                         new EnumConfigRow<>(config.tool_belt_hud_visibility, ToolBeltHUD.values()),
+                        new EnumConfigRow<>(config.shorthand_control, ShorthandControl.values()),
                         new ConfigLabel(Component.translatable("config.beansbackpacks.client.player-render")),
                         new ItemListConfigRow(config.elytra_model_equipment),
                         new BoolConfigRow(config.disable_equipable_render),

@@ -5,13 +5,12 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "BCombatPlayerAttackMixin",
-    "BlockBehaviourMixin",
     "InventoryMixin",
     "ItemsMixin",
     "ItemStackMixin"
   ],
   "client": [
-    "MinecraftMixin"
+    "MinecraftMixin", "MultiPlayerMixin"
   ],
   "server": [ ],
   "injectors": {

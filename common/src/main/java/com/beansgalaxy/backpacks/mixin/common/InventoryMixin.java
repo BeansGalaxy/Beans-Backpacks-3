@@ -1,17 +1,21 @@
 package com.beansgalaxy.backpacks.mixin.common;
 
+import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.access.BackData;
+import com.beansgalaxy.backpacks.client.KeyPress;
 import com.beansgalaxy.backpacks.components.StackableComponent;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.data.ServerSave;
-import com.beansgalaxy.backpacks.container.ShortContainer;
 import com.beansgalaxy.backpacks.container.Shorthand;
+import com.beansgalaxy.backpacks.data.config.options.ShorthandControl;
+import com.beansgalaxy.backpacks.network.serverbound.SyncShorthand;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
 import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.NonNullList;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
@@ -34,6 +38,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -95,11 +100,6 @@ public abstract class InventoryMixin implements BackData {
                                     return;
                               }
                         }
-                  }
-
-                  if (ShortContainer.Weapon.putBackLastStack(player, stack)) {
-                        cir.setReturnValue(true);
-                        return;
                   }
 
                   ItemStorageTraits.runIfEquipped(player, (traits, equipmentSlot) -> {
@@ -196,21 +196,8 @@ public abstract class InventoryMixin implements BackData {
       @Inject(method = "dropAll", at = @At("TAIL"))
       private void shorthandDropAll(CallbackInfo ci) {
             Shorthand shorthand = getShorthand();
-            if (!ServerSave.CONFIG.keep_tool_belt_on_death.get()) {
-                  Iterator<ItemStack> iterator = shorthand.tools.getContent();
-                  while (iterator.hasNext()) {
-                        ItemStack itemstack = iterator.next();
-                        player.drop(itemstack, true, false);
-                        iterator.remove();
-                  }
-            }
             if (!ServerSave.CONFIG.keep_shorthand_on_death.get()) {
-                  Iterator<ItemStack> iterator = shorthand.weapons.getContent();
-                  while (iterator.hasNext()) {
-                        ItemStack itemstack = iterator.next();
-                        player.drop(itemstack, true, false);
-                        iterator.remove();
-                  }
+                  shorthand.dropAll(player.getInventory());
             }
       }
 
@@ -268,5 +255,48 @@ public abstract class InventoryMixin implements BackData {
       private void cancelDropAllBackSlot(CallbackInfo ci, @Local LocalRef<List<ItemStack>> list) {
             if (list.get() == beans_Backpacks_3$getBody() && ServerSave.CONFIG.keep_back_on_death.get())
                   list.set(List.of());
+      }
+
+      @Inject(method = "swapPaint", cancellable = true, at = @At("HEAD"))
+      private void backpacks_handleScroll(double pDirection, CallbackInfo ci) {
+            Shorthand shorthand = Shorthand.get(player);
+            if (!shorthand.active)
+                  return;
+
+            int slot;
+            int direction;
+            int size = shorthand.getContainerSize();
+
+            if (pDirection < 0 && shorthand.selection == 0) {
+                  direction = -1;
+                  slot = shorthand.getContainerSize() + direction;
+            }
+            else {
+                  direction = (int) Math.signum(pDirection);
+                  int dir = shorthand.selection + direction;
+                  slot = dir % size;
+            }
+
+            int start = slot;
+            do {
+                  ItemStack stack = shorthand.getItem(slot);
+                  if (!stack.isEmpty())
+                        break;
+
+                  slot += direction;
+
+                  if (slot == -1) {
+                        slot = size - 1;
+                  }
+                  else if (slot == size) {
+                        slot = 0;
+                  }
+            } while (start != slot);
+
+            shorthand.selection = slot;
+            selected = items.size() + slot;
+
+            SyncShorthand.send(shorthand.active, shorthand.selection);
+            ci.cancel();
       }
 }

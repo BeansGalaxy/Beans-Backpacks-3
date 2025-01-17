@@ -28,21 +28,21 @@ public abstract class BCombatPlayerAttackMixin {
                         return;
 
                   Shorthand shorthand = Shorthand.get(player);
-                  int i = inventory.selected - itemsSize - shorthand.tools.getSize();
+                  int i = inventory.selected - itemsSize;
                   if (i < 0) {
                         shorthand.resetSelected(inventory);
                         return;
                   } else ci.cancel();
 
                   synchronized (player) {
-                        ItemStack mainHandStack = shorthand.weapons.getItem(i);
+                        ItemStack mainHandStack = shorthand.getItem(i);
                         ItemStack offHandStack = inventory.offhand.get(0);
 
                         setAttributesForOffHandAttack(player, true);
-                        shorthand.weapons.putItem(i, offHandStack);
+                        shorthand.putItem(i, offHandStack);
                         inventory.offhand.set(0, offHandStack);
                         runnable.run();
-                        shorthand.weapons.putItem(i, mainHandStack);
+                        shorthand.putItem(i, mainHandStack);
                         inventory.offhand.set(0, offHandStack);
                         setAttributesForOffHandAttack(player, false);
                   }

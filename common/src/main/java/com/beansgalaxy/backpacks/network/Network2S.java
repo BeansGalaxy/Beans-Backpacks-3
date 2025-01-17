@@ -22,6 +22,7 @@ public enum Network2S {
       SYNC_SELECTED_SLOT_2S(SyncSelectedSlot.class, SyncSelectedSlot.ID, SyncSelectedSlot::encode, SyncSelectedSlot::new, SyncSelectedSlot::handle),
       INSTANT_KEY_2S(InstantKeyPress.class, InstantKeyPress.ID, InstantKeyPress::encode, InstantKeyPress::new, InstantKeyPress::handle),
       UTILITY_ROCKET_USE(UtilitiesUse.class, UtilitiesUse.ID, UtilitiesUse::encode, UtilitiesUse::new, UtilitiesUse::handle),
+      SHORTHAND_2S(SyncShorthand.class, SyncShorthand.ID, SyncShorthand::encode, SyncShorthand::new, SyncShorthand::handle),
       ;
 
       public final DynamicLoaderPacket<? super RegistryFriendlyByteBuf, ?> packet;

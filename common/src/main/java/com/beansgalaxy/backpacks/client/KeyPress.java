@@ -4,14 +4,15 @@ import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.access.PlayerAccessor;
 import com.beansgalaxy.backpacks.components.UtilityComponent;
+import com.beansgalaxy.backpacks.container.Shorthand;
+import com.beansgalaxy.backpacks.data.config.options.ShorthandControl;
 import com.beansgalaxy.backpacks.network.serverbound.BackpackUseOn;
 import com.beansgalaxy.backpacks.network.serverbound.InstantKeyPress;
 import com.beansgalaxy.backpacks.network.serverbound.SyncHotkey;
-import com.beansgalaxy.backpacks.network.serverbound.UtilitiesUse;
+import com.beansgalaxy.backpacks.network.serverbound.SyncShorthand;
 import com.beansgalaxy.backpacks.traits.chest.screen.MenuChestScreen;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.mojang.blaze3d.platform.InputConstants;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -25,14 +26,10 @@ import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.*;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
-
-import java.util.Optional;
 
 public class KeyPress {
       public static final KeyPress INSTANCE = new KeyPress();
@@ -49,9 +46,8 @@ public class KeyPress {
       public static final String ACTION_KEY_DISABLED_DESC = "key.beansbackpacks.desc.action_disabled";
 
       public static final String SHORTHAND_KEY_IDENTIFIER = "key.beansbackpacks.shorthand";
-      public static final String SECONDARY_KEY_IDENTIFIER = "key.beansbackpacks.secondary";
 
-      public static final String UTILITY_KEY_IDENTIFIER = "key.beansbackpacks.utility";
+      public static final String SPYGLASS_KEY_IDENTIFIER = "key.beansbackpacks.spyglass";
 
       public final KeyMapping ACTION_KEY = new KeyMapping(
                   ACTION_KEY_IDENTIFIER,
@@ -73,17 +69,14 @@ public class KeyPress {
                   GLFW.GLFW_KEY_GRAVE_ACCENT,
                   KEY_CATEGORY);
 
-      public final KeyMapping SECONDARY_KEY = new KeyMapping(
-                  SECONDARY_KEY_IDENTIFIER,
-                  GLFW.GLFW_KEY_0,
-                  KEY_CATEGORY);
-
-      public final KeyMapping UTILITY_KEY = new KeyMapping(
-                  UTILITY_KEY_IDENTIFIER,
+      public final KeyMapping SPYGLASS_KEY = new KeyMapping(
+                  SPYGLASS_KEY_IDENTIFIER,
                   GLFW.GLFW_KEY_B,
                   KEY_CATEGORY);
 
       public void tick(Minecraft minecraft, LocalPlayer player) {
+            handleShorthand(minecraft);
+            
             isPressed actionKey = KeyPress.isPressed(minecraft, KeyPress.getActionKeyBind());
             boolean actionKeyPressed = actionKey.pressed() && INSTANT_KEY.isUnbound();
             isPressed menusKey = KeyPress.isPressed(minecraft, KeyPress.getMenusKeyBind());
@@ -99,7 +92,30 @@ public class KeyPress {
             backData.setMenuKey(menuKeyPressed);
             backData.setTinySlot(tinyChestSlot);
             SyncHotkey.send(actionKeyPressed, menuKeyPressed, tinyChestSlot);
+      }
 
+      private boolean isShorthandDown = false;
+      private void handleShorthand(Minecraft minecraft) {
+            isPressed keyPress = isPressed(minecraft, SHORTHAND_KEY);
+            boolean isDown = keyPress.pressed();
+            ShorthandControl control = CommonClass.CLIENT_CONFIG.shorthand_control.get();
+            Shorthand shorthand = Shorthand.get(minecraft.player);
+
+            if (control.pressKey()) {
+                  if (isDown && !isShorthandDown) {
+                        shorthand.activateShorthand(!shorthand.active);
+                        SyncShorthand.send(!shorthand.active, shorthand.selection);
+                  }
+            }
+            else {
+                  if (isDown != isShorthandDown) {
+                        shorthand.activateShorthand(isDown);
+                        shorthand.clearTimer();
+                        SyncShorthand.send(isDown, shorthand.selection);
+                  }
+            }
+
+            isShorthandDown = isDown;
       }
 
       public boolean consumeActionUseOn(Minecraft instance, BlockHitResult hitResult) {
@@ -221,7 +237,7 @@ public class KeyPress {
       private boolean wasUtilityDown = false;
 
       public void handleUtility(LocalPlayer player, HitResult result) {
-            boolean isUtilityDown = UTILITY_KEY.isDown();
+            boolean isUtilityDown = SPYGLASS_KEY.isDown();
             if (isUtilityDown != wasUtilityDown) {
                   UtilityComponent.testItems(player, (item, mute) -> {
                         if (item.is(Items.SPYGLASS)) {

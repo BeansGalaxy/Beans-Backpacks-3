@@ -37,6 +37,7 @@ public abstract class InventoryMixin implements BackData {
 
       @Unique private boolean beans_Backpacks_3$actionKeyIsDown = false;
       @Unique private boolean beans_Backpacks_3$menuKeyIsDown = false;
+      @Unique private boolean beans_Backpacks_3$shorthandIsDown = false;
       @Unique private int beans_Backpacks_3$tinySlot = -1;
 
       @Override
@@ -57,6 +58,16 @@ public abstract class InventoryMixin implements BackData {
       @Override
       public void setMenuKey(boolean menuKeyIsDown) {
             this.beans_Backpacks_3$menuKeyIsDown = menuKeyIsDown;
+      }
+
+      @Override
+      public boolean isShorthandDown() {
+            return beans_Backpacks_3$shorthandIsDown;
+      }
+
+      @Override
+      public void setShorthandKey(boolean shorthandPressed) {
+            beans_Backpacks_3$shorthandIsDown = shorthandPressed;
       }
 
       @Override

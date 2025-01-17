@@ -100,8 +100,7 @@ public class NeoForgeClient {
                   event.register(KeyPress.INSTANCE.MENUS_KEY);
                   event.register(KeyPress.INSTANCE.INSTANT_KEY);
                   event.register(KeyPress.INSTANCE.SHORTHAND_KEY);
-                  event.register(KeyPress.INSTANCE.SECONDARY_KEY);
-                  event.register(KeyPress.INSTANCE.UTILITY_KEY);
+                  event.register(KeyPress.INSTANCE.SPYGLASS_KEY);
             }
 
             @SubscribeEvent

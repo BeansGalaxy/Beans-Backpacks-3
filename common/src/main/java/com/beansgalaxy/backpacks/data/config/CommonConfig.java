@@ -16,30 +16,24 @@ import net.minecraft.world.item.Item;
 import java.util.*;
 
 public class CommonConfig implements IConfig {
-      public IntConfigVariant tool_belt_size;
+      @Deprecated(since = "0.8-beta") public HSetConfigVariant<Item> tool_belt_additions;
       public IntConfigVariant shorthand_size;
-      public HSetConfigVariant<Item> tool_belt_additions;
       public HSetConfigVariant<Item> shorthand_additions;
-      public BoolConfigVariant allow_shorthand_weapons;
       public BoolConfigVariant tool_belt_break_items;
       public BoolConfigVariant keep_back_on_death;
-      public BoolConfigVariant keep_tool_belt_on_death;
       public BoolConfigVariant keep_shorthand_on_death;
       public BoolConfigVariant do_nbt_stacking;
 
       private final ConfigLine[] LINES = new ConfigLine[] {
-                  tool_belt_size = new IntConfigVariant("tool_belt_size", Shorthand.TOOL_DEFAU, 0, Shorthand.TOOL_MAX),
-                  shorthand_size = new IntConfigVariant("shorthand_size", Shorthand.WEAPON_DEFAU, 0, Shorthand.WEAPON_MAX),
+                  shorthand_size = new IntConfigVariant("shorthand_size", Shorthand.SHORTHAND_DEFAU, 0, Shorthand.SHORTHAND_MAX),
                   tool_belt_additions = HSetConfigVariant.Builder.create(Constants::itemShortString, in -> BuiltInRegistries.ITEM.get(ResourceLocation.parse(in)))
-                              .isValid(in -> BuiltInRegistries.ITEM.containsKey(ResourceLocation.parse(in)))
+                              .isValid(in -> BuiltInRegistries.ITEM.containsKey(ResourceLocation.parse(in))).comment("!!DOES NOTING!! SOON TO BE REMOVED!")
                               .build("tool_belt_additions"),
                   shorthand_additions = HSetConfigVariant.Builder.create(Constants::itemShortString, in -> BuiltInRegistries.ITEM.get(ResourceLocation.parse(in)))
                               .isValid(in -> BuiltInRegistries.ITEM.containsKey(ResourceLocation.parse(in)))
                               .build("shorthand_additions"),
-                  allow_shorthand_weapons = new BoolConfigVariant("allow_shorthand_weapons", false, "Can weapons be placed in the shorthand"),
                   tool_belt_break_items = new BoolConfigVariant("tool_belt_break_items", false, "Will the Tool Belt continue to use a tool until it breaks"),
                   keep_back_on_death = new BoolConfigVariant("keep_back_on_death", false, "On death, the player will drop their equipment in the Back Slot"),
-                  keep_tool_belt_on_death = new BoolConfigVariant("keep_tool_belt_on_death", false, "On death, the player will drop their equipment in the Tool Belt"),
                   keep_shorthand_on_death = new BoolConfigVariant("keep_shorthand_on_death", false, "On death, the player will drop their equipment in the Shorthand"),
                   do_nbt_stacking = new BoolConfigVariant("do_nbt_stacking", false, "Matching items which do not stack due to differing nbt now can stack")
       };
@@ -57,18 +51,8 @@ public class CommonConfig implements IConfig {
       public int getShorthandSize(Player player) {
             IntConfigVariant config = shorthand_size;
             Holder<Attribute> attribute = CommonClass.SHORTHAND_ATTRIBUTE;
-            return configureAttributeDefault(player, config, attribute);
-      }
-
-      public int getToolBeltSize(Player player) {
-            IntConfigVariant config = tool_belt_size;
-            Holder<Attribute> attribute = CommonClass.TOOL_BELT_ATTRIBUTE;
-            return configureAttributeDefault(player, config, attribute);
-      }
-
-      private static int configureAttributeDefault(Player player, IntConfigVariant variant, Holder<Attribute> attribute) {
-            int configSize = variant.get() - variant.defau();
-            int clamp = Mth.clamp((int) player.getAttributeValue(attribute) + configSize, variant.min, variant.max);
+            int configSize = config.get() - config.defau();
+            int clamp = Mth.clamp((int) player.getAttributeValue(attribute) + configSize, config.min, config.max);
             return clamp;
       }
 

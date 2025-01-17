@@ -16,7 +16,6 @@ public enum Network2C {
       CONFIG_REFERENCES_2C(ConfigureReferences.class, ConfigureReferences.ID, ConfigureReferences::encode, ConfigureReferences::new, ConfigureReferences::handle),
       CONFIG_COMMON_2C(ConfigureConfig.class, ConfigureConfig.ID, ConfigureConfig::encode, ConfigureConfig::new, ConfigureConfig::handle),
       WEAPON_SLOT_2C(SendWeaponSlot.class, SendWeaponSlot.ID, SendWeaponSlot::encode, SendWeaponSlot::new, SendWeaponSlot::handle),
-      SELECTED_SLOT_2C(SendSelectedSlot.class, SendSelectedSlot.ID, SendSelectedSlot::encode, SendSelectedSlot::new, SendSelectedSlot::handle),
       ;
 
       public final DynamicLoaderPacket<? super RegistryFriendlyByteBuf, ?> packet;

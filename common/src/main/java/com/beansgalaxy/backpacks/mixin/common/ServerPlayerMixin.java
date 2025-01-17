@@ -33,14 +33,9 @@ public abstract class ServerPlayerMixin extends Player {
                   this.setItemSlot(EquipmentSlot.BODY, backpack);
             }
 
-            if (config.keep_tool_belt_on_death.get()) {
-                  Shorthand shorthand = Shorthand.get(this);
-                  shorthand.tools.replaceWith(Shorthand.get(that).tools);
-            }
-
             if (config.keep_shorthand_on_death.get()) {
                   Shorthand shorthand = Shorthand.get(this);
-                  shorthand.weapons.replaceWith(Shorthand.get(that).weapons);
+                  shorthand.replaceWith(Shorthand.get(that));
 
             }
       }

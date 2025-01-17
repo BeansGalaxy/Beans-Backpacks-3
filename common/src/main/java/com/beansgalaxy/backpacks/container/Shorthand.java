@@ -3,35 +3,53 @@ package com.beansgalaxy.backpacks.container;
 import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.data.ServerSave;
 import com.beansgalaxy.backpacks.network.clientbound.SendWeaponSlot;
-import com.google.common.collect.Iterables;
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.RegistryOps;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+import java.util.OptionalInt;
 
-public class Shorthand {
-      public static final int WEAPON_DEFAU = 1;
-      public static final int TOOL_DEFAU = 2;
-      public static final int WEAPON_MAX = 4;
-      public static final int TOOL_MAX = 5;
+public class Shorthand implements Container {
+      public static final int SHORTHAND_DEFAU = 2;
+      public static final int SHORTHAND_MAX = 4;
 
-      public final ShortContainer.Tools tools = new ShortContainer.Tools(this);
-      public final ShortContainer.Weapon weapons = new ShortContainer.Weapon(this);
-
+      protected final Int2ObjectArrayMap<ItemStack> stacks;
       private final Player owner;
+
       private int timer = 0;
+      public int selection = 0;
+      public boolean active = false;
+
       int heldSelected = 0;
-      int selectedWeapon = 0;
-      private int oToolSize;
-      private int oWeaponSize;
+      private int oSize;
       private ItemStack oWeapon;
 
       public Shorthand(Player player) {
             this.owner = player;
+            this.oSize = ServerSave.CONFIG.getShorthandSize(owner);
+
+            Int2ObjectArrayMap<ItemStack> map = new Int2ObjectArrayMap<>();
+            map.defaultReturnValue(ItemStack.EMPTY);
+            this.stacks = map;
+
       }
 
       public static Shorthand get(Inventory that) {
@@ -44,117 +62,64 @@ public class Shorthand {
             return backData.getShorthand();
       }
 
-      public int size() {
-            return tools.getContainerSize() + weapons.getContainerSize();
-      }
+      public void load(CompoundTag tag, RegistryAccess access) {
+            ArrayList<ItemStack> stacks = new ArrayList<>();
+            loadByName("weapons", tag, access, stacks);
+            loadByName("tools", tag, access, stacks);
 
-      public int getSelectedWeapon() {
-            return selectedWeapon;
-      }
-
-      public void selectWeapon(Inventory inventory, boolean advance) {
-            if (weapons.isEmpty()) {
-                  resetSelected(inventory);
-                  return;
+            if (tag.contains("shorthand")) {
+                  CompoundTag shorthand = tag.getCompound("shorthand");
+                  for (String allKey : shorthand.getAllKeys()) {
+                        CompoundTag slot = shorthand.getCompound(allKey);
+                        int index = Integer.parseInt(allKey);
+                        RegistryOps<Tag> serializationContext = access.createSerializationContext(NbtOps.INSTANCE);
+                        ItemStack stack1 = ItemStack.OPTIONAL_CODEC.parse(serializationContext, slot).getOrThrow();
+                        setItem(index, stack1);
+                  }
             }
 
-            int weaponsSize = weapons.getContainerSize();
-            int itemsSize = inventory.items.size();
-
-            int toolsSize = tools.getContainerSize();
-            int slot = inventory.selected - itemsSize;
-            int weaponSlot = slot - toolsSize;
-            int selectedSlot = getSelectedSlot(advance, weaponsSize, weaponSlot);
-
-            int i = selectedSlot;
-            while (weapons.getItem(i).isEmpty()) {
-                  if (advance) {
+            if (!stacks.isEmpty()) {
+                  Iterator<ItemStack> iterator = stacks.iterator();
+                  int i = 0;
+                  while (iterator.hasNext()) {
+                        if (this.stacks.get(i).isEmpty()) {
+                              ItemStack stack = iterator.next();
+                              this.stacks.put(i, stack);
+                        }
                         i++;
-                        if (i >= weaponsSize)
-                              i = 0;
-                  }
-                  else {
-                        i--;
-                        if (i < 0)
-                              i = weaponsSize - 1;
-                  }
-
-                  if (i == selectedSlot) {
-                        resetSelected(inventory);
-                        return;
                   }
             }
-
-            int selected = itemsSize + toolsSize + i;
-            if (selected == inventory.selected) {
-                  resetSelected(inventory);
-                  return;
-            }
-
-            selectedWeapon = i;
-            setHeldSelected(inventory.selected);
-            inventory.selected = selected;
       }
 
-      private int getSelectedSlot(boolean advance, int weaponsSize, int weaponSlot) {
-            if (weaponsSize < 3)
-                  return advance ? 0 : 1;
-
-            if (weaponSlot < 0)
-                  return selectedWeapon;
-
-            if (advance)
-                  return selectedWeapon + 1 < weaponsSize ? selectedWeapon + 1 : 0;
-
-            int i = selectedWeapon > 0 ? selectedWeapon : weaponsSize;
-            return i - 1;
-      }
-
-      public ItemStack getItem(int slot) {
-            int weaponSlot = slot - tools.getContainerSize();
-            return weaponSlot < 0 ? tools.getItem(slot) : weapons.getItem(weaponSlot);
-      }
-
-      public int getToolsSize() {
-            return ServerSave.CONFIG.getToolBeltSize(owner);
-      }
-
-      public int getWeaponsSize() {
-            return ServerSave.CONFIG.getShorthandSize(owner);
-      }
-
-      public void dropOverflowItems(ShortContainer container) {
-            container.setChanged();
-            int maxSlot = container.getMaxSlot();
-            int size = container.getSize();
-
-            if (maxSlot < size)
+      @Deprecated(since = "0.8-beta")
+      private void loadByName(String name, CompoundTag tag, RegistryAccess access, List<ItemStack> stacks) {
+            if (!tag.contains(name))
                   return;
 
-            for (int i = size; i < maxSlot; i++) {
-                  ItemStack removed = container.stacks.remove(i);
-                  owner.drop(removed, true);
+            CompoundTag shorthand = tag.getCompound(name);
+            for (String allKey : shorthand.getAllKeys()) {
+                  CompoundTag slot = shorthand.getCompound(allKey);
+                  RegistryOps<Tag> serializationContext = access.createSerializationContext(NbtOps.INSTANCE);
+                  ItemStack stack = ItemStack.OPTIONAL_CODEC.parse(serializationContext, slot).getOrThrow();
+                  stacks.add(stack);
             }
       }
 
       public int getQuickestSlot(BlockState blockState) {
             ItemStack itemInHand = owner.getMainHandItem();
             Inventory inv = owner.getInventory();
-            boolean shorthandSelected = inv.selected >= inv.items.size();
-            if (!shorthandSelected && ShorthandSlot.isTool(itemInHand)) {
+            if (!active && ShorthandSlot.isTool(itemInHand))
                   return -1;
-            }
 
             int slot = -1;
-            int canadate = -1;
-            ItemStack mainHandItem = inv.items.get(shorthandSelected ? heldSelected : inv.selected);
+            int candidate = -1;
+            ItemStack mainHandItem = inv.items.get(active ? heldSelected : inv.selected);
             float topSpeed = mainHandItem.getItem().getDestroySpeed(mainHandItem, blockState);
 
             boolean saveItemsIfBroken = !ServerSave.CONFIG.tool_belt_break_items.get();
             boolean requiresToolForDrops = blockState.requiresCorrectToolForDrops();
-            int toolSize = tools.getContainerSize();
-            for (int i = 0; i < toolSize; i++) {
-                  ItemStack tool = tools.getItem(i);
+            for (int i = 0; i < getContainerSize(); i++) {
+                  ItemStack tool = getItem(i);
 
                   if (saveItemsIfBroken) {
                         int remainingUses = tool.getMaxDamage() - tool.getDamageValue();
@@ -169,37 +134,17 @@ public class Shorthand {
                               slot = i;
                         }
                         else if (!requiresToolForDrops)
-                              canadate = i;
+                              candidate = i;
                   }
             }
 
-            if (slot == -1) {
-                  for (int i = 0; i < weapons.getContainerSize(); i++) {
-                        ItemStack tool = weapons.getItem(i);
-
-                        if (saveItemsIfBroken) {
-                              int remainingUses = tool.getMaxDamage() - tool.getDamageValue();
-                              if (remainingUses < 2)
-                                    continue;
-                        }
-
-                        float destroySpeed = tool.getItem().getDestroySpeed(tool, blockState);
-                        if (destroySpeed > topSpeed) {
-                              if (tool.getItem().isCorrectToolForDrops(tool, blockState)) {
-                                    topSpeed = destroySpeed;
-                                    slot = toolSize + i;
-                              }
-                        }
-                  }
-            }
-
-            return slot == -1 ? canadate : slot;
+            return slot == -1 ? candidate : slot;
       }
 
       public void onAttackBlock(BlockState blockState, float blockHardness) {
             Inventory inv = owner.getInventory();
-            int weaponSlot = inv.selected - inv.items.size() - tools.getContainerSize();
-            if (weaponSlot >= 0 && timer == 0)
+
+            if (inv.selected - inv.items.size() >= 0 && timer == 0)
                   return;
 
             if (blockHardness < 0.1f)
@@ -207,11 +152,14 @@ public class Shorthand {
             else {
                   int slot = this.getQuickestSlot(blockState);
                   if (slot > -1) {
-                        setTimer(25);
+                        loadTimer();
                         setHeldSelected(inv.selected);
                         int newSelected = slot + inv.items.size();
                         if (inv.selected != newSelected)
                               inv.selected = newSelected;
+
+                        selection = slot;
+                        active = true;
                   } else
                         resetSelected(inv);
             }
@@ -222,66 +170,88 @@ public class Shorthand {
                   heldSelected = selected;
       }
 
-      private void setTimer(int time) {
-            this.timer = time;
-      }
-
       public int getTimer() {
             return timer;
       }
 
-      public Iterable<ItemStack> getContent() {
-            return Iterables.concat(tools.stacks.values(), weapons.stacks.values());
+      public void loadTimer() {
+            timer = 20;
+      }
+
+      public void clearTimer() {
+            timer = 0;
       }
 
       public void tick(Inventory inventory) {
-            int toolsSize = getToolsSize();
-            if (oToolSize > toolsSize)
-                  dropOverflowItems(tools);
+            if (!owner.level().isClientSide) {
+                  int size = size();
+                  if (oSize > size) {
+                        setChanged();
+                        int maxSlot = getMaxSlot();
 
-            int weaponsSize = getWeaponsSize();
-            if (oWeaponSize > weaponsSize)
-                  dropOverflowItems(weapons);
+                        if (maxSlot < size())
+                              return;
 
-            int slot = inventory.selected - inventory.items.size();
-            tools.stacks.forEach((i, stack) ->
-                        stack.inventoryTick(owner.level(), inventory.player, i, slot == i)
-            );
+                        int[] j = {0};
+                        for (int i = size(); i < maxSlot; i++) {
+                              ItemStack removed = stacks.remove(i);
 
-            int selected = slot - tools.getContainerSize();
-            weapons.stacks.forEach((i, stack) ->
-                        stack.inventoryTick(owner.level(), inventory.player, i, selected == i)
+                              if (getJ(j, removed))
+                                    continue;
+
+                              int slot = inventory.getFreeSlot();
+                              if (slot == -1)
+                                    owner.drop(removed, true);
+                              else
+                                    inventory.add(slot, removed);
+                        }
+                  }
+
+            }
+
+            stacks.forEach((i, stack) ->
+                        stack.inventoryTick(owner.level(), inventory.player, i, selection == i)
             );
 
             if (owner instanceof ServerPlayer serverPlayer) {
-                  int selectedWeapon = getSelectedWeapon();
-                  ItemStack weapon;
-                  if (selected == selectedWeapon)
-                        weapon = ItemStack.EMPTY;
-                  else if (selected >= 0) {
-                        selectedWeapon = selected;
-                        this.selectedWeapon = selectedWeapon;
-                        weapon = ItemStack.EMPTY;
-                  } else
-                        weapon = weapons.getItem(selectedWeapon);
+                  int selected = inventory.selected - inventory.items.size();
 
-                  if (oWeapon != weapon) {
-                        oWeapon = weapon;
-                        SendWeaponSlot.send(serverPlayer, selectedWeapon, weapon);
+                  if (selected > -1) {
+                        ItemStack weapon;
+                        if (selection == selected)
+                              weapon = ItemStack.EMPTY;
+                        else if (selection >= 0) {
+                              selected = selection;
+                              weapon = ItemStack.EMPTY;
+                        } else
+                              weapon = getItem(selected);
+
+                        if (oWeapon != weapon) {
+                              oWeapon = weapon;
+                              SendWeaponSlot.send(serverPlayer, selected, weapon);
+                        }
                   }
             }
 
-            oToolSize = tools.getContainerSize();
-            oWeaponSize = weapons.getContainerSize();
-
-            tickToolBeltTimer(inventory, slot);
+            oSize = getContainerSize();
       }
 
-      private void tickToolBeltTimer(Inventory inventory, int slot) {
-            if (size() <= slot || slot < 0) {
+      private boolean getJ(int[] j, ItemStack removed) {
+            for (; j[0] < this.size(); j[0]++) {
+                  ItemStack stack = stacks.get(j[0]);
+                  if (stack.isEmpty()) {
+                        stacks.put(j[0], removed);
+                        return true;
+                  }
+            }
+            return false;
+      }
+
+      public void tickTimer(Inventory inventory) {
+            if (getContainerSize() <= selection || selection < 0) {
                   if (inventory.selected >= inventory.items.size())
                         inventory.selected = heldSelected;
-                  timer = 0;
+                  clearTimer();
                   return;
             }
 
@@ -289,7 +259,7 @@ public class Shorthand {
                   resetSelected(inventory);
 
             if (timer > 0) {
-                  if (getItem(slot).isEmpty())
+                  if (getItem(selection).isEmpty())
                         resetSelected(inventory);
                   timer--;
             }
@@ -298,44 +268,159 @@ public class Shorthand {
       public void resetSelected(Inventory inventory) {
             if (inventory.selected >= inventory.items.size())
                   inventory.selected = heldSelected;
-            timer = 0;
+            clearTimer();
+            active = false;
       }
 
-      public int getSelected(Inventory instance) {
-            int slot = instance.selected - instance.items.size();
-            if (size() > slot && slot >= 0)
+      public int getSelected(Inventory inventory) {
+            int slot = inventory.selected - inventory.items.size();
+            if (getContainerSize() > slot && slot >= 0)
                   return slot;
             else {
-                  resetSelected(instance);
+                  resetSelected(inventory);
                   return -1;
             }
       }
 
       public void replaceWith(Shorthand that) {
-            this.weapons.replaceWith(that.weapons);
-            this.tools.replaceWith(that.tools);
+            clearContent();
+            that.stacks.forEach((i, stack) -> {
+                  if (!stack.isEmpty())
+                        this.stacks.put(i, stack);
+            });
 
             ItemStack backpack = that.owner.getItemBySlot(EquipmentSlot.BODY);
             this.owner.setItemSlot(EquipmentSlot.BODY, backpack);
       }
 
-      public void updateSelectedWeapon(int selectedSlot, ItemStack stack) {
-            selectedWeapon = selectedSlot;
-            weapons.setItem(selectedSlot, stack);
+      public void activateShorthand(boolean active) {
+            this.active = active;
+
+            Inventory inventory = owner.getInventory();
+            if (active) {
+                  setHeldSelected(inventory.selected);
+
+                  int start = selection;
+                  do {
+                        selection %= getContainerSize();
+
+                        ItemStack stack = getItem(selection);
+                        if (!stack.isEmpty())
+                              break;
+
+                        selection++;
+                  } while (start != selection);
+
+                  inventory.selected = inventory.items.size() + selection;
+            }
+            else resetSelected(inventory);
       }
 
-      public void clearContent() {
-            Iterator<ItemStack> iterator = getContent().iterator();
+      public int getMaxSlot() {
+            if (stacks.isEmpty()) {
+                  return 0;
+            }
+
+            OptionalInt max = stacks.int2ObjectEntrySet().stream().mapToInt(entry ->
+                  entry.getValue().isEmpty()
+                  ? 0 : entry.getIntKey()
+            ).max();
+            return max.orElse(-1) + 1;
+      }
+
+      public void save(CompoundTag tag, RegistryAccess access) {
+            CompoundTag container = new CompoundTag();
+            stacks.forEach((slot, tool) -> {
+                  if (tool.isEmpty())
+                        return;
+
+                  RegistryOps<Tag> serializationContext = access.createSerializationContext(NbtOps.INSTANCE);
+                  ItemStack.CODEC.encodeStart(serializationContext, tool).ifSuccess(stackTag ->
+                                                                                                container.put(String.valueOf(slot), stackTag));
+            });
+
+            tag.put("shorthand", container);
+      }
+
+      public void dropAll(Inventory inventory) {
+            ObjectIterator<Int2ObjectMap.Entry<ItemStack>> iterator = stacks.int2ObjectEntrySet().iterator();
             while (iterator.hasNext()) {
-                  iterator.next();
+                  ItemStack itemstack = iterator.next().getValue();
+                  if (!itemstack.isEmpty())
+                        inventory.player.drop(itemstack, true, false);
                   iterator.remove();
             }
       }
 
-      public boolean setSlot(Inventory inventory, int slot) {
-            setHeldSelected(inventory.selected);
-            inventory.selected = inventory.items.size() + tools.getContainerSize() + slot;
-            selectedWeapon = slot;
-            return false;
+      public Iterable<ItemStack> getContent() {
+            return stacks.values();
+      }
+
+      public void putItem(int slot, ItemStack stack) {
+            stacks.put(slot, stack);
+      }
+
+      public int size() {
+            return ServerSave.CONFIG.getShorthandSize(owner);
+      }
+
+      @Override
+      public void setChanged() {
+      }
+
+      @Override
+      public int getContainerSize() {
+            int maxSlot = getMaxSlot();
+            return Math.max(size(), maxSlot);
+      }
+
+      @Override
+      public boolean isEmpty() {
+            return stacks.int2ObjectEntrySet().stream().allMatch(stack -> stack.getValue().isEmpty());
+      }
+
+      @Override
+      public ItemStack getItem(int slot) {
+            return stacks.get(slot);
+      }
+
+      @Override
+      public ItemStack removeItem(int slot, int amount) {
+            ItemStack stack = getItem(slot);
+            ItemStack split = stack.getCount() > amount
+                  ? stack.split(amount)
+                  : removeItemNoUpdate(slot);
+
+            setChanged();
+            return split;
+      }
+
+      @Override
+      public ItemStack removeItemNoUpdate(int slot) {
+            setChanged();
+            return stacks.remove(slot);
+      }
+
+      @Override
+      public void setItem(int slot, ItemStack stack) {
+            if (stack.isEmpty())
+                  stacks.remove(slot);
+            else stacks.put(slot, stack);
+            setChanged();
+      }
+
+      @Override
+      public boolean stillValid(Player player) {
+            return !player.isRemoved();
+      }
+
+      @Override
+      public void clearContent() {
+            stacks.clear();
+            setChanged();
+      }
+
+      public int getHeldSlot() {
+            return heldSelected;
       }
 }

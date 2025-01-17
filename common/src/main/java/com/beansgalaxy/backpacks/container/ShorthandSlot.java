@@ -16,12 +16,45 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
-public abstract class ShorthandSlot extends Slot {
-      private final ShortContainer shortContainer;
+public class ShorthandSlot extends Slot {
+      private final Shorthand shorthand;
+      private final ResourceLocation icon;
 
-      public ShorthandSlot(ShortContainer shortContainer, int pSlot, int pX, int pY) {
-            super(shortContainer, pSlot, pX, pY);
-            this.shortContainer = shortContainer;
+      public ShorthandSlot(Shorthand shorthand, int pSlot) {
+            super(shorthand, pSlot, getX(pSlot), getY(pSlot));
+            this.shorthand = shorthand;
+            this.icon = getIcon(pSlot);
+      }
+
+      private static ResourceLocation getIcon(int i) {
+            return switch (i % 7) {
+                  default -> ResourceLocation.withDefaultNamespace("item/empty_slot_pickaxe");
+                  case 1 -> ResourceLocation.withDefaultNamespace("item/empty_slot_shovel");
+                  case 2 -> ResourceLocation.withDefaultNamespace("item/empty_slot_axe");
+                  case 3 -> ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "item/empty_slot_shears");
+                  case 4 -> ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "item/empty_slot_bone");
+                  case 5 -> ResourceLocation.withDefaultNamespace("item/empty_slot_hoe");
+                  case 6 -> ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "item/empty_slot_stick");
+            };
+      }
+
+      public static int getX(int slot) {
+            return 152 - (slot * 18);
+      }
+
+      public static int getY(int slot) {
+            return 164;
+      }
+
+      @Override
+      public boolean mayPlace(ItemStack stack) {
+            Item item = stack.getItem();
+            return ShorthandSlot.isTool(stack) || ServerSave.CONFIG.shorthand_additions.get().contains(item);
+      }
+
+      @Nullable @Override
+      public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
+            return Pair.of(InventoryMenu.BLOCK_ATLAS, icon);
       }
 
       private static boolean stackHasAttribute(ItemStack stack) {
@@ -46,120 +79,13 @@ public abstract class ShorthandSlot extends Slot {
             Item item = stack.getItem();
             return item instanceof DiggerItem
             || item instanceof ShearsItem
-            || ServerSave.CONFIG.tool_belt_additions.get().contains(item);
+            || ServerSave.CONFIG.shorthand_additions.get().contains(item);
       }
 
       @Override
       public boolean isActive() {
             int containerSlot = getContainerSlot();
-            int containerSize = shortContainer.getContainerSize();
+            int containerSize = shorthand.getContainerSize();
             return containerSlot < containerSize;
-      }
-
-      public static class WeaponSlot extends ShorthandSlot {
-            private final ResourceLocation icon;
-
-            public WeaponSlot(Shorthand shorthand, int slot) {
-                  super(shorthand.weapons, slot, getX(slot), getY(slot));
-                  icon = getIcon(slot);
-            }
-
-            private static ResourceLocation getIcon(int i) {
-                  return switch (i % 4) {
-                        default -> ResourceLocation.withDefaultNamespace("item/empty_slot_axe");
-                        case 1 -> ResourceLocation.withDefaultNamespace("item/empty_slot_pickaxe");
-                        case 2 -> ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "item/empty_slot_shears");
-                        case 3 -> ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "item/empty_slot_bone");
-                  };
-            }
-
-            public static int getX(int slot) {
-                  return 152 - (slot * 18);
-            }
-
-            public static int getY(int slot) {
-                  return 164;
-            }
-
-            @Override
-            public boolean mayPlace(ItemStack stack) {
-                  Item item = stack.getItem();
-                  if (ShorthandSlot.isTool(stack) || ServerSave.CONFIG.shorthand_additions.get().contains(item))
-                        return true;
-
-                  if (!ServerSave.CONFIG.allow_shorthand_weapons.get())
-                        return false;
-
-                  if (ShorthandSlot.stackHasAttribute(stack))
-                        return true;
-
-                  return item instanceof ProjectileWeaponItem;
-            }
-
-            @Nullable @Override
-            public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
-                  return Pair.of(InventoryMenu.BLOCK_ATLAS, icon);
-            }
-      }
-
-      public static class ToolSlot extends ShorthandSlot {
-            private final ResourceLocation icon;
-            private final Shorthand shorthand;
-
-            public ToolSlot(Shorthand shorthand, int slot) {
-                  super(shorthand.tools, slot, getX(slot), getY(slot));
-                  this.shorthand = shorthand;
-                  this.icon = getIcon(slot);
-            }
-
-            private static ResourceLocation getIcon(int i) {
-                  return switch (i % 6) {
-                        case 0 -> ResourceLocation.withDefaultNamespace("item/empty_slot_shovel");
-                        default -> ResourceLocation.withDefaultNamespace("item/empty_slot_pickaxe");
-                        case 2 -> ResourceLocation.withDefaultNamespace("item/empty_slot_hoe");
-                        case 4 -> ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "item/empty_slot_stick");
-                        case 5 -> ResourceLocation.withDefaultNamespace("item/empty_slot_axe");
-                  };
-            }
-
-            public static int getX(int slot) {
-                  return 151 - (slot * 18);
-            }
-
-            public static int getY(int slot) {
-                  return 164;
-            }
-
-            @Override
-            public boolean mayPlace(ItemStack stack) {
-                  return ShorthandSlot.isTool(stack);
-            }
-
-            @Nullable @Override
-            public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
-                  return Pair.of(InventoryMenu.BLOCK_ATLAS, icon);
-            }
-
-            public ItemStack getItem() {
-                  return this.container.getItem(this.getContainerSlot());
-            }
-
-            public void set(ItemStack pStack) {
-                  this.container.setItem(this.getContainerSlot(), pStack);
-                  this.setChanged();
-            }
-
-            public ItemStack remove(int pAmount) {
-                  return this.container.removeItem(this.getContainerSlot(), pAmount);
-            }
-
-            public int getContainerSlot() {
-                  return super.getContainerSlot() - shorthand.getWeaponsSize();
-            }
-
-            @Override
-            public boolean isActive() {
-                  return getContainerSlot() >= 0 && super.isActive();
-            }
       }
 }

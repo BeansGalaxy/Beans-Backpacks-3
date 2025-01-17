@@ -173,7 +173,7 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
       @Inject(method = "createAttributes", at = @At(value = "RETURN"))
       private static void addShortAttributes(CallbackInfoReturnable<AttributeSupplier.Builder> cir) {
             AttributeSupplier.Builder returnValue = cir.getReturnValue();
-            returnValue.add(CommonClass.TOOL_BELT_ATTRIBUTE, 2).add(CommonClass.SHORTHAND_ATTRIBUTE, 1);
+            returnValue.add(CommonClass.SHORTHAND_ATTRIBUTE, Shorthand.SHORTHAND_DEFAU);
       }
 
        @Inject(method = "interactOn", cancellable = true, at = @At("HEAD"))
@@ -194,8 +194,7 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
             dataResult.ifSuccess(back -> backpacks.put("back", back));
 
             Shorthand shorthand = Shorthand.get(instance);
-            shorthand.tools.save(backpacks, access);
-            shorthand.weapons.save(backpacks, access);
+            shorthand.save(backpacks, access);
 
             Inventory inventory = getInventory();
             CompoundTag selectedSlots = new CompoundTag();
@@ -249,8 +248,7 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
             }
 
             Shorthand shorthand = Shorthand.get(instance);
-            shorthand.tools.load(backpacks, access);
-            shorthand.weapons.load(backpacks, access);
+            shorthand.load(backpacks, access);
 
             CompoundTag slotSelection = backpacks.getCompound("slot_selection");
             readSlotSelection("items", inventory.items, instance, slotSelection);
@@ -291,10 +289,8 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
       @Inject(method = "getWeaponItem", cancellable = true, at = @At("HEAD"))
       private void backpackSyncedData(CallbackInfoReturnable<ItemStack> cir) {
             Shorthand shorthand = Shorthand.get(instance);
-            Inventory inventory = getInventory();
-            int shorthandSlot = inventory.selected - inventory.items.size() - shorthand.tools.getSize();
-            if (shorthandSlot == shorthand.getSelectedWeapon()) {
-                  ItemStack stack = shorthand.weapons.getItem(shorthand.getSelectedWeapon());
+            if (shorthand.active) {
+                  ItemStack stack = shorthand.getItem(shorthand.selection);
                   cir.setReturnValue(stack);
             }
       }

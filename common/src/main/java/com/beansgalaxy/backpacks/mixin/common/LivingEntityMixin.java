@@ -104,18 +104,14 @@ public abstract class LivingEntityMixin extends Entity {
                         level().playSeededSound(null, getX(), getY(), getZ(), sound, getSoundSource(), 1F, 1F, random.nextLong());
                   });
             }
-
-
       }
 
       @Inject(method = "getMainHandItem", cancellable = true, at = @At("HEAD"))
       private void backpackSyncedData(CallbackInfoReturnable<ItemStack> cir) {
             if (instance instanceof Player player) {
                   Shorthand shorthand = Shorthand.get(player);
-                  Inventory inventory = player.getInventory();
-                  int shorthandSlot = inventory.selected - inventory.items.size() - shorthand.tools.getSize();
-                  if (shorthandSlot == shorthand.getSelectedWeapon()) {
-                        ItemStack stack = shorthand.weapons.getItem(shorthand.getSelectedWeapon());
+                  if (shorthand.active) {
+                        ItemStack stack = shorthand.getItem(shorthand.selection);
                         cir.setReturnValue(stack);
                   }
             }

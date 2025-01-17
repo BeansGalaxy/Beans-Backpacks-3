@@ -24,7 +24,6 @@ public class ServerSave extends SavedData {
 
       private static ServerSave load(CompoundTag tag, HolderLookup.Provider provider) {
             ServerSave save = new ServerSave();
-            CONFIG.read();
             recoverLegacyEnderItems(tag, save);
             save.enderStorage.load(tag);
 

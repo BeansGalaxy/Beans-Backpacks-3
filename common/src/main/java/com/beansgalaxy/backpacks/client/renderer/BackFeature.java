@@ -68,29 +68,29 @@ public class BackFeature extends RenderLayer<AbstractClientPlayer, PlayerModel<A
                   return;
 
             Shorthand shorthand = Shorthand.get(player);
-            int selectedWeapon = shorthand.getSelectedWeapon();
-            ItemStack stack = shorthand.weapons.getItem(selectedWeapon);
+            int selection = shorthand.selection;
+            ItemStack stack = shorthand.getItem(selection);
             if (stack.isEmpty())
                   return;
 
             Inventory inventory = player.getInventory();
-            int selected = inventory.selected - inventory.items.size() - shorthand.tools.getContainerSize();
-            boolean mainHand = selectedWeapon != selected;
+            int selected = inventory.selected - inventory.items.size();
+            if (selection == selected)
+                  return;
 
-            if (mainHand && !stack.isEmpty()) {
-                  pose.pushPose();
-                  this.getParentModel().body.translateAndRotate(pose);
-                  pose.translate(0, player.isCrouching() ? 6/16f : 5/16f, 5/32f);
-                  if (!player.getItemBySlot(EquipmentSlot.CHEST).isEmpty())
-                        pose.translate(0.0F, -1/16f, 1 / 16f);
+            pose.pushPose();
+            this.getParentModel().body.translateAndRotate(pose);
+            pose.translate(0, player.isCrouching() ? 6/16f : 5/16f, 5/32f);
+            if (!player.getItemBySlot(EquipmentSlot.CHEST).isEmpty())
+                  pose.translate(0.0F, -1/16f, 1 / 16f);
 
-                  pose.mulPose(Axis.ZN.rotationDegrees(90));
-                  pose.translate(0.001, -0.001, 0);
+            pose.mulPose(Axis.ZN.rotationDegrees(90));
+            pose.translate(0.001, -0.001, 0);
 
-                  BakedModel model = itemRenderer.getModel(stack, player.level(), player, player.getId());
-                  itemRenderer().render(stack, ItemDisplayContext.FIXED, false, pose, pBufferSource, pCombinedLight, OverlayTexture.NO_OVERLAY, model);
-                  pose.popPose();
-            }
+            BakedModel model = itemRenderer.getModel(stack, player.level(), player, player.getId());
+            itemRenderer().render(stack, ItemDisplayContext.FIXED, false, pose, pBufferSource, pCombinedLight, OverlayTexture.NO_OVERLAY, model);
+            pose.popPose();
+
       }
 
       private void renderEquipables(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, AbstractClientPlayer player, float tick) {

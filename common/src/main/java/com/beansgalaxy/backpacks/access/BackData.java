@@ -19,6 +19,10 @@ public interface BackData {
 
       void setMenuKey(boolean menuKeyIsDown);
 
+      boolean isShorthandDown();
+
+      void setShorthandKey(boolean shorthandPressed);
+
       NonNullList<ItemStack> beans_Backpacks_3$getBody();
 
       void setTinySlot(int tinySlot);

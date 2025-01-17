@@ -5,7 +5,6 @@
   "refmap": "${mod_id}.refmap.json",
   "compatibilityLevel": "JAVA_18",
   "mixins": [
-    "client.MultiPlayerMixin",
     "common.AbstractMenuMixin",
     "common.AllayAiMixin",
     "common.AllayMixin",
@@ -47,7 +46,6 @@
     "client.KeyBindEntriesMixin",
     "client.LocalPlayerMixin",
     "client.MinecraftMixin",
-    "client.MouseHandlerMixin",
     "client.PalettedPermutationsMixin",
     "client.PlayerRendererMixin",
     "client.SimpleBakedModelMixin",

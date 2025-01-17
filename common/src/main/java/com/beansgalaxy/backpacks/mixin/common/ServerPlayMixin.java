@@ -46,9 +46,8 @@ public class ServerPlayMixin {
             int selectedSlot = packet.getSlot();
             if (selectedSlot >= size) {
                   Shorthand shorthand = Shorthand.get(player);
-                  int tools = shorthand.tools.getContainerSize();
-                  int weapons = shorthand.weapons.getContainerSize();
-                  int max = size + tools + weapons;
+                  int weapons = shorthand.getContainerSize();
+                  int max = size + weapons;
                   if (selectedSlot > max)
                         return;
 
