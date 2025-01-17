@@ -21,6 +21,7 @@
     "common.ItemMixin",
     "common.ItemStackMixin",
     "common.LivingEntityMixin",
+    "common.MobEffectUtilMixin",
     "common.PlayerMixin",
     "common.ServerPlayerMixin",
     "common.ServerPlayMixin",
