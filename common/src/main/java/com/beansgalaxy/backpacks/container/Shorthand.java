@@ -16,6 +16,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.Container;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -297,18 +299,17 @@ public class Shorthand implements Container {
             this.active = active;
 
             Inventory inventory = owner.getInventory();
-            if (active) {
+            if (active && !stacks.isEmpty()) {
                   setHeldSelected(inventory.selected);
 
                   int start = selection;
                   do {
-                        selection %= getContainerSize();
-
                         ItemStack stack = getItem(selection);
                         if (!stack.isEmpty())
                               break;
 
                         selection++;
+                        selection %= getContainerSize();
                   } while (start != selection);
 
                   inventory.selected = inventory.items.size() + selection;
