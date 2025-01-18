@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.8 Fabric <br> 0.8 NeoForge
+
+- **Major Shorthand & Tool Belt Changes**
+  - The Shorthand & the Tool Belt have been merged into the Shorthand
+  - Equipping a Tool in any Shorthand Slot works like the Tool Belt
+  - Removed the Secondary Shorthand Key
+  - Pressing the Shorthand Key now activates the Shorthand
+  - While active, scroll the mouse to select a different tool
+  - Read the full documentation [here]()
+- **Config**
+  - Added Client Config Option `shorthand_control` *([read more]())*
+  - Removed `tool_belt_hud_visibility`
+  - Removed `tool_belt_additions`
+  - Removed `allow_shorthand_weapons`
+  - Removed `keep_tool_belt_on_death`
+  - Renamed `tool_belt_break_items` to `shorthand_breaks_tool`
+  - `shorthand_breaks_tool` is now modifiable on the Client
+- **Miscellaneous**
+  - Vanilla Conduit Power's mining speed increase now stacks with Haste
+  - Updated the textures for Iron & Gold Backpacks
+- **Bugs**
+  - Right Clicking while using the Shorthand's auto equip now unequips the tool correctly to use items on your first click
+  - The Creative Mode Screen now correctly clears the Shorthand Slots and no longer creates ghost items
+  - If the player is loaded on a server with an invalid selected slot, that slot gets clamped
+
 ## 0.7 Fabric <br> 0.7 NeoForge
 
 - **Major Changes**
