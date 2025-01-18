@@ -296,7 +296,7 @@ public abstract class InventoryMixin implements BackData {
             shorthand.selection = slot;
             selected = items.size() + slot;
 
-            SyncShorthand.send(shorthand.active, shorthand.selection);
+            SyncShorthand.send(shorthand);
             ci.cancel();
       }
 }

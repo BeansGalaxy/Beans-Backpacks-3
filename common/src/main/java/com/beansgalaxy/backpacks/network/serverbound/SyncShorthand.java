@@ -25,6 +25,10 @@ public class SyncShorthand implements Packet2S {
             new SyncShorthand(active, selection).send2S();
       }
 
+      public static void send(Shorthand shorthand) {
+            send(shorthand.active, shorthand.selection);
+      }
+
       @Override
       public Network2S getNetwork() {
             return Network2S.SHORTHAND_2S;

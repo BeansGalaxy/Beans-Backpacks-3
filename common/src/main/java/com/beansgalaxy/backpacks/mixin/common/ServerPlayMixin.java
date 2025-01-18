@@ -62,7 +62,7 @@ public class ServerPlayMixin {
 
       @Inject(method = "handlePlayerAction", at = @At(value = "INVOKE", ordinal = 0,
                   target = "Lnet/minecraft/server/level/ServerPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;"))
-      private void shorthandOnSwapOffhand(ServerboundPlayerActionPacket pPacket, CallbackInfo ci) {
+      private void shorthand_swapOffhand(ServerboundPlayerActionPacket pPacket, CallbackInfo ci) {
             Inventory inventory = player.getInventory();
             Shorthand shorthand = Shorthand.get(player);
             shorthand.resetSelected(inventory);

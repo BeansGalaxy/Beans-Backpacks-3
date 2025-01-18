@@ -33,7 +33,6 @@ public class MultiPlayerMixin {
             int timer = shorthand.getTimer();
             if (inventory.selected >= inventory.items.size() && timer > 0) {
                   shorthand.resetSelected(inventory);
-
             }
       }
 
@@ -51,7 +50,7 @@ public class MultiPlayerMixin {
             Shorthand shorthand = Shorthand.get(minecraft.player);
             float destroySpeed = blockstate.getDestroySpeed(minecraft.level, pLoc);
             shorthand.onAttackBlock(blockstate, destroySpeed);
-            SyncShorthand.send(shorthand.active, shorthand.selection);
+            SyncShorthand.send(shorthand);
       }
 
       @Inject(method = "continueDestroyBlock", at = @At("HEAD"))

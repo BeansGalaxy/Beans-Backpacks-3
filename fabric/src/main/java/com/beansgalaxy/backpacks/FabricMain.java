@@ -3,7 +3,6 @@ package com.beansgalaxy.backpacks;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
 import com.beansgalaxy.backpacks.data.ServerSave;
-import com.beansgalaxy.backpacks.events.InteractBlockCallback;
 import com.beansgalaxy.backpacks.events.NetworkPackages;
 import com.beansgalaxy.backpacks.events.ServerStartEvent;
 import com.beansgalaxy.backpacks.events.SyncDataEvent;
@@ -39,7 +38,6 @@ public class FabricMain implements ModInitializer {
         CommonClass.init();
         NetworkPackages.registerCommon();
         EntityDataSerializers.registerSerializer(BackpackEntity.PLACEABLE.serializer());
-        InteractBlockCallback.EVENT.register(new InteractBlockCallback());
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
             ServerSave.CONFIG.read();
         });

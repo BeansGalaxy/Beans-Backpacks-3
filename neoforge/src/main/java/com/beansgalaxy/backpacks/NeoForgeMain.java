@@ -107,18 +107,6 @@ public class NeoForgeMain {
         }
 
         @SubscribeEvent
-        public static void blockInteractEvent(final PlayerInteractEvent.RightClickBlock event) {
-            Player player = event.getEntity();
-            Inventory inventory = player.getInventory();
-            int slot = inventory.selected - inventory.items.size();
-            if (slot > 0) {
-                Shorthand shorthand = Shorthand.get(player);
-                if (shorthand.getTimer() != 0)
-                    shorthand.resetSelected(inventory);
-            }
-        }
-
-        @SubscribeEvent
         public static void serverStartedEvent(final ServerStartedEvent event) {
             MinecraftServer server = event.getServer();
             ServerSave.getSave(server, false);

@@ -51,7 +51,7 @@ public class MultiPlayerMixin {
             Shorthand shorthand = Shorthand.get(minecraft.player);
             float destroySpeed = blockstate.getDestroySpeed(minecraft.level, pLoc);
             shorthand.onAttackBlock(blockstate, destroySpeed);
-            SyncShorthand.send(shorthand.active, shorthand.selection);
+            SyncShorthand.send(shorthand);
       }
 
       @Inject(method = "continueDestroyBlock", at = @At("HEAD"))

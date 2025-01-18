@@ -6,6 +6,7 @@ import com.beansgalaxy.backpacks.access.MinecraftAccessor;
 import com.beansgalaxy.backpacks.client.KeyPress;
 import com.beansgalaxy.backpacks.data.EnderStorage;
 import com.beansgalaxy.backpacks.container.Shorthand;
+import com.beansgalaxy.backpacks.network.serverbound.SyncShorthand;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
@@ -53,5 +54,14 @@ public abstract class MinecraftMixin implements MinecraftAccessor {
             Inventory inventory = player.getInventory();
             Shorthand shorthand = Shorthand.get(player);
             shorthand.resetSelected(inventory);
+      }
+
+      @Inject(method = "startUseItem", at = @At(value = "JUMP", opcode = 198))
+      private void shorthand_startUseItem(CallbackInfo ci) {
+            Shorthand shorthand = Shorthand.get(player);
+            if (shorthand.getTimer() > 0) {
+                  shorthand.resetSelected(player.getInventory());
+                  SyncShorthand.send(shorthand);
+            }
       }
 }

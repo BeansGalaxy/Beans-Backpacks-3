@@ -104,14 +104,15 @@ public class KeyPress {
             if (control.pressKey()) {
                   if (isDown && !isShorthandDown) {
                         shorthand.activateShorthand(!shorthand.active);
-                        SyncShorthand.send(!shorthand.active, shorthand.selection);
+                        shorthand.clearTimer();
+                        SyncShorthand.send(shorthand);
                   }
             }
             else {
                   if (isDown != isShorthandDown) {
                         shorthand.activateShorthand(isDown);
                         shorthand.clearTimer();
-                        SyncShorthand.send(isDown, shorthand.selection);
+                        SyncShorthand.send(shorthand);
                   }
             }
 
