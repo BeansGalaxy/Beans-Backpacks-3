@@ -11,13 +11,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.players.PlayerList;
 import net.minecraft.world.Container;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -118,7 +113,7 @@ public class Shorthand implements Container {
             ItemStack mainHandItem = inv.items.get(active ? heldSelected : inv.selected);
             float topSpeed = mainHandItem.getItem().getDestroySpeed(mainHandItem, blockState);
 
-            boolean saveItemsIfBroken = !ServerSave.CONFIG.tool_belt_break_items.get();
+            boolean saveItemsIfBroken = !ServerSave.CONFIG.shorthand_break_items.get();
             boolean requiresToolForDrops = blockState.requiresCorrectToolForDrops();
             for (int i = 0; i < getContainerSize(); i++) {
                   ItemStack tool = getItem(i);

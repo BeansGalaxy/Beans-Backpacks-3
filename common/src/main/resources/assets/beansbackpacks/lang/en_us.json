@@ -73,7 +73,6 @@
   "tooltip.beansbackpacks.advanced.kind": "backpack_kind:%d",
   "tooltip.beansbackpacks.advanced.reference": "§o%d",
 
-  "attribute.name.player.tool_belt": "Tool Belt",
   "attribute.name.player.shorthand": "Shorthand",
 
   "key.beansbackpacks.category": "Beans' Backpacks",
@@ -100,7 +99,7 @@
   "screen.beansbackpacks.move_element.save_and_close": "Save & Close",
   "screen.beansbackpacks.move_element.rotate": "↑↓",
 
-  "config.beansbackpacks.common.shorthandToolBelt": "Tool Belt & Shorthand",
+  "config.beansbackpacks.common.shorthandToolBelt": "The Shorthand",
   "config.beansbackpacks.common.keepInventory": "Keep Inventory",
   "config.beansbackpacks.common.misc": "Uncategorized",
   "config.beansbackpacks.traits.description": "\"Registers new & overrides existing\nTrait References to be used with the \"beansbackpacks:reference\" Component\"",

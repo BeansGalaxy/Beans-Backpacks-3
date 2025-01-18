@@ -9,7 +9,6 @@ import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.container.UtilitySlot;
 import com.beansgalaxy.backpacks.data.EnderStorage;
 import com.beansgalaxy.backpacks.data.config.options.ShorthandHUD;
-import com.beansgalaxy.backpacks.data.config.options.ToolBeltHUD;
 import com.beansgalaxy.backpacks.network.serverbound.SyncSelectedSlot;
 import com.beansgalaxy.backpacks.container.BackSlot;
 import com.beansgalaxy.backpacks.container.Shorthand;
@@ -36,7 +35,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.item.ClampedItemPropertyFunction;
 import net.minecraft.client.renderer.item.CompassItemPropertyFunction;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -48,7 +46,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.HumanoidArm;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.CompassItem;
@@ -57,7 +54,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.item.component.LodestoneTracker;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -203,7 +199,6 @@ public class CommonClient {
       private static final ResourceLocation SHORTHAND_STOP = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/slots/shorthand/stop.png");
       private static final ResourceLocation SHORTHAND_END = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/slots/shorthand/end.png");
       private static final ResourceLocation SHORTHAND_SLOT = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/slots/shorthand/shorthand.png");
-      private static final ResourceLocation SHORTHAND_TOOL_BELT = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/slots/shorthand/tool_belt.png");
 
       public static void renderShorthandSlots(GuiGraphics graphics, int leftPos, int topPos, int imageWidth, int imageHeight, LocalPlayer player) {
             graphics.blit(BACK_SLOT, leftPos + BackSlot.getX() - 1, topPos + BackSlot.getY() - 1, 10, 0, 0, 18, 18, 18, 18);
@@ -511,60 +506,6 @@ public class CommonClient {
             return Mth.floor(r * 58) + 1;
       }
 
-      private static void renderToolBelt(Minecraft minecraft, GuiGraphics gui, int selected, int slot, Player player, Shorthand shorthand, HumanoidArm mainArm, ShorthandHUD hud, int width, int y) {
-            ToolBeltHUD visibility = CommonClass.CLIENT_CONFIG.tool_belt_hud_visibility.get();
-            if (ToolBeltHUD.HIDDEN.equals(visibility))
-                  return;
-
-            if (shorthand.getContainerSize() == 0)
-                  return;
-
-            int toolBeltSlot = -1;
-            boolean toolBeltSelected = false;
-            if (selected < 0 && slot > -1) {
-                  toolBeltSlot = slot;
-                  toolBeltSelected = true;
-            }
-            else {
-                  if (ToolBeltHUD.SELECTED.equals(visibility))
-                        return;
-
-                  HitResult hitResult = minecraft.hitResult;
-                  if (HitResult.Type.BLOCK.equals(hitResult.getType())) {
-                        BlockHitResult blockHitResult = (BlockHitResult) hitResult;
-                        Level level = player.level();
-                        BlockPos blockPos = blockHitResult.getBlockPos();
-                        BlockState blockState = level.getBlockState(blockPos);
-                        float destroySpeed = blockState.getDestroySpeed(level, blockPos);
-                        if (destroySpeed >= 0.1f)
-                              toolBeltSlot = shorthand.getQuickestSlot(blockState);
-                  }
-
-                  int containerSize = shorthand.getContainerSize();
-                  if (toolBeltSlot >= containerSize)
-                        return;
-            }
-
-            if (toolBeltSlot == -1)
-                  return;
-
-            RenderSystem.enableBlend();
-
-            ItemStack tool = shorthand.getItem(toolBeltSlot);
-            int x = getToolBeltHudX(mainArm, hud, width);
-            gui.blitSprite(SHORTHAND_SINGLE, x - 6, y - 4, 44, 24);
-            gui.renderItem(tool, x + 17, y, player.getId());
-            gui.renderItemDecorations(minecraft.font, tool, x + 17, y);
-
-            if (toolBeltSelected)
-                  gui.blitSprite(SHORTHAND_SELECT, x + 3, y - 4, 44, 24);
-
-            RenderSystem.disableBlend();
-      }
-
-      private static int getToolBeltHudX(HumanoidArm mainArm, ShorthandHUD hud, int width) {
-            return getShorthandHudX(mainArm, width, 1, !ShorthandHUD.FAR_CORNER.equals(hud));
-      }
       private static int getShorthandHudX(HumanoidArm mainArm, int width, int weaponsSize, boolean hudIsFarCorner) {
             if (HumanoidArm.LEFT.equals(mainArm)) {
                   if (hudIsFarCorner)

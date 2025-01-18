@@ -26,7 +26,7 @@ public class CommonConfigRows extends ConfigRows {
                         new ConfigLabel(Component.translatable("config.beansbackpacks.common.shorthandToolBelt")),
                         new IntConfigRow(config.shorthand_size),
                         new ItemListConfigRow(config.shorthand_additions),
-                        new BoolConfigRow(config.tool_belt_break_items),
+                        new BoolConfigRow(config.shorthand_break_items),
                         new ConfigLabel(Component.translatable("config.beansbackpacks.common.keepInventory")),
                         new BoolConfigRow(config.keep_back_on_death),
                         new BoolConfigRow(config.keep_shorthand_on_death),

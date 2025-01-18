@@ -19,7 +19,7 @@ public class CommonConfig implements IConfig {
       @Deprecated(since = "0.8-beta") public HSetConfigVariant<Item> tool_belt_additions;
       public IntConfigVariant shorthand_size;
       public HSetConfigVariant<Item> shorthand_additions;
-      public BoolConfigVariant tool_belt_break_items;
+      public BoolConfigVariant shorthand_break_items;
       public BoolConfigVariant keep_back_on_death;
       public BoolConfigVariant keep_shorthand_on_death;
       public BoolConfigVariant do_nbt_stacking;
@@ -32,7 +32,7 @@ public class CommonConfig implements IConfig {
                   shorthand_additions = HSetConfigVariant.Builder.create(Constants::itemShortString, in -> BuiltInRegistries.ITEM.get(ResourceLocation.parse(in)))
                               .isValid(in -> BuiltInRegistries.ITEM.containsKey(ResourceLocation.parse(in)))
                               .build("shorthand_additions"),
-                  tool_belt_break_items = new BoolConfigVariant("tool_belt_break_items", false, "Will the Tool Belt continue to use a tool until it breaks"),
+                  shorthand_break_items = new BoolConfigVariant("shorthand_break_items", true, "Will the Shorthand continue to use a tool until it breaks"),
                   keep_back_on_death = new BoolConfigVariant("keep_back_on_death", false, "On death, the player will drop their equipment in the Back Slot"),
                   keep_shorthand_on_death = new BoolConfigVariant("keep_shorthand_on_death", false, "On death, the player will drop their equipment in the Shorthand"),
                   do_nbt_stacking = new BoolConfigVariant("do_nbt_stacking", false, "Matching items which do not stack due to differing nbt now can stack")

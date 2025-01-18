@@ -26,7 +26,6 @@ public class ClientConfigRows extends ConfigRows {
             return List.of(
                         new MoveBackSlotConfigRow(config.back_slot_pos, config.back_and_utility_direction),
                         new EnumConfigRow<>(config.shorthand_hud_location, ShorthandHUD.values()),
-                        new EnumConfigRow<>(config.tool_belt_hud_visibility, ToolBeltHUD.values()),
                         new EnumConfigRow<>(config.shorthand_control, ShorthandControl.values()),
                         new ConfigLabel(Component.translatable("config.beansbackpacks.client.player-render")),
                         new ItemListConfigRow(config.elytra_model_equipment),
