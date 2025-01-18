@@ -22,6 +22,7 @@ public class ClientConfig implements IConfig {
       public ListConfigVariant<Integer> back_slot_pos;
       public EnumConfigVariant<Orientation> back_and_utility_direction;
       public EnumConfigVariant<ShorthandControl> shorthand_control;
+      public BoolConfigVariant shorthand_breaks_tool;
 //      public ListConfigVariant<Integer> shorthand_slot_pos;
 //      public EnumConfigVariant<Orientation> shorthand_slots_direction;
 
@@ -39,7 +40,8 @@ public class ClientConfig implements IConfig {
 //                  shorthand_slot_pos = ListConfigVariant.create(String::valueOf, JsonElement::getAsInt)
 //                              .defau(77, 44).valid(in -> in.size() == 2).build("shorthand_slot_pos"),
 //                  shorthand_slots_direction = new EnumConfigVariant<>("shorthand_slots_direction", Orientation.LEFT, Orientation.values())
-                  shorthand_control = new EnumConfigVariant<>("shorthand_control", ShorthandControl.HARD, ShorthandControl.values())
+                  shorthand_control = new EnumConfigVariant<>("shorthand_control", ShorthandControl.HARD, ShorthandControl.values()),
+                  shorthand_breaks_tool = new BoolConfigVariant("shorthand_breaks_tool", false, "Will the Shorthand continue to use a tool until it breaks"),
       };
 
       @Override

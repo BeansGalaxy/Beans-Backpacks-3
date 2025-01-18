@@ -32,7 +32,6 @@ public class CommonConfig implements IConfig {
                   shorthand_additions = HSetConfigVariant.Builder.create(Constants::itemShortString, in -> BuiltInRegistries.ITEM.get(ResourceLocation.parse(in)))
                               .isValid(in -> BuiltInRegistries.ITEM.containsKey(ResourceLocation.parse(in)))
                               .build("shorthand_additions"),
-                  shorthand_break_items = new BoolConfigVariant("shorthand_break_items", true, "Will the Shorthand continue to use a tool until it breaks"),
                   keep_back_on_death = new BoolConfigVariant("keep_back_on_death", false, "On death, the player will drop their equipment in the Back Slot"),
                   keep_shorthand_on_death = new BoolConfigVariant("keep_shorthand_on_death", false, "On death, the player will drop their equipment in the Shorthand"),
                   do_nbt_stacking = new BoolConfigVariant("do_nbt_stacking", false, "Matching items which do not stack due to differing nbt now can stack")

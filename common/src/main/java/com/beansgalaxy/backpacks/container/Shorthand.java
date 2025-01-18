@@ -1,5 +1,6 @@
 package com.beansgalaxy.backpacks.container;
 
+import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.data.ServerSave;
 import com.beansgalaxy.backpacks.network.clientbound.SendWeaponSlot;
@@ -113,7 +114,7 @@ public class Shorthand implements Container {
             ItemStack mainHandItem = inv.items.get(active ? heldSelected : inv.selected);
             float topSpeed = mainHandItem.getItem().getDestroySpeed(mainHandItem, blockState);
 
-            boolean saveItemsIfBroken = !ServerSave.CONFIG.shorthand_break_items.get();
+            boolean saveItemsIfBroken = !CommonClass.CLIENT_CONFIG.shorthand_breaks_tool.get();
             boolean requiresToolForDrops = blockState.requiresCorrectToolForDrops();
             for (int i = 0; i < getContainerSize(); i++) {
                   ItemStack tool = getItem(i);
