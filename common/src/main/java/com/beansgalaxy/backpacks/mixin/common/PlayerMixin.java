@@ -234,6 +234,14 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
             tag.putInt(name, selectedSlot);
       }
 
+      private static int getMaxSelection(ItemStack item) {
+            List<ItemStack> stacks = item.get(ITraitData.ITEM_STACKS);
+            if (stacks != null)
+                  return stacks.size();
+
+            return 0;
+      }
+
 
       @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
       private void backpackReadSaveData(CompoundTag pCompound, CallbackInfo ci) {
@@ -276,8 +284,9 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
                   return;
 
             SlotSelection slotSelection1 = item.getOrDefault(ITraitData.SLOT_SELECTION, new SlotSelection());
+            int max = getMaxSelection(item);
 
-            slotSelection1.setSelectedSlot(instance, selection);
+            slotSelection1.setSelectedSlot(instance, Math.min(selection, max));
             item.set(ITraitData.SLOT_SELECTION, slotSelection1);
       }
 
