@@ -1,7 +1,10 @@
 package com.beansgalaxy.backpacks.mixin.common;
 
-import com.beansgalaxy.backpacks.container.BackSlot;
 import com.beansgalaxy.backpacks.container.Shorthand;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.sugar.Local;
+import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
 import net.minecraft.network.protocol.game.ServerboundSetCreativeModeSlotPacket;
@@ -10,7 +13,6 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,22 +24,21 @@ public class ServerPlayMixin {
 
       @Shadow public ServerPlayer player;
 
-      @Inject(method = "handleSetCreativeModeSlot", cancellable = true,
-                  at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z"))
-      public void setCreativeBackSlot(ServerboundSetCreativeModeSlotPacket ctx, CallbackInfo ci) {
-            int slotIndex = ctx.slotNum();
-            ItemStack stack = ctx.itemStack();
+      @Inject(method = "handleSetCreativeModeSlot",
+                  at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z"))
+      public void setCreativeBackSlot(ServerboundSetCreativeModeSlotPacket ctx, CallbackInfo ci, @Local(ordinal = 1) LocalBooleanRef withinBounds) {
+            if (withinBounds.get())
+                  return;
 
-            boolean outOfRange = player.inventoryMenu.slots.size() < slotIndex || slotIndex < 0;
-            boolean flag2 = stack.isEmpty() || stack.getDamageValue() >= 0 && stack.getCount() <= 64 && !stack.isEmpty();
-            if (!outOfRange && flag2) {
-                  Slot slot = this.player.inventoryMenu.getSlot(slotIndex);
-                  if (slot instanceof BackSlot) {
-                        slot.setByPlayer(stack);
-                        this.player.inventoryMenu.broadcastChanges();
-                        ci.cancel();
-                  }
-            }
+            int slotIndex = ctx.slotNum();
+            if (slotIndex < 0)
+                  return;
+
+            NonNullList<Slot> slots = player.inventoryMenu.slots;
+            if (slotIndex >= slots.size())
+                  return;
+
+            withinBounds.set(true);
       }
 
       @Inject(method = "handleSetCarriedItem", at = @At(value = "HEAD", shift = At.Shift.AFTER), cancellable = true)
