@@ -8,10 +8,16 @@
   - Removed the Secondary Shorthand Key
   - Pressing the Shorthand Key now activates the Shorthand
   - While active, scroll the mouse to select a different tool
-  - Read the full documentation [here]()
+  - Disabled Rendering of the Shorthand on the Player
+  - The Shorthand can be extended through meeting specific advancements
+    - Entering the End
+    - Reaching Level 30
+  - [Read the updated documentation]()
 - **Config**
   - Added Client Config Option `shorthand_control` *([read more]())*
+  - Added Common Config Option `extend_shorthand_by_advancement` *([read more]())*
   - Removed `tool_belt_hud_visibility`
+  - Removed `disable_shorthand_render`
   - Removed `tool_belt_additions`
   - Removed `allow_shorthand_weapons`
   - Removed `keep_tool_belt_on_death`
