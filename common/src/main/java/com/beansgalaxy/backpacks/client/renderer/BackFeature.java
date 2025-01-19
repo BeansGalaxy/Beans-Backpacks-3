@@ -60,12 +60,12 @@ public class BackFeature extends RenderLayer<AbstractClientPlayer, PlayerModel<A
       @Override
       public void render(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, AbstractClientPlayer player, float limbAngle, float limbDistance, float tick, float animationProgress, float playerHeadYaw, float playerHeadPitch) {
             renderEquipables(pose, pBufferSource, pCombinedLight, player, tick);
-            renderShorthand(pose, pBufferSource, pCombinedLight, player);
+//            renderShorthand(pose, pBufferSource, pCombinedLight, player);
       }
 
       private void renderShorthand(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, AbstractClientPlayer player) {
-            if (CommonClass.CLIENT_CONFIG.disable_shorthand_render.get())
-                  return;
+//            if (CommonClass.CLIENT_CONFIG.disable_shorthand_render.get())
+//                  return;
 
             Shorthand shorthand = Shorthand.get(player);
             int selection = shorthand.selection;

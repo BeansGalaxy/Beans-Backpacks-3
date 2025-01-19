@@ -29,8 +29,8 @@ public class ClientConfigRows extends ConfigRows {
                         new BoolConfigRow(config.shorthand_breaks_tool),
                         new ConfigLabel(Component.translatable("config.beansbackpacks.client.player-render")),
                         new ItemListConfigRow(config.elytra_model_equipment),
-                        new BoolConfigRow(config.disable_equipable_render),
-                        new BoolConfigRow(config.disable_shorthand_render)
+                        new BoolConfigRow(config.disable_equipable_render)
+//                        new BoolConfigRow(config.disable_shorthand_render)
             );
       }
 

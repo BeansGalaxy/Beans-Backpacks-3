@@ -18,7 +18,7 @@ public class ClientConfig implements IConfig {
       public EnumConfigVariant<ShorthandHUD> shorthand_hud_location;
       public HSetConfigVariant<Item> elytra_model_equipment;
       public BoolConfigVariant disable_equipable_render;
-      public BoolConfigVariant disable_shorthand_render;
+//      public BoolConfigVariant disable_shorthand_render;
       public ListConfigVariant<Integer> back_slot_pos;
       public EnumConfigVariant<Orientation> back_and_utility_direction;
       public EnumConfigVariant<ShorthandControl> shorthand_control;
@@ -33,7 +33,7 @@ public class ClientConfig implements IConfig {
                                                                  .comment("effects the position of the backpack on the player's back while these items are equipped in the chestplate slot")
                                                                  .build("elytra_model_equipment"),
                   disable_equipable_render = new BoolConfigVariant("disable_backpack_render", false, "Disables backpacks and \"beansbackpacks:equipable\" rendering on the player"),
-                  disable_shorthand_render = new BoolConfigVariant("disable_shorthand_render", false, "Disables shorthand item rendering on the player's back"),
+//                  disable_shorthand_render = new BoolConfigVariant("disable_shorthand_render", false, "Disables shorthand item rendering on the player's back"),
                   back_slot_pos = ListConfigVariant.create(String::valueOf, JsonElement::getAsInt)
                               .defau(77, 44).valid(in -> in.size() == 2).build("back_slot_pos"),
                   back_and_utility_direction = new EnumConfigVariant<>("back_and_utility_direction", Orientation.UP, Orientation.values()),
