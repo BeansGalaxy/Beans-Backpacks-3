@@ -12,10 +12,10 @@
   - The Shorthand can be extended through meeting specific advancements
     - Entering the End
     - Reaching Level 30
-  - [Read the updated documentation]()
+  - [Read the updated documentation](https://github.com/BeansGalaxy/Beans-Backpacks-3/wiki/Config-Options#extend_shorthand_by_advancement)
 - **Config**
-  - Added Client Config Option `shorthand_control` *([read more]())*
-  - Added Common Config Option `extend_shorthand_by_advancement` *([read more]())*
+  - Added Client Config Option `shorthand_control` *([more](https://github.com/BeansGalaxy/Beans-Backpacks-3/wiki/Config-Options#shorthand_control))*
+  - Added Common Config Option `extend_shorthand_by_advancement` *([more](https://github.com/BeansGalaxy/Beans-Backpacks-3/wiki/Config-Options#extend_shorthand_by_advancement))*
   - Removed `tool_belt_hud_visibility`
   - Removed `disable_shorthand_render`
   - Removed `tool_belt_additions`
