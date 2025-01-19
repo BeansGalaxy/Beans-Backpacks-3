@@ -1,0 +1,8 @@
+{
+  "criteria": {
+    "level": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "sends_telemetry_event": true
+}

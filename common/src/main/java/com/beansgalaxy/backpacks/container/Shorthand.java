@@ -27,7 +27,7 @@ import java.util.OptionalInt;
 
 public class Shorthand implements Container {
       public static final int SHORTHAND_DEFAU = 2;
-      public static final int SHORTHAND_MAX = 4;
+      public static final int SHORTHAND_MAX = 9;
 
       protected final Int2ObjectArrayMap<ItemStack> stacks;
       private final Player owner;

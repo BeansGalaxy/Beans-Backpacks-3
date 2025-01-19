@@ -23,6 +23,7 @@ import com.beansgalaxy.backpacks.util.Tint;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.ChatFormatting;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.ItemColor;
@@ -30,6 +31,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.item.ClampedItemPropertyFunction;
@@ -61,6 +63,7 @@ import org.apache.commons.lang3.math.Fraction;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -646,5 +649,20 @@ public class CommonClient {
             MutableComponent post = Component.literal("|".repeat(postCount)).withStyle(ChatFormatting.GRAY);
             empty.append(post);
             lines.add(empty);
+      }
+
+      public static int getAdvancements(HashSet<ResourceLocation> locations) {
+            ClientPacketListener connection = Minecraft.getInstance().getConnection();
+            if (connection == null)
+                  return 0;
+
+            int i = 0;
+            for (ResourceLocation location : locations) {
+                  AdvancementHolder holder = connection.getAdvancements().get(location);
+                  if (holder != null)
+                        i++;
+            }
+
+            return i;
       }
 }

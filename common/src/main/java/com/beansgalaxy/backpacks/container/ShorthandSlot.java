@@ -27,14 +27,12 @@ public class ShorthandSlot extends Slot {
       }
 
       private static ResourceLocation getIcon(int i) {
-            return switch (i % 7) {
+            return switch (i % 9) {
                   default -> ResourceLocation.withDefaultNamespace("item/empty_slot_pickaxe");
-                  case 1 -> ResourceLocation.withDefaultNamespace("item/empty_slot_shovel");
-                  case 2 -> ResourceLocation.withDefaultNamespace("item/empty_slot_axe");
-                  case 3 -> ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "item/empty_slot_shears");
-                  case 4 -> ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "item/empty_slot_bone");
-                  case 5 -> ResourceLocation.withDefaultNamespace("item/empty_slot_hoe");
-                  case 6 -> ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "item/empty_slot_stick");
+                  case 1, 5 -> ResourceLocation.withDefaultNamespace("item/empty_slot_shovel");
+                  case 2, 6 -> ResourceLocation.withDefaultNamespace("item/empty_slot_axe");
+                  case 3 -> ResourceLocation.withDefaultNamespace("item/empty_slot_hoe");
+                  case 7 -> ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "item/empty_slot_bone");
             };
       }
 

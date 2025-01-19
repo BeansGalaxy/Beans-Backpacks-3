@@ -28,7 +28,7 @@ public class ClientConfig implements IConfig {
 
       private final ConfigLine[] LINES = new ConfigLine[] {
                   shorthand_hud_location = new EnumConfigVariant<>("shorthand_hud_location", ShorthandHUD.NEAR_CENTER, ShorthandHUD.values()),
-                  elytra_model_equipment = HSetConfigVariant.Builder.create(Constants::itemShortString, in -> BuiltInRegistries.ITEM.get(ResourceLocation.parse(in)))
+                  elytra_model_equipment = HSetConfigVariant.Builder.create(Constants::shortString, in -> BuiltInRegistries.ITEM.get(ResourceLocation.parse(in)))
                                                                  .isValid(in -> BuiltInRegistries.ITEM.containsKey(ResourceLocation.parse(in))).defauString("minecraft:elytra")
                                                                  .comment("effects the position of the backpack on the player's back while these items are equipped in the chestplate slot")
                                                                  .build("elytra_model_equipment"),

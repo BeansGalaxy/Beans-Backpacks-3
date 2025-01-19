@@ -51,8 +51,12 @@ public class Constants {
             return level.clip(new ClipContext($$3, $$4, block, fluid, player));
       }
 
-      public static String itemShortString(Item item) {
+      public static String shortString(Item item) {
             ResourceLocation key = BuiltInRegistries.ITEM.getKey(item);
+            return shortString(key);
+      }
+
+      public static String shortString(ResourceLocation key) {
             if (key.getNamespace().equals("minecraft"))
                   return key.getPath();
             else
