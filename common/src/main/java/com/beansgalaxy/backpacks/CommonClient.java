@@ -131,8 +131,8 @@ public class CommonClient {
       };
 
       public static final ItemColor LEATHER_BACKPACK_ITEM_COLOR = (itemStack, layer) -> switch (layer) {
-            case 0, 2 -> componentTint(itemStack, Constants.DEFAULT_LEATHER_COLOR);
-            case 4 -> componentHighlight(itemStack, Constants.DEFAULT_LEATHER_COLOR);
+            case 0 -> componentTint(itemStack, Constants.DEFAULT_LEATHER_COLOR);
+            case 4, 2 -> componentHighlight(itemStack, Constants.DEFAULT_LEATHER_COLOR);
             default -> 0xFFFFFFFF;
       };
 
@@ -153,27 +153,25 @@ public class CommonClient {
 
       private static int componentHighlight(ItemStack itemStack, int rgbBase) {
             DyedItemColor itemColor = itemStack.get(DataComponents.DYED_COLOR);
-            if (itemColor != null) {
-                  rgbBase = itemColor.rgb();
-            }
-            Tint tint = new Tint(rgbBase);
+
+            int rgb = itemColor == null ? rgbBase : itemColor.rgb();
+
+            Tint tint = new Tint(rgb);
             double brightness = tint.brightness();
             Tint.HSL hsl = tint.HSL();
             double lum = hsl.getLum();
-            hsl.setLum((Math.cbrt(lum + 0.2) + lum) / 2).rotate(5).setSat(Math.sqrt((hsl.getSat() + brightness) / 2));
+            hsl.rotate(10);
+            hsl.setLum((Math.pow(brightness, 4) + lum + 2.3 + (tint.getBlue() / 160.0)) / 5);
+            double sat = hsl.getSat();
+            hsl.setSat((1 - brightness + sat) / 2);
             return hsl.rgb();
       }
 
       public static Tint.HSL smartAverageTint(int rgbTint, int rgbBase) {
             Tint tint = new Tint(rgbTint, true);
-            Tint base = new Tint(rgbBase);
-            tint.modRGB(
-                        r -> (r + r + base.getRed()) / 3,
-                        g -> (g + g + base.getGreen()) / 3,
-                        b -> (b + b + base.getBlue()) / 3
-            );
+            tint.setAlpha(1f);
             Tint.HSL tintHsl = tint.HSL();
-            tintHsl.modLum(l -> (Math.sqrt(l) + l + l) / 3);
+            tintHsl.modLum(l -> (Math.sqrt(l) + l) / 2);
             return tintHsl;
       }
 
