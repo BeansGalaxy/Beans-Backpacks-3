@@ -3,7 +3,7 @@ package com.beansgalaxy.backpacks;
 import com.beansgalaxy.backpacks.client.KeyPress;
 import com.beansgalaxy.backpacks.client.renderer.BackpackCapeModel;
 import com.beansgalaxy.backpacks.client.renderer.BackpackModel;
-import com.beansgalaxy.backpacks.client.renderer.BackpackRender;
+import com.beansgalaxy.backpacks.client.renderer.RenderBackpack;
 import com.beansgalaxy.backpacks.client.renderer.EntityRender;
 import com.beansgalaxy.backpacks.data.config.screen.ConfigRows;
 import com.beansgalaxy.backpacks.data.config.screen.ConfigScreen;
@@ -28,6 +28,7 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -70,8 +71,8 @@ public class NeoForgeClient {
 
             @SubscribeEvent
             public static void registerLayerDefinitions(final EntityRenderersEvent.RegisterLayerDefinitions event) {
-                  event.registerLayerDefinition(BackpackRender.BACKPACK_MODEL, BackpackModel::getTexturedModelData);
-                  event.registerLayerDefinition(BackpackRender.PACK_CAPE_MODEL, BackpackCapeModel::createBodyLayer);
+                  event.registerLayerDefinition(RenderBackpack.BACKPACK_MODEL, BackpackModel::getTexturedModelData);
+                  event.registerLayerDefinition(RenderBackpack.PACK_CAPE_MODEL, BackpackCapeModel::createBodyLayer);
             }
 
             @SubscribeEvent
@@ -80,15 +81,20 @@ public class NeoForgeClient {
             }
 
             @SubscribeEvent
-            public static void registerEntityRenderer(final ModelEvent.RegisterAdditional event) {
+            public static void registerAdditionalModels(final ModelEvent.RegisterAdditional event) {
                   ResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
-                  Map<ResourceLocation, Resource> resourceMap = resourceManager.listResources("models/backpack", (p_251575_) -> {
+                  appendModels(resourceManager, "backpack", event);
+                  appendModels(resourceManager, "utilities", event);
+            }
+
+            private static void appendModels(ResourceManager resourceManager, String path, ModelEvent.RegisterAdditional event) {
+                  Map<ResourceLocation, Resource> resourceMap = resourceManager.listResources("models/" + path, (p_251575_) -> {
                         String s = p_251575_.getPath();
                         return s.endsWith(".json");
                   });
 
                   for(ResourceLocation resourceLocation: resourceMap.keySet()) {
-                        ResourceLocation location = resourceLocation.withPath(path -> path.replaceAll("models/", "").replaceAll(".json", ""));
+                        ResourceLocation location = resourceLocation.withPath(key -> key.replaceAll("models/", "").replaceAll(".json", ""));
                         ModelResourceLocation model = ModelResourceLocation.standalone(location);
                         event.register(model);
                   }

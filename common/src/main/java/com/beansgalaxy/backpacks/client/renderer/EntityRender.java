@@ -30,7 +30,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 
-public class EntityRender extends EntityRenderer<BackpackEntity> implements BackpackRender {
+public class EntityRender extends EntityRenderer<BackpackEntity> implements RenderBackpack {
       ModelLayerLocation BACKPACK_MODEL = new ModelLayerLocation(ResourceLocation.parse(Constants.MOD_ID + ":backpack_model"), "main");
       ResourceLocation TEXTURE = ResourceLocation.parse(Constants.MOD_ID + ":textures/entity/backpack/null.png");
       public final BackpackModel<BackpackEntity> model;

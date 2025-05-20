@@ -29,9 +29,8 @@ import net.minecraft.world.item.*;
 import net.minecraft.world.item.armortrim.ArmorTrim;
 import net.minecraft.world.item.component.DyedItemColor;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 
-public interface BackpackRender {
+public interface RenderBackpack extends RenderUtilities {
 
       ModelLayerLocation BACKPACK_MODEL =
                   new ModelLayerLocation(ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "backpack_model"), "main");
@@ -40,9 +39,6 @@ public interface BackpackRender {
 
       BackpackModel<?> model();
 
-      ItemRenderer itemRenderer();
-
-      BlockRenderDispatcher blockRenderer();
 
       default void renderTexture(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, ResourceLocation texture, ItemStack itemStack, ViewableBackpack viewable) {
             tryRenderUtilities(pose, pBufferSource, pCombinedLight, itemStack, viewable);
@@ -77,82 +73,6 @@ public interface BackpackRender {
             } else {
                   model().renderButton(pose, outer, pCombinedLight, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
             }
-      }
-
-      private void tryRenderUtilities(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, ItemStack itemStack, ViewableBackpack viewable) {
-            UtilityComponent utilities = itemStack.get(ITraitData.UTILITIES);
-            if (utilities != null && !utilities.isBlank()) {
-                  ItemStack first = utilities.get(0);
-                  ItemStack second = utilities.get(1);
-
-                  renderUtilities(pose, pBufferSource, pCombinedLight, first, viewable, true);
-                  renderUtilities(pose, pBufferSource, pCombinedLight, second, viewable, false);
-
-            }
-      }
-
-      private void renderConduit(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, ItemStack first, ClientLevel level) {
-            Matrix4f posed = pose.last().pose();
-            pose.pushPose();
-            itemRenderer().renderStatic(null, first, ItemDisplayContext.HEAD, false, pose, pBufferSource, level, pCombinedLight, OverlayTexture.NO_OVERLAY, 0);
-            pose.popPose();
-      }
-
-      private void renderUtilities(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, ItemStack stack, ViewableBackpack viewable, boolean rightSide) {
-            if (stack.isEmpty())
-                  return;
-
-            BakedModel model = resolveUtilitiesModel(stack);
-            if (model == null)
-                  return;
-
-            pose.pushPose();
-            ItemDisplayContext displayContext = ItemDisplayContext.FIXED;
-            model.getTransforms().getTransform(displayContext).apply(!rightSide, pose);
-            pose.scale(.5f, .5f, .5f);
-            if (rightSide) {
-                  pose.translate(33/32f, -19/16f, -1f);
-                  pose.mulPose(Axis.YN.rotationDegrees(90));
-            }
-            else {
-                  pose.translate(-33/32f, -19/16f, 0f);
-                  pose.mulPose(Axis.YP.rotationDegrees(90));
-            }
-
-            float fallDistance = viewable.fallDistance();
-            boolean isFallFlying = false;
-            float fallPitch = isFallFlying ? 0 : (float) -Math.log(fallDistance * 2 + 1);
-            double y = fallPitch * 0.02;
-            pose.translate(0, y, -fallPitch * 0.004);
-            pose.mulPose(Axis.XP.rotationDegrees(fallPitch * 2));
-
-            VertexConsumer buffer = pBufferSource.getBuffer(Sheets.cutoutBlockSheet());
-            this.blockRenderer().getModelRenderer().renderModel(pose.last(), buffer, null, model, 1.0F, 1.0F, 1.0F, pCombinedLight, OverlayTexture.NO_OVERLAY);
-
-
-            pose.popPose();
-      }
-
-      default BakedModel resolveUtilitiesModel(ItemStack stack) {
-            ItemModelShaper itemModelShaper = this.itemRenderer().getItemModelShaper();
-            if (stack.is(Items.WHITE_BANNER)) {
-                  ModelManager modelmanager = itemModelShaper.getModelManager();
-                  ModelResourceLocation modelLocation = Services.PLATFORM.getModelVariant(ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "backpack/ominous_banner"));
-                  return modelmanager.getModel(modelLocation);
-            }
-            if (stack.is(Items.CONDUIT)) {
-                  ModelManager modelmanager = itemModelShaper.getModelManager();
-                  ModelResourceLocation modelLocation = Services.PLATFORM.getModelVariant(ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "backpack/conduit"));
-                  return modelmanager.getModel(modelLocation);
-            }
-
-            BakedModel itemModel = itemModelShaper.getItemModel(stack);
-            BakedModel resolve = itemModel.getOverrides().resolve(itemModel, CommonClient.UTILITY_DISPLAY_STAND_IN, null, null, 0);
-            if (resolve == null)
-                  return null;
-
-            Minecraft minecraft = Minecraft.getInstance();
-            return resolve.getOverrides().resolve(resolve, stack, minecraft.level, minecraft.player, minecraft.player == null ? 0 : minecraft.player.getId());
       }
 
       default void builtInLeatherModel(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, ItemStack pItemStack) {

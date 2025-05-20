@@ -1,0 +1,7 @@
+{
+    
+	"parent": "beansbackpacks:item/utilities/lantern",
+	"textures": {
+		"lantern": "beansbackpacks:item/utilities/soul_lantern"
+    }
+}

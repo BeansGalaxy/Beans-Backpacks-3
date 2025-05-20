@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.model.loading.v1.PreparableModelLoadingPlugin;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -19,19 +20,24 @@ public class AppendLoadedModels implements PreparableModelLoadingPlugin<Collecti
 
       public static final DataLoader<Collection<ResourceLocation>> LOADER = (resourceManager, executor) ->
             CompletableFuture.supplyAsync(() -> {
-                  Map<ResourceLocation, Resource> resourceMap = resourceManager.listResources("models/backpack", (p_251575_) -> {
-                        String s = p_251575_.getPath();
-                        return s.endsWith(".json");
-                  });
-
                   HashSet<ResourceLocation> modelIDs = new HashSet<>();
-                  for(ResourceLocation resourceLocation: resourceMap.keySet()) {
-                        ResourceLocation location = resourceLocation.withPath(path -> path.replaceAll("models/", "").replaceAll(".json", ""));
-                        modelIDs.add(location);
-                  }
+                  appendModels(resourceManager, "backpack", modelIDs);
+                  appendModels(resourceManager, "utilities", modelIDs);
 
                   return modelIDs;
             }, executor
       );
+
+      private static void appendModels(ResourceManager resourceManager, String path, HashSet<ResourceLocation> modelIDs) {
+            Map<ResourceLocation, Resource> resourceMap = resourceManager.listResources("models/" + path, (p_251575_) -> {
+                  String s = p_251575_.getPath();
+                  return s.endsWith(".json");
+            });
+
+            for(ResourceLocation resourceLocation: resourceMap.keySet()) {
+                  ResourceLocation location = resourceLocation.withPath(key -> key.replaceAll("models/", "").replaceAll(".json", ""));
+                  modelIDs.add(location);
+            }
+      }
 
 }

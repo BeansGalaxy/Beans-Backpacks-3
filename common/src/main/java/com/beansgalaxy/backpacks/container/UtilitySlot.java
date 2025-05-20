@@ -50,4 +50,9 @@ public class UtilitySlot extends Slot {
             UtilityContainer container = (UtilityContainer) this.container;
             return container.size > getContainerSlot();
       }
+
+      @Override
+      public int getMaxStackSize(ItemStack pStack) {
+            return UtilityComponent.getType(pStack).isStackable() ? pStack.getMaxStackSize() : 1;
+      }
 }

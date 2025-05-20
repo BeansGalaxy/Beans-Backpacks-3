@@ -1,0 +1,73 @@
+{
+	"credit": "Made with Blockbench",
+	"textures": {
+		"particle": "beansbackpacks:item/utilities/crafting_table",
+		"table": "beansbackpacks:item/utilities/crafting_table"
+	},
+	"elements": [
+		{
+			"from": [6.5, 1, 8],
+			"to": [9.5, 11, 8],
+			"rotation": {"angle": 0, "axis": "y", "origin": [6.5, 9, 8.2]},
+			"faces": {
+				"north": {"uv": [14, 13, 11, 3], "texture": "#table"},
+				"west": {"uv": [3, 6, 6, 9], "texture": "#table"}
+			}
+		},
+		{
+			"from": [8.5, 9, 8],
+			"to": [9.5, 11, 9],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7.5, 9, 7]},
+			"faces": {
+				"north": {"uv": [13, 13, 14, 11], "texture": "#table"},
+				"east": {"uv": [13, 13, 14, 11], "texture": "#table"},
+				"south": {"uv": [13, 13, 14, 11], "texture": "#table"},
+				"west": {"uv": [13, 13, 14, 11], "texture": "#table"},
+				"up": {"uv": [13, 12, 14, 13], "texture": "#table"}
+			}
+		},
+		{
+			"from": [6.5, 1, 8],
+			"to": [9.5, 7, 9],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7.5, 5, 7]},
+			"faces": {
+				"north": {"uv": [14, 9, 11, 3], "texture": "#table"},
+				"east": {"uv": [14, 9, 13, 3], "texture": "#table"},
+				"south": {"uv": [11, 9, 14, 3], "texture": "#table"},
+				"west": {"uv": [12, 9, 11, 3], "texture": "#table"},
+				"up": {"uv": [12, 8, 9, 9], "texture": "#table"},
+				"down": {"uv": [11, 3, 14, 4], "texture": "#table"}
+			}
+		},
+		{
+			"from": [7.5, 7, 8],
+			"to": [9.5, 9, 9],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7.5, 7, 7]},
+			"faces": {
+				"north": {"uv": [14, 11, 12, 9], "texture": "#table"},
+				"east": {"uv": [14, 11, 13, 9], "texture": "#table"},
+				"south": {"uv": [12, 11, 14, 9], "texture": "#table"},
+				"west": {"uv": [13, 11, 12, 9], "texture": "#table"},
+				"up": {"uv": [13, 10, 11, 11], "texture": "#table"}
+			}
+		},
+		{
+			"from": [8.5, 2, 8],
+			"to": [7.5, 3, 9],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8.5, 1, 8]},
+			"faces": {
+				"east": {"uv": [11, 4, 12, 5], "texture": "#table"},
+				"west": {"uv": [13, 4, 14, 5], "texture": "#table"},
+				"up": {"uv": [12, 5, 13, 6], "texture": "#table"},
+				"down": {"uv": [12, 3, 13, 4], "texture": "#table"}
+			}
+		}
+	],
+	"display": {
+		"fixed": {
+			"rotation": [0, 180, 0],
+			"translation": [3.49, 6.5, -4],
+			"scale": [2, 2, 2]
+		}
+	}
+}

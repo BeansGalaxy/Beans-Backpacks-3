@@ -15,7 +15,6 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -184,36 +183,48 @@ public class UtilityComponent {
       }
 
       private static final Component OMINOUS_NAME = Component.translatable("block.minecraft.ominous_banner").withStyle(ChatFormatting.GOLD);
+      public static boolean isOminousBanner(ItemStack stack) {
+            if (!stack.is(Items.WHITE_BANNER) || !stack.has(DataComponents.HIDE_ADDITIONAL_TOOLTIP))
+                  return false;
+
+            Component component = stack.get(DataComponents.ITEM_NAME);
+            return component != null && component.equals(OMINOUS_NAME);
+      }
 
       public enum Type {
-            SPYGLASS(Items.SPYGLASS),
-            CLOCK(Items.CLOCK),
-            COMPASS(Items.COMPASS),
-            RECOVERY(Items.RECOVERY_COMPASS),
-            LODESTONE(stack -> stack.is(Items.COMPASS) && stack.has(DataComponents.LODESTONE_TRACKER)),
-            CONDUIT(Items.CONDUIT),
-            OMINOUS(stack -> {
-                  if (!stack.is(Items.WHITE_BANNER) || !stack.has(DataComponents.HIDE_ADDITIONAL_TOOLTIP))
-                        return false;
-
-                  Component component = stack.get(DataComponents.ITEM_NAME);
-                  return component != null && component.equals(OMINOUS_NAME);
-            }),
-            ROCKET(Items.FIREWORK_ROCKET),
-            TOTEM(Items.TOTEM_OF_UNDYING),
-            NONE(Items.AIR);
+            SPYGLASS(Items.SPYGLASS, false),
+            CLOCK(Items.CLOCK, false),
+            COMPASS(Items.COMPASS, false),
+            RECOVERY(Items.RECOVERY_COMPASS, false),
+            LODESTONE(stack -> stack.is(Items.COMPASS) && stack.has(DataComponents.LODESTONE_TRACKER), false),
+            CONDUIT(Items.CONDUIT, false),
+            OMINOUS(UtilityComponent::isOminousBanner, true),
+            ROCKET(Items.FIREWORK_ROCKET, true),
+            TOTEM(Items.TOTEM_OF_UNDYING, false),
+            LANTERN(stack -> stack.is(Items.LANTERN) || stack.is(Items.SOUL_LANTERN), false),
+            CRAFTING(Items.CRAFTING_TABLE, false),
+            CAULDRON(Items.CAULDRON, false),
+            POT(Items.DECORATED_POT, false),
+            NONE(Items.AIR, true);
 
             private final Predicate<ItemStack> predicate;
-            Type(Item item) {
-                  this.predicate = stack -> stack.is(item);
+            private final boolean isStackable;
+
+            Type(Item item, boolean stackable) {
+                  this(stack -> stack.is(item), stackable);
             }
 
-            Type(Predicate<ItemStack> predicate) {
+            Type(Predicate<ItemStack> predicate, boolean stackable) {
                   this.predicate = predicate;
+                  isStackable = stackable;
             }
 
             public boolean test(ItemStack item) {
                   return predicate.test(item);
+            }
+
+            public boolean isStackable() {
+                  return isStackable;
             }
       }
 

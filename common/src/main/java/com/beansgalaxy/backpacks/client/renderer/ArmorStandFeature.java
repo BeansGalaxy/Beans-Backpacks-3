@@ -19,7 +19,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.ItemStack;
 
-public class ArmorStandFeature extends RenderLayer<ArmorStand, ArmorStandArmorModel> implements BackpackRender {
+public class ArmorStandFeature extends RenderLayer<ArmorStand, ArmorStandArmorModel> implements RenderBackpack {
       private final BackpackModel<ArmorStand> backpackModel;
       private final ItemRenderer itemRenderer;
       private final BlockRenderDispatcher blockDispatcher;

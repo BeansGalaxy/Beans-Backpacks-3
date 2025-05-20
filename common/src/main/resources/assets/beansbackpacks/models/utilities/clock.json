@@ -1,0 +1,21 @@
+{
+	"parent": "beansbackpacks:utilities/clock/template",
+	"textures": {
+		"face": "beansbackpacks:item/utilities/clock/0"
+	},
+	"overrides": [
+		{ "predicate": { "time": 0.0000000 }, "model": "beansbackpacks:utilities/clock/0" },
+		{ "predicate": { "time": 0.0833333 }, "model": "beansbackpacks:utilities/clock/1" },
+		{ "predicate": { "time": 0.1666666 }, "model": "beansbackpacks:utilities/clock/2" },
+		{ "predicate": { "time": 0.2500000 }, "model": "beansbackpacks:utilities/clock/3" },
+		{ "predicate": { "time": 0.3333333 }, "model": "beansbackpacks:utilities/clock/4" },
+		{ "predicate": { "time": 0.4166666 }, "model": "beansbackpacks:utilities/clock/5" },
+		{ "predicate": { "time": 0.5000000 }, "model": "beansbackpacks:utilities/clock/6" },
+		{ "predicate": { "time": 0.5833333 }, "model": "beansbackpacks:utilities/clock/7" },
+		{ "predicate": { "time": 0.6666666 }, "model": "beansbackpacks:utilities/clock/8" },
+		{ "predicate": { "time": 0.7500000 }, "model": "beansbackpacks:utilities/clock/9" },
+		{ "predicate": { "time": 0.8333333 }, "model": "beansbackpacks:utilities/clock/10" },
+		{ "predicate": { "time": 0.9166666 }, "model": "beansbackpacks:utilities/clock/11" },
+		{ "predicate": { "time": 1.0000000 }, "model": "beansbackpacks:utilities/clock/0" }
+	]
+}

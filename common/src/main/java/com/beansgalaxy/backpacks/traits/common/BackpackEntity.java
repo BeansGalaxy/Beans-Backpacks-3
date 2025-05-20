@@ -92,7 +92,7 @@ public class BackpackEntity extends Entity implements PatchedComponentHolder {
                   getTraits().ifPresent(traits -> traits.sound().at(BackpackEntity.this, type));
             }
 
-            @Override public Entity entity() {
+            @Override public @NotNull Entity entity() {
                   return BackpackEntity.this;
             }
 
@@ -101,7 +101,9 @@ public class BackpackEntity extends Entity implements PatchedComponentHolder {
             }
 
             @Override public ItemStack toStack() {
-                  return BackpackEntity.this.toStack();
+                  ItemStack stack = BackpackEntity.this.toStack();
+                  stack.setEntityRepresentation(BackpackEntity.this);
+                  return stack;
             }
 
             @Override public boolean shouldClose() {

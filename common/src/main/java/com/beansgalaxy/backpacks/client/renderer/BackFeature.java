@@ -28,7 +28,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 
-public class BackFeature extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> implements BackpackRender {
+public class BackFeature extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> implements RenderBackpack {
       private final BackpackModel<AbstractClientPlayer> model;
       private final BackpackCapeModel<AbstractClientPlayer> capeModel;
       private final ItemRenderer itemRenderer;

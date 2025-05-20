@@ -7,6 +7,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
@@ -107,6 +108,7 @@ public abstract class ViewableBackpack implements PatchedComponentHolder {
 
       public abstract void playSound(ModSound.Type type);
 
+      @NotNull
       public abstract Entity entity();
 
       public int getId() {
@@ -118,5 +120,4 @@ public abstract class ViewableBackpack implements PatchedComponentHolder {
       public abstract ItemStack toStack();
 
       public abstract boolean shouldClose();
-
 }

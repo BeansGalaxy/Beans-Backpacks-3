@@ -7,7 +7,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.AllayModel;
-import net.minecraft.client.model.ArmorStandArmorModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
@@ -19,12 +18,11 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.allay.Allay;
-import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Optional;
 
-public class AllayFeature extends RenderLayer<Allay, AllayModel> implements BackpackRender {
+public class AllayFeature extends RenderLayer<Allay, AllayModel> implements RenderBackpack {
       private final BackpackModel<Allay> backpackModel;
       private final ItemRenderer itemRenderer;
       private final BlockRenderDispatcher blockDispatcher;

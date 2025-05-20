@@ -3,7 +3,7 @@ package com.beansgalaxy.backpacks;
 import com.beansgalaxy.backpacks.client.KeyPress;
 import com.beansgalaxy.backpacks.client.renderer.BackpackCapeModel;
 import com.beansgalaxy.backpacks.client.renderer.BackpackModel;
-import com.beansgalaxy.backpacks.client.renderer.BackpackRender;
+import com.beansgalaxy.backpacks.client.renderer.RenderBackpack;
 import com.beansgalaxy.backpacks.client.renderer.EntityRender;
 import com.beansgalaxy.backpacks.events.AppendLoadedModels;
 import com.beansgalaxy.backpacks.events.NetworkPackages;
@@ -40,8 +40,8 @@ public class FabricClient implements ClientModInitializer {
             KeyBindingHelper.registerKeyBinding(KeyPress.INSTANCE.SHORTHAND_KEY);
             KeyBindingHelper.registerKeyBinding(KeyPress.INSTANCE.SPYGLASS_KEY);
 
-            EntityModelLayerRegistry.registerModelLayer(BackpackRender.BACKPACK_MODEL, BackpackModel::getTexturedModelData);
-            EntityModelLayerRegistry.registerModelLayer(BackpackRender.PACK_CAPE_MODEL, BackpackCapeModel::createBodyLayer);
+            EntityModelLayerRegistry.registerModelLayer(RenderBackpack.BACKPACK_MODEL, BackpackModel::getTexturedModelData);
+            EntityModelLayerRegistry.registerModelLayer(RenderBackpack.PACK_CAPE_MODEL, BackpackCapeModel::createBodyLayer);
             EntityRendererRegistry.register(CommonClass.BACKPACK_ENTITY.get(), EntityRender::new);
             EntityRendererRegistry.register(CommonClass.LEGACY_ENDER_ENTITY.get(), EntityRender::new);
             EntityRendererRegistry.register(CommonClass.LEGACY_WINGED_ENTITY.get(), EntityRender::new);
