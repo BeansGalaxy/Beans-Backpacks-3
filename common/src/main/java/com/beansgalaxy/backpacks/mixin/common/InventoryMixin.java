@@ -35,6 +35,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.Iterator;
 import java.util.List;
@@ -260,43 +261,60 @@ public abstract class InventoryMixin implements BackData {
       @Inject(method = "swapPaint", cancellable = true, at = @At("HEAD"))
       private void backpacks_handleScroll(double pDirection, CallbackInfo ci) {
             Shorthand shorthand = Shorthand.get(player);
-            if (!shorthand.active)
+            final int size = shorthand.getContainerSize();
+
+            if (size < 1)
                   return;
 
-            int slot;
-            int direction;
-            int size = shorthand.getContainerSize();
+            ci.cancel();
+            int i = (int)Math.signum(pDirection);
 
-            if (pDirection < 0 && shorthand.selection == 0) {
-                  direction = -1;
-                  slot = shorthand.getContainerSize() + direction;
+            final int maxShorthandIndex = size - 1;
+            final int maximum = 9 + size;
+
+            int selection;
+            if (this.selected < 9)
+                  selection = this.selected - i;
+            else {
+                  selection = (maxShorthandIndex - shorthand.selection) + 9 - i;
+            }
+
+            while (selection < 0)
+                  selection += maximum;
+
+            while (selection >= maximum)
+                  selection -= maximum;
+
+            if (selection < 9) {
+                  shorthand.selection = -1;
+                  selected = selection;
             }
             else {
-                  direction = (int) Math.signum(pDirection);
-                  int dir = shorthand.selection + direction;
-                  slot = dir % size;
+                  selection = maxShorthandIndex - (selection - 9);
+
+                  while (true) {
+                        ItemStack stack = shorthand.getItem(selection);
+                        if (!stack.isEmpty()) {
+                              shorthand.selection = selection;
+                              selected = items.size() + selection;
+                              break;
+                        }
+
+                        selection += i;
+
+                        if (selection < 0) {
+                              shorthand.selection = -1;
+                              selected = 0;
+                              break;
+                        }
+                        else if (selection >= size) {
+                              shorthand.selection = -1;
+                              selected = 8;
+                              break;
+                        }
+                  }
+
+                  SyncShorthand.send(shorthand);
             }
-
-            int start = slot;
-            do {
-                  ItemStack stack = shorthand.getItem(slot);
-                  if (!stack.isEmpty())
-                        break;
-
-                  slot += direction;
-
-                  if (slot == -1) {
-                        slot = size - 1;
-                  }
-                  else if (slot == size) {
-                        slot = 0;
-                  }
-            } while (start != slot);
-
-            shorthand.selection = slot;
-            selected = items.size() + slot;
-
-            SyncShorthand.send(shorthand);
-            ci.cancel();
       }
 }

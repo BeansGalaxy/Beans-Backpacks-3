@@ -37,7 +37,6 @@ public class FabricClient implements ClientModInitializer {
             KeyBindingHelper.registerKeyBinding(KeyPress.INSTANCE.ACTION_KEY);
             KeyBindingHelper.registerKeyBinding(KeyPress.INSTANCE.MENUS_KEY);
             KeyBindingHelper.registerKeyBinding(KeyPress.INSTANCE.INSTANT_KEY);
-            KeyBindingHelper.registerKeyBinding(KeyPress.INSTANCE.SHORTHAND_KEY);
             KeyBindingHelper.registerKeyBinding(KeyPress.INSTANCE.SPYGLASS_KEY);
 
             EntityModelLayerRegistry.registerModelLayer(RenderBackpack.BACKPACK_MODEL, BackpackModel::getTexturedModelData);

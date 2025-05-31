@@ -4,12 +4,9 @@ import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.access.PlayerAccessor;
 import com.beansgalaxy.backpacks.components.UtilityComponent;
-import com.beansgalaxy.backpacks.container.Shorthand;
-import com.beansgalaxy.backpacks.data.config.options.ShorthandControl;
 import com.beansgalaxy.backpacks.network.serverbound.BackpackUseOn;
 import com.beansgalaxy.backpacks.network.serverbound.InstantKeyPress;
 import com.beansgalaxy.backpacks.network.serverbound.SyncHotkey;
-import com.beansgalaxy.backpacks.network.serverbound.SyncShorthand;
 import com.beansgalaxy.backpacks.traits.chest.screen.MenuChestScreen;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -45,8 +42,6 @@ public class KeyPress {
       public static final String ACTION_KEY_DISABLED = "key.beansbackpacks.action_disabled";
       public static final String ACTION_KEY_DISABLED_DESC = "key.beansbackpacks.desc.action_disabled";
 
-      public static final String SHORTHAND_KEY_IDENTIFIER = "key.beansbackpacks.shorthand";
-
       public static final String SPYGLASS_KEY_IDENTIFIER = "key.beansbackpacks.spyglass";
 
       public final KeyMapping ACTION_KEY = new KeyMapping(
@@ -64,19 +59,12 @@ public class KeyPress {
                   GLFW.GLFW_KEY_UNKNOWN,
                   KEY_CATEGORY);
 
-      public final KeyMapping SHORTHAND_KEY = new KeyMapping(
-                  SHORTHAND_KEY_IDENTIFIER,
-                  GLFW.GLFW_KEY_GRAVE_ACCENT,
-                  KEY_CATEGORY);
-
       public final KeyMapping SPYGLASS_KEY = new KeyMapping(
                   SPYGLASS_KEY_IDENTIFIER,
                   GLFW.GLFW_KEY_B,
                   KEY_CATEGORY);
 
       public void tick(Minecraft minecraft, LocalPlayer player) {
-            handleShorthand(minecraft);
-            
             isPressed actionKey = KeyPress.isPressed(minecraft, KeyPress.getActionKeyBind());
             boolean actionKeyPressed = actionKey.pressed() && INSTANT_KEY.isUnbound();
             isPressed menusKey = KeyPress.isPressed(minecraft, KeyPress.getMenusKeyBind());
@@ -94,44 +82,36 @@ public class KeyPress {
             SyncHotkey.send(actionKeyPressed, menuKeyPressed, tinyChestSlot);
       }
 
-      private boolean isShorthandDown = false;
-      private void handleShorthand(Minecraft minecraft) {
-            isPressed keyPress = isPressed(minecraft, SHORTHAND_KEY);
-            boolean isDown = keyPress.pressed();
-            ShorthandControl control = CommonClass.CLIENT_CONFIG.shorthand_control.get();
-            Shorthand shorthand = Shorthand.get(minecraft.player);
-
-            if (control.pressKey()) {
-                  if (isDown && !isShorthandDown) {
-                        shorthand.activateShorthand(!shorthand.active);
-                        shorthand.clearTimer();
-                        SyncShorthand.send(shorthand);
-                  }
-            }
-            else {
-                  if (isDown != isShorthandDown) {
-                        shorthand.activateShorthand(isDown);
-                        shorthand.clearTimer();
-                        SyncShorthand.send(shorthand);
-                  }
-            }
-
-            isShorthandDown = isDown;
-      }
-
       public boolean consumeActionUseOn(Minecraft instance, BlockHitResult hitResult) {
+            doCoyoteClick = false;
+
             BlockPos blockPos = hitResult.getBlockPos();
             if (!instance.level.getWorldBorder().isWithinBounds(blockPos))
                   return false;
 
             LocalPlayer player = instance.player;
-            boolean cancel = player.isSprinting() || player.isSwimming();
-            if (cancel && INSTANCE.ACTION_KEY.isUnbound())
-                  storeCoyoteClick(instance);
-            else if (placeBackpack(player, hitResult))
-                  return true;
+            if (INSTANCE.ACTION_KEY.isUnbound()) {
+                  Vec3 movement = player.getDeltaMovement();
+                  if (Math.abs(movement.x) + Math.abs(movement.z) != 0) {
+                        if (pickUpThru(player))
+                              return true;
 
-            return pickUpThru(player);
+                        doCoyoteClick = true;
+                        return false;
+                  }
+            }
+
+            return placeBackpack(player, hitResult) || pickUpThru(player);
+      }
+
+      private boolean doCoyoteClick = false;
+      public boolean tryCoyoteClick(LocalPlayer player, BlockHitResult hitResult) {
+            if (doCoyoteClick) {
+                  doCoyoteClick = false;
+                  return placeBackpack(player, hitResult);
+            }
+
+            return false;
       }
 
       public boolean pickUpThru(LocalPlayer player) {
@@ -196,10 +176,6 @@ public class KeyPress {
 
             BackpackUseOn.send(hitResult, equipmentSlot);
             return true;
-      }
-
-      private void storeCoyoteClick(Minecraft instance) {
-
       }
 
       public static KeyMapping getDefaultKeyBind() {

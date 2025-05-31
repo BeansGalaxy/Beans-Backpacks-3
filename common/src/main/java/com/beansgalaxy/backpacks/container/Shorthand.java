@@ -33,8 +33,7 @@ public class Shorthand implements Container {
       private final Player owner;
 
       private int timer = 0;
-      public int selection = 0;
-      public boolean active = false;
+      public int selection = -1;
 
       int heldSelected = 0;
       private int oSize;
@@ -106,12 +105,12 @@ public class Shorthand implements Container {
       public int getQuickestSlot(BlockState blockState) {
             ItemStack itemInHand = owner.getMainHandItem();
             Inventory inv = owner.getInventory();
-            if (!active && ShorthandSlot.isTool(itemInHand))
+            if (!isActive() && ShorthandSlot.isTool(itemInHand))
                   return -1;
 
             int slot = -1;
             int candidate = -1;
-            ItemStack mainHandItem = inv.items.get(active ? heldSelected : inv.selected);
+            ItemStack mainHandItem = inv.items.get(isActive() ? heldSelected : inv.selected);
             float topSpeed = mainHandItem.getItem().getDestroySpeed(mainHandItem, blockState);
 
             boolean saveItemsIfBroken = !CommonClass.CLIENT_CONFIG.shorthand_breaks_tool.get();
@@ -157,7 +156,6 @@ public class Shorthand implements Container {
                               inv.selected = newSelected;
 
                         selection = slot;
-                        active = true;
                   } else
                         resetSelected(inv);
             }
@@ -267,7 +265,7 @@ public class Shorthand implements Container {
             if (inventory.selected >= inventory.items.size())
                   inventory.selected = heldSelected;
             clearTimer();
-            active = false;
+            selection = -1;
       }
 
       public int getSelected(Inventory inventory) {
@@ -289,28 +287,6 @@ public class Shorthand implements Container {
 
             ItemStack backpack = that.owner.getItemBySlot(EquipmentSlot.BODY);
             this.owner.setItemSlot(EquipmentSlot.BODY, backpack);
-      }
-
-      public void activateShorthand(boolean active) {
-            this.active = active;
-
-            Inventory inventory = owner.getInventory();
-            if (active && !stacks.isEmpty()) {
-                  setHeldSelected(inventory.selected);
-
-                  int start = selection;
-                  do {
-                        ItemStack stack = getItem(selection);
-                        if (!stack.isEmpty())
-                              break;
-
-                        selection++;
-                        selection %= getContainerSize();
-                  } while (start != selection);
-
-                  inventory.selected = inventory.items.size() + selection;
-            }
-            else resetSelected(inventory);
       }
 
       public int getMaxSlot() {
@@ -419,5 +395,9 @@ public class Shorthand implements Container {
 
       public int getHeldSlot() {
             return heldSelected;
+      }
+
+      public boolean isActive() {
+            return selection >= 0;
       }
 }

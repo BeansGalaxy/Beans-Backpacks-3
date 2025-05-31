@@ -105,7 +105,6 @@ public class NeoForgeClient {
                   event.register(KeyPress.INSTANCE.ACTION_KEY);
                   event.register(KeyPress.INSTANCE.MENUS_KEY);
                   event.register(KeyPress.INSTANCE.INSTANT_KEY);
-                  event.register(KeyPress.INSTANCE.SHORTHAND_KEY);
                   event.register(KeyPress.INSTANCE.SPYGLASS_KEY);
             }
 

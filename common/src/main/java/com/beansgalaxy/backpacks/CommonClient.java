@@ -262,7 +262,7 @@ public class CommonClient {
             boolean hudIsFarCorner = ShorthandHUD.FAR_CORNER.equals(hud);
             int x = getShorthandHudX(mainArm, width, size, hudIsFarCorner);
 
-            if (shorthand.active) {
+            if (shorthand.isActive() && shorthand.getTimer() > 0) {
                   int heldSlot = shorthand.getHeldSlot();
                   int left = width / 2 - 90;
                   int heldX = heldSlot * 20;
@@ -288,7 +288,7 @@ public class CommonClient {
                   gui.renderItem(weapon, x + 17, y, player.getId());
                   gui.renderItemDecorations(minecraft.font, weapon, x + 17, y);
 
-                  if (shorthand.active)
+                  if (shorthand.isActive())
                         gui.blitSprite(SHORTHAND_SELECT, x + 3, y - 4, 44, 24);
             }
             else {
@@ -314,7 +314,7 @@ public class CommonClient {
                         gui.renderItemDecorations(minecraft.font, stack, spriteX, y);
 
                         if (i == shorthand.selection) {
-                              ResourceLocation overlay = shorthand.active ? SHORTHAND_SELECT : SHORTHAND_DORMANT;
+                              ResourceLocation overlay = shorthand.isActive() ? SHORTHAND_SELECT : SHORTHAND_DORMANT;
                               gui.blitSprite(overlay, spriteX - 14, y - 4, 10, 44, 24);
                         }
 

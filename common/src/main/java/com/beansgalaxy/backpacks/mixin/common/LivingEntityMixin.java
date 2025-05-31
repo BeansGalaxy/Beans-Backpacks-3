@@ -5,7 +5,6 @@ import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.container.Shorthand;
 import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxTraits;
 import com.llamalad7.mixinextras.sugar.Local;
-import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.Holder;
@@ -19,7 +18,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Equipable;
 import net.minecraft.world.item.ItemStack;
@@ -110,7 +108,7 @@ public abstract class LivingEntityMixin extends Entity {
       private void backpackSyncedData(CallbackInfoReturnable<ItemStack> cir) {
             if (instance instanceof Player player) {
                   Shorthand shorthand = Shorthand.get(player);
-                  if (shorthand.active) {
+                  if (shorthand.isActive()) {
                         ItemStack stack = shorthand.getItem(shorthand.selection);
                         cir.setReturnValue(stack);
                   }

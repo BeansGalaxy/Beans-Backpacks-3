@@ -299,7 +299,7 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
       @Inject(method = "getWeaponItem", cancellable = true, at = @At("HEAD"))
       private void backpackSyncedData(CallbackInfoReturnable<ItemStack> cir) {
             Shorthand shorthand = Shorthand.get(instance);
-            if (shorthand.active) {
+            if (shorthand.isActive()) {
                   ItemStack stack = shorthand.getItem(shorthand.selection);
                   cir.setReturnValue(stack);
             }

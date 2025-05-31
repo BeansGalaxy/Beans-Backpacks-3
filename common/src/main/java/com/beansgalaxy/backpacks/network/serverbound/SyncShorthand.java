@@ -9,24 +9,22 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 
 public class SyncShorthand implements Packet2S {
-      final boolean active;
       final int selection;
 
-      public SyncShorthand(boolean active, int selection) {
-            this.active = active;
+      public SyncShorthand(int selection) {
             this.selection = selection;
       }
 
       public SyncShorthand(RegistryFriendlyByteBuf buf) {
-            this(buf.readBoolean(), buf.readInt());
+            this(buf.readInt());
       }
 
-      public static void send(boolean active, int selection) {
-            new SyncShorthand(active, selection).send2S();
+      public static void send(int selection) {
+            new SyncShorthand(selection).send2S();
       }
 
       public static void send(Shorthand shorthand) {
-            send(shorthand.active, shorthand.selection);
+            send(shorthand.selection);
       }
 
       @Override
@@ -36,7 +34,6 @@ public class SyncShorthand implements Packet2S {
 
       @Override
       public void encode(RegistryFriendlyByteBuf buf) {
-            buf.writeBoolean(active);
             buf.writeInt(selection);
 
       }
@@ -45,7 +42,6 @@ public class SyncShorthand implements Packet2S {
       public void handle(Player sender) {
             Shorthand shorthand = Shorthand.get(sender);
             shorthand.selection = selection;
-            shorthand.activateShorthand(active);
       }
 
       public static Type<SyncShorthand> ID = new Type<>(ResourceLocation.parse(Constants.MOD_ID + ":sync_shorthand_s"));
