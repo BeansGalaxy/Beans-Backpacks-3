@@ -1,8 +1,8 @@
 package com.beansgalaxy.backpacks.mixin;
 
 import com.beansgalaxy.backpacks.access.BackData;
-import com.beansgalaxy.backpacks.container.Shorthand;
 import com.beansgalaxy.backpacks.container.UtilityContainer;
+import com.beansgalaxy.backpacks.util.PlaceProgress;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.player.Inventory;
@@ -28,6 +28,10 @@ public abstract class InventoryMixin implements BackData {
       public void backpackInit(Player player, CallbackInfo ci) {
             ImmutableList.Builder<NonNullList<ItemStack>> builder = ImmutableList.builder();
             compartments = builder.addAll(this.compartments).add(beans_Backpacks_3$body).build();
+      }
+
+      public NonNullList<ItemStack> beans_Backpacks_3$getBody() {
+            return beans_Backpacks_3$body;
       }
 
       @Unique private boolean beans_Backpacks_3$actionKeyIsDown = false;
@@ -59,22 +63,9 @@ public abstract class InventoryMixin implements BackData {
             return beans_Backpacks_3$tinySlot;
       }
 
-      @Unique private Shorthand shorthand;
-
-      @Override @Unique
-      public Shorthand getShorthand() {
-            if (shorthand == null)
-                  shorthand = new Shorthand(player);
-            return shorthand;
-      }
-
       @Override
       public void setTinySlot(int tinySlot) {
             beans_Backpacks_3$tinySlot = tinySlot;
-      }
-
-      public NonNullList<ItemStack> beans_Backpacks_3$getBody() {
-            return beans_Backpacks_3$body;
       }
 
       @Unique private UtilityContainer utility;
@@ -84,5 +75,14 @@ public abstract class InventoryMixin implements BackData {
             if (utility == null)
                   utility = new UtilityContainer(this);
             return utility;
+      }
+
+      @Unique PlaceProgress placeProgress;
+
+      @Override @Unique
+      public PlaceProgress getPlaceProgress() {
+            if (placeProgress == null)
+                  placeProgress = new PlaceProgress();
+            return placeProgress;
       }
 }

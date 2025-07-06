@@ -1,7 +1,6 @@
 package com.beansgalaxy.backpacks.mixin;
 
 import com.beansgalaxy.backpacks.access.BackData;
-import com.beansgalaxy.backpacks.container.Shorthand;
 import com.beansgalaxy.backpacks.container.UtilityContainer;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.NonNullList;
@@ -37,7 +36,6 @@ public abstract class InventoryMixin implements BackData {
 
       @Unique private boolean beans_Backpacks_3$actionKeyIsDown = false;
       @Unique private boolean beans_Backpacks_3$menuKeyIsDown = false;
-      @Unique private boolean beans_Backpacks_3$shorthandIsDown = false;
       @Unique private int beans_Backpacks_3$tinySlot = -1;
 
       @Override
@@ -61,16 +59,6 @@ public abstract class InventoryMixin implements BackData {
       }
 
       @Override
-      public boolean isShorthandDown() {
-            return beans_Backpacks_3$shorthandIsDown;
-      }
-
-      @Override
-      public void setShorthandKey(boolean shorthandPressed) {
-            beans_Backpacks_3$shorthandIsDown = shorthandPressed;
-      }
-
-      @Override
       public int getTinySlot() {
             return beans_Backpacks_3$tinySlot;
       }
@@ -78,15 +66,6 @@ public abstract class InventoryMixin implements BackData {
       @Override
       public void setTinySlot(int tinySlot) {
             beans_Backpacks_3$tinySlot = tinySlot;
-      }
-
-      @Unique private Shorthand shorthand;
-
-      @Override @Unique
-      public Shorthand getShorthand() {
-            if (shorthand == null)
-                  shorthand = new Shorthand(player);
-            return shorthand;
       }
 
       @Unique private UtilityContainer utility;

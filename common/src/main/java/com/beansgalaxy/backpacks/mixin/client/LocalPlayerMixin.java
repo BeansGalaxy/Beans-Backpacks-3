@@ -1,7 +1,6 @@
 package com.beansgalaxy.backpacks.mixin.client;
 
 import com.beansgalaxy.backpacks.client.KeyPress;
-import com.beansgalaxy.backpacks.container.Shorthand;
 import com.beansgalaxy.backpacks.network.serverbound.UtilitiesUse;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.Minecraft;
@@ -30,7 +29,6 @@ public abstract class LocalPlayerMixin extends LivingEntity {
       public void tick(CallbackInfo ci) {
             LocalPlayer player = (LocalPlayer) (Object) this;
             KeyPress.INSTANCE.tick(minecraft, player);
-            Shorthand.get(player).tickTimer(player.getInventory());
       }
 
       @Inject(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/Input;tick(ZF)V", shift = At.Shift.AFTER))

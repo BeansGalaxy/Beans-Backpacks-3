@@ -2,7 +2,6 @@ package com.beansgalaxy.backpacks.mixin.common;
 
 import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
-import com.beansgalaxy.backpacks.container.Shorthand;
 import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxTraits;
 import com.llamalad7.mixinextras.sugar.Local;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -101,17 +100,6 @@ public abstract class LivingEntityMixin extends Entity {
                   equipSound.ifPresent(sound -> {
                         level().playSeededSound(null, getX(), getY(), getZ(), sound, getSoundSource(), 1F, 1F, random.nextLong());
                   });
-            }
-      }
-
-      @Inject(method = "getMainHandItem", cancellable = true, at = @At("HEAD"))
-      private void backpackSyncedData(CallbackInfoReturnable<ItemStack> cir) {
-            if (instance instanceof Player player) {
-                  Shorthand shorthand = Shorthand.get(player);
-                  if (shorthand.isActive()) {
-                        ItemStack stack = shorthand.getItem(shorthand.selection);
-                        cir.setReturnValue(stack);
-                  }
             }
       }
 

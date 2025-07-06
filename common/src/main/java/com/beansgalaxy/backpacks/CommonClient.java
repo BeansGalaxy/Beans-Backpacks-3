@@ -8,10 +8,8 @@ import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.container.UtilitySlot;
 import com.beansgalaxy.backpacks.data.EnderStorage;
-import com.beansgalaxy.backpacks.data.config.options.ShorthandHUD;
 import com.beansgalaxy.backpacks.network.serverbound.SyncSelectedSlot;
 import com.beansgalaxy.backpacks.container.BackSlot;
-import com.beansgalaxy.backpacks.container.Shorthand;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
@@ -24,7 +22,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.AdvancementHolder;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.gui.GuiGraphics;
@@ -47,7 +44,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.CompassItem;
@@ -188,140 +184,19 @@ public class CommonClient {
             return Minecraft.getInstance().level;
       }
 
-// ===================================================================================================================== SHORTHAND CLIENT
-
-      public static float getHandHeight(float mainHandHeight) {
-            return 1f - mainHandHeight;
-      }
-
       public static final ResourceLocation BACK_SLOT = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/slots/back_slot.png");
       public static final ResourceLocation UTIL_SLOT = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/slots/util_slot.png");
-      private static final ResourceLocation SHORTHAND_START = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/slots/shorthand/start.png");
-      private static final ResourceLocation SHORTHAND_STOP = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/slots/shorthand/stop.png");
-      private static final ResourceLocation SHORTHAND_END = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/slots/shorthand/end.png");
-      private static final ResourceLocation SHORTHAND_SLOT = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/slots/shorthand/shorthand.png");
 
-      public static void renderShorthandSlots(GuiGraphics graphics, int leftPos, int topPos, int imageWidth, int imageHeight, LocalPlayer player) {
+      public static void renderSlots(GuiGraphics graphics, int leftPos, int topPos, int imageWidth, int imageHeight, LocalPlayer player) {
             graphics.blit(BACK_SLOT, leftPos + BackSlot.getX() - 1, topPos + BackSlot.getY() - 1, 10, 0, 0, 18, 18, 18, 18);
             ItemStack backpack = player.getItemBySlot(EquipmentSlot.BODY);
             byte utilities = UtilityComponent.getSize(backpack);
             if (utilities > 0) for (byte i = 0; i < utilities; i++)
-                        graphics.blit(UTIL_SLOT, leftPos + UtilitySlot.getX(i) - 1, topPos + UtilitySlot.getY(i) - 1, 10, 0, 0, 18, 18, 18, 18);
-
-            Shorthand shorthand = Shorthand.get(player);
-            int hX = leftPos + imageWidth;
-            int hY = topPos + imageHeight - 10;
-            int totalSize = shorthand.getContainerSize();
-            if (totalSize == 0)
-                  return;
-
-            graphics.blit(SHORTHAND_START, hX - 32, hY, 10, 0, 0, 32, 32, 32, 32);
-            int i = 0;
-            while (i < totalSize) {
-                  graphics.blit(SHORTHAND_SLOT, hX - 32 - (i * 18), hY, 10, 0, 0, 32, 32, 32, 32);
-                  i++;
-            }
-            if (totalSize == 9)
-                  graphics.blit(SHORTHAND_END, leftPos, hY, 10, 0, 0, 32, 32, 32, 32);
-            else
-                  graphics.blit(SHORTHAND_STOP, hX - 14 - (i * 18), hY, 10, 0, 0, 32, 32, 32, 32);
+                  graphics.blit(UTIL_SLOT, leftPos + UtilitySlot.getX(i) - 1, topPos + UtilitySlot.getY(i) - 1, 10, 0, 0, 18, 18, 18, 18);
       }
 
-      private static final ResourceLocation SHORTHAND_SINGLE = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID,"shorthand_single");
-      private static final ResourceLocation SHORTHAND_LEFT = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID,"shorthand_left");
-      private static final ResourceLocation SHORTHAND_CENTER = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID,"shorthand_center");
-      private static final ResourceLocation SHORTHAND_RIGHT = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID,"shorthand_right");
 
-      private static final ResourceLocation SHORTHAND_DORMANT = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID,"shorthand_dormant");
-      private static final ResourceLocation SHORTHAND_SELECT = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID,"shorthand_selection");
-
-      public static void renderShorthandHUD(Minecraft minecraft, GuiGraphics gui, DeltaTracker tickCounter, Player player) {
-            if (player == null || player.isSpectator() || minecraft.options.hideGui)
-                  return;
-
-            renderCompassClockHUD(minecraft, gui, player);
-
-            Shorthand shorthand = Shorthand.get(player);
-
-            int size = 0;
-            int containerSize = shorthand.getContainerSize();
-            for (int i = 0; i < containerSize; i++) {
-                  if (!shorthand.getItem(i).isEmpty())
-                        size++;
-            }
-
-            if (size == 0)
-                  return;
-
-            int height = gui.guiHeight();
-            int width = gui.guiWidth();
-            int y = height - 1 - 18;
-
-            HumanoidArm mainArm = player.getMainArm();
-            ShorthandHUD hud = CommonClass.CLIENT_CONFIG.shorthand_hud_location.get();
-            boolean hudIsFarCorner = ShorthandHUD.FAR_CORNER.equals(hud);
-            int x = getShorthandHudX(mainArm, width, size, hudIsFarCorner);
-
-            if (shorthand.isActive() && shorthand.getTimer() > 0) {
-                  int heldSlot = shorthand.getHeldSlot();
-                  int left = width / 2 - 90;
-                  int heldX = heldSlot * 20;
-                  gui.blitSprite(SHORTHAND_DORMANT, left + heldX - 12, y - 4, 44, 24);
-            }
-
-            if (size == 1) {
-                  int i = 0;
-                  ItemStack weapon;
-                  do {
-                        weapon = shorthand.getItem(i);
-                        i++;
-
-                        if (i > containerSize)
-                              return;
-                  }
-                  while (weapon.isEmpty());
-
-                  RenderSystem.enableBlend();
-                  gui.blitSprite(SHORTHAND_SINGLE, x - 6, y - 4, 44, 24);
-                  RenderSystem.disableBlend();
-
-                  gui.renderItem(weapon, x + 17, y, player.getId());
-                  gui.renderItemDecorations(minecraft.font, weapon, x + 17, y);
-
-                  if (shorthand.isActive())
-                        gui.blitSprite(SHORTHAND_SELECT, x + 3, y - 4, 44, 24);
-            }
-            else {
-                  boolean leftHanded = HumanoidArm.LEFT.equals(mainArm);
-                  int offset = (hudIsFarCorner && leftHanded) || (!hudIsFarCorner && !leftHanded) ? size * 20 - 3 : 17;
-
-                  int j = 0;
-                  for (int i = 0; i < containerSize; i++) {
-                        ItemStack stack = shorthand.getItem(i);
-                        if (stack.isEmpty())
-                              continue;
-
-                        int spriteX = j * -20 + x + offset;
-                        ResourceLocation sprite = j == 0 ? SHORTHAND_RIGHT
-                                         : j == size - 1 ? SHORTHAND_LEFT
-                                                         : SHORTHAND_CENTER;
-
-                        RenderSystem.enableBlend();
-                        gui.blitSprite(sprite, spriteX - 4, y - 4, 24, 24);
-                        RenderSystem.disableBlend();
-
-                        gui.renderItem(stack, spriteX, y, minecraft.player.getId());
-                        gui.renderItemDecorations(minecraft.font, stack, spriteX, y);
-
-                        if (i == shorthand.selection) {
-                              ResourceLocation overlay = shorthand.isActive() ? SHORTHAND_SELECT : SHORTHAND_DORMANT;
-                              gui.blitSprite(overlay, spriteX - 14, y - 4, 10, 44, 24);
-                        }
-
-                        j++;
-                  }
-            }
-      }
+// ===================================================================================================================== SHORTHAND CLIENT
 
       private static final CompassItemPropertyFunction COMPASS_FUNCTION = new CompassItemPropertyFunction((clientLevel, itemStack, entity) -> {
             LodestoneTracker lodestoneTracker = itemStack.get(DataComponents.LODESTONE_TRACKER);
@@ -338,7 +213,10 @@ public class CommonClient {
             }
       });
 
-      private static void renderCompassClockHUD(Minecraft minecraft, GuiGraphics gui, Player player) {
+      public static void renderCompassClockHUD(Minecraft minecraft, GuiGraphics gui, Player player) {
+            if (player == null || player.isSpectator() || minecraft.options.hideGui)
+                  return;
+
             ItemStack backpack = player.getItemBySlot(EquipmentSlot.BODY);
             UtilityComponent utilities = backpack.get(ITraitData.UTILITIES);
             if (utilities == null)
@@ -507,31 +385,6 @@ public class CommonClient {
             return Mth.floor(r * 58) + 1;
       }
 
-      private static int getShorthandHudX(HumanoidArm mainArm, int width, int weaponsSize, boolean hudIsFarCorner) {
-            if (HumanoidArm.LEFT.equals(mainArm)) {
-                  if (hudIsFarCorner)
-                        return -12;
-                  else
-                        return width / 2 - 134;
-            }
-            else {
-                  if (hudIsFarCorner)
-                        return width - 38;
-                  else
-                        return width / 2 + 84;
-            }
-      }
-
-      public static void handleSendWeaponSlot(int player, int selectedSlot, ItemStack stack) {
-            Minecraft minecraft = Minecraft.getInstance();
-            Entity entity = minecraft.level.getEntity(player);
-            if (entity instanceof Player otherPlayer) {
-                  Shorthand shorthand = Shorthand.get(otherPlayer);
-                  shorthand.selection = selectedSlot;
-                  shorthand.setItem(selectedSlot, stack);
-            }
-      }
-
       public static void modifyBackpackKeyDisplay(Component name, Button changeButton) {
             KeyPress keyPress = KeyPress.INSTANCE;
             if (name.equals(Component.translatable(KeyPress.ACTION_KEY_IDENTIFIER))) {
@@ -564,7 +417,6 @@ public class CommonClient {
                   return;
             }
       }
-
 
       public static void handleKeyBinds(LocalPlayer player, @Nullable HitResult hitResult) {
             KeyPress keyPress = KeyPress.INSTANCE;

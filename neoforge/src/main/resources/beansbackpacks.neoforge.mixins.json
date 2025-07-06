@@ -4,13 +4,12 @@
   "package": "com.beansgalaxy.backpacks.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "BCombatPlayerAttackMixin",
     "InventoryMixin",
     "ItemsMixin",
     "ItemStackMixin"
   ],
   "client": [
-    "MinecraftMixin", "MultiPlayerMixin"
+    "MinecraftMixin"
   ],
   "server": [ ],
   "injectors": {

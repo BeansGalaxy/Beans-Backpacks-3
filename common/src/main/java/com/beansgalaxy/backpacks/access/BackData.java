@@ -1,7 +1,7 @@
 package com.beansgalaxy.backpacks.access;
 
-import com.beansgalaxy.backpacks.container.Shorthand;
 import com.beansgalaxy.backpacks.container.UtilityContainer;
+import com.beansgalaxy.backpacks.util.PlaceProgress;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -19,17 +19,13 @@ public interface BackData {
 
       void setMenuKey(boolean menuKeyIsDown);
 
-      boolean isShorthandDown();
-
-      void setShorthandKey(boolean shorthandPressed);
-
       NonNullList<ItemStack> beans_Backpacks_3$getBody();
 
       void setTinySlot(int tinySlot);
 
       int getTinySlot();
 
-      Shorthand getShorthand();
-
       UtilityContainer getUtility();
+
+      PlaceProgress getPlaceProgress();
 }

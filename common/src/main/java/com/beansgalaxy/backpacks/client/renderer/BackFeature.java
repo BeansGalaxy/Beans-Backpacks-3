@@ -3,11 +3,9 @@ package com.beansgalaxy.backpacks.client.renderer;
 import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.components.equipable.EquipmentModel;
-import com.beansgalaxy.backpacks.container.Shorthand;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.EntityModelSet;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -18,12 +16,9 @@ import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
@@ -61,36 +56,6 @@ public class BackFeature extends RenderLayer<AbstractClientPlayer, PlayerModel<A
       public void render(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, AbstractClientPlayer player, float limbAngle, float limbDistance, float tick, float animationProgress, float playerHeadYaw, float playerHeadPitch) {
             renderEquipables(pose, pBufferSource, pCombinedLight, player, tick);
 //            renderShorthand(pose, pBufferSource, pCombinedLight, player);
-      }
-
-      private void renderShorthand(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, AbstractClientPlayer player) {
-//            if (CommonClass.CLIENT_CONFIG.disable_shorthand_render.get())
-//                  return;
-
-            Shorthand shorthand = Shorthand.get(player);
-            int selection = shorthand.selection;
-            ItemStack stack = shorthand.getItem(selection);
-            if (stack.isEmpty())
-                  return;
-
-            Inventory inventory = player.getInventory();
-            int selected = inventory.selected - inventory.items.size();
-            if (selection == selected)
-                  return;
-
-            pose.pushPose();
-            this.getParentModel().body.translateAndRotate(pose);
-            pose.translate(0, player.isCrouching() ? 6/16f : 5/16f, 5/32f);
-            if (!player.getItemBySlot(EquipmentSlot.CHEST).isEmpty())
-                  pose.translate(0.0F, -1/16f, 1 / 16f);
-
-            pose.mulPose(Axis.ZN.rotationDegrees(90));
-            pose.translate(0.001, -0.001, 0);
-
-            BakedModel model = itemRenderer.getModel(stack, player.level(), player, player.getId());
-            itemRenderer().render(stack, ItemDisplayContext.FIXED, false, pose, pBufferSource, pCombinedLight, OverlayTexture.NO_OVERLAY, model);
-            pose.popPose();
-
       }
 
       private void renderEquipables(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, AbstractClientPlayer player, float tick) {

@@ -29,10 +29,5 @@ public abstract class InventoryMenuMixin extends RecipeBookMenu<CraftingInput, C
             UtilityContainer utility = backData.getUtility();
             addSlot(new UtilitySlot(utility, 0));
             addSlot(new UtilitySlot(utility, 1));
-
-            Shorthand shorthand = backData.getShorthand();
-
-            for (int i = 0; i < 9; i++)
-                  this.addSlot(new ShorthandSlot(shorthand, i));
       }
 }

@@ -1,9 +1,7 @@
 package com.beansgalaxy.backpacks.data.config;
 
-import com.beansgalaxy.backpacks.data.config.options.ShorthandControl;
 import com.beansgalaxy.backpacks.data.config.screen.ConfigRows;
 import com.beansgalaxy.backpacks.data.config.screen.ConfigScreen;
-import com.beansgalaxy.backpacks.data.config.options.ShorthandHUD;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 
@@ -24,13 +22,9 @@ public class ClientConfigRows extends ConfigRows {
             ClientConfig config = (ClientConfig) this.config;
             return List.of(
                         new MoveBackSlotConfigRow(config.back_slot_pos, config.back_and_utility_direction),
-                        new EnumConfigRow<>(config.shorthand_hud_location, ShorthandHUD.values()),
-                        new EnumConfigRow<>(config.shorthand_control, ShorthandControl.values()),
-                        new BoolConfigRow(config.shorthand_breaks_tool),
                         new ConfigLabel(Component.translatable("config.beansbackpacks.client.player-render")),
                         new ItemListConfigRow(config.elytra_model_equipment),
                         new BoolConfigRow(config.disable_equipable_render)
-//                        new BoolConfigRow(config.disable_shorthand_render)
             );
       }
 

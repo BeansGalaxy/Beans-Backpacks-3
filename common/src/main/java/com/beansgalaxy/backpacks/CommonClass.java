@@ -1,6 +1,5 @@
 package com.beansgalaxy.backpacks;
 
-import com.beansgalaxy.backpacks.container.Shorthand;
 import com.beansgalaxy.backpacks.data.config.ClientConfig;
 import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.traits.ITraitData;
@@ -9,7 +8,6 @@ import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.util.ModItems;
 import com.beansgalaxy.backpacks.util.ModSound;
-import net.minecraft.core.Holder;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -18,8 +16,6 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.ai.Brain;
-import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -60,9 +56,6 @@ public class CommonClass {
       public static final Supplier<MemoryModuleType<UUID>> BACKPACK_OWNER_MEMORY =
                   Services.PLATFORM.registerMemoryModule("backpack_owner", UUIDUtil.CODEC);
 
-
-      public static final Holder<Attribute> SHORTHAND_ATTRIBUTE = Services.PLATFORM.register("player.shorthand",
-                new RangedAttribute("attribute.name.player.shorthand", Shorthand.SHORTHAND_DEFAU, 0, Shorthand.SHORTHAND_MAX).setSyncable(true));
       public static final ClientConfig CLIENT_CONFIG = new ClientConfig();
 
       public static void init() {

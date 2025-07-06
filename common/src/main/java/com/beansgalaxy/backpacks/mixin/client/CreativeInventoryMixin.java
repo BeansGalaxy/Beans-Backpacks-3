@@ -48,7 +48,7 @@ public abstract class CreativeInventoryMixin extends EffectRenderingInventoryScr
 
       @Override
       protected void renderSlot(GuiGraphics gui, Slot slot) {
-            if (slot instanceof BackSlot || slot instanceof ShorthandSlot) {
+            if (slot instanceof BackSlot) {
                   gui.blitSprite(LARGE_SLOT, leftPos + slot.x - 1, topPos + slot.y - 1, 18, 18);
             }
             else if (slot instanceof UtilitySlot) {
@@ -64,12 +64,6 @@ public abstract class CreativeInventoryMixin extends EffectRenderingInventoryScr
                   UtilityContainer utilities = UtilityContainer.get(minecraft.player);
                   for (byte b = 0; b < utilities.size; b++) {
                         gui.blitSprite(SMALL_SLOT, leftPos - 58 + 16, topPos + (b * 18) - 1, 18, 18);
-                  }
-
-                  Shorthand shorthand = Shorthand.get(minecraft.player);
-                  int weaponsSize = shorthand.getContainerSize();
-                  for (int i = 0; i < weaponsSize; i++) {
-                        gui.blitSprite(LARGE_SLOT, leftPos - 22 - 1, topPos + (i * 18) - 1, 18, 18);
                   }
             }
       }
@@ -90,10 +84,6 @@ public abstract class CreativeInventoryMixin extends EffectRenderingInventoryScr
                               CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(utilSlot, utilSlot.index, -41, utilSlot.getContainerSlot() * 18);
                               backpacks_setOrAdd(i, wrapped);
                         }
-                        case ShorthandSlot shortSlot -> {
-                              CreativeModeInventoryScreen.SlotWrapper wrapped = new CreativeModeInventoryScreen.SlotWrapper(shortSlot, shortSlot.index, -22, shortSlot.getContainerSlot() * 18);
-                              backpacks_setOrAdd(i, wrapped);
-                        }
                         default -> {}
                   }
             }
@@ -104,12 +94,6 @@ public abstract class CreativeInventoryMixin extends EffectRenderingInventoryScr
             if (i < menu.slots.size())
                   menu.slots.set(i, wrapped);
             else menu.slots.add(wrapped);
-      }
-
-      @Inject(method = "slotClicked", at = @At(value = "INVOKE",
-                  target = "Lnet/minecraft/world/inventory/InventoryMenu;getItems()Lnet/minecraft/core/NonNullList;"))
-      private void backpackQuickMoveDestroyItemSlot(Slot pSlot, int pSlotId, int pMouseButton, ClickType pType, CallbackInfo ci) {
-            Shorthand.get(minecraft.player).clearContent();
       }
 
       @ModifyExpressionValue(method = "slotClicked", at = @At(value = "INVOKE",

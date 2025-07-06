@@ -273,6 +273,6 @@ public abstract class BackpackScreen extends EffectRenderingInventoryScreen<Inve
             int top = this.topPos;
             gui.blit(INVENTORY_LOCATION, left, top, 0, 0, this.imageWidth, this.imageHeight);
             InventoryScreen.renderEntityInInventoryFollowsMouse(gui, left + 26, top + 8, left + 75, top + 78, 30, 0.0625F, pMouseX, pMouseY, this.minecraft.player);
-            CommonClient.renderShorthandSlots(gui, leftPos, topPos, imageWidth, imageHeight, minecraft.player);
+            CommonClient.renderSlots(gui, leftPos, topPos, imageWidth, imageHeight, minecraft.player);
       }
 }

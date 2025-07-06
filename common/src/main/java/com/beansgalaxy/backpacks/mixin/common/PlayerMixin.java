@@ -8,7 +8,6 @@ import com.beansgalaxy.backpacks.access.ViewableAccessor;
 import com.beansgalaxy.backpacks.components.PlaceableComponent;
 import com.beansgalaxy.backpacks.components.SlotSelection;
 import com.beansgalaxy.backpacks.data.ServerSave;
-import com.beansgalaxy.backpacks.container.Shorthand;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
@@ -32,7 +31,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -171,12 +169,6 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
             });
       }
 
-      @Inject(method = "createAttributes", at = @At(value = "RETURN"))
-      private static void addShortAttributes(CallbackInfoReturnable<AttributeSupplier.Builder> cir) {
-            AttributeSupplier.Builder returnValue = cir.getReturnValue();
-            returnValue.add(CommonClass.SHORTHAND_ATTRIBUTE, Shorthand.SHORTHAND_DEFAU);
-      }
-
        @Inject(method = "interactOn", cancellable = true, at = @At("HEAD"))
       private void backpackInteractOn(Entity pEntityToInteractOn, InteractionHand pHand, CallbackInfoReturnable<InteractionResult> cir) {
              if (pEntityToInteractOn instanceof Player player)
@@ -193,9 +185,6 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
             RegistryOps<Tag> serializationContext = access.createSerializationContext(NbtOps.INSTANCE);
             DataResult<Tag> dataResult = ItemStack.OPTIONAL_CODEC.encodeStart(serializationContext, backStack);
             dataResult.ifSuccess(back -> backpacks.put("back", back));
-
-            Shorthand shorthand = Shorthand.get(instance);
-            shorthand.save(backpacks, access);
 
             Inventory inventory = getInventory();
             CompoundTag selectedSlots = new CompoundTag();
@@ -256,9 +245,6 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
                   back.ifSuccess(stack -> setItemSlot(EquipmentSlot.BODY, stack));
             }
 
-            Shorthand shorthand = Shorthand.get(instance);
-            shorthand.load(backpacks, access);
-
             CompoundTag slotSelection = backpacks.getCompound("slot_selection");
             readSlotSelection("items", inventory.items, instance, slotSelection);
             readSlotSelection("armor", inventory.armor, instance, slotSelection);
@@ -294,15 +280,6 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
       @Inject(method = "defineSynchedData", at = @At("TAIL"))
       private void backpackSyncedData(SynchedEntityData.Builder pBuilder, CallbackInfo ci) {
             pBuilder.define(IS_OPEN, false);
-      }
-
-      @Inject(method = "getWeaponItem", cancellable = true, at = @At("HEAD"))
-      private void backpackSyncedData(CallbackInfoReturnable<ItemStack> cir) {
-            Shorthand shorthand = Shorthand.get(instance);
-            if (shorthand.isActive()) {
-                  ItemStack stack = shorthand.getItem(shorthand.selection);
-                  cir.setReturnValue(stack);
-            }
       }
 
       @Inject(method = "dropEquipment", at = @At(value = "INVOKE",

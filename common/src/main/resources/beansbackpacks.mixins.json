@@ -41,7 +41,6 @@
     "client.GuiGraphicsMixin",
     "client.GuiMixin",
     "client.InventoryScreenMixin",
-    "client.ItemInHandMixin",
     "client.ItemInHandRendererMixin",
     "client.ItemRendererMixin",
     "client.KeyBindEntriesMixin",
