@@ -1,8 +1,6 @@
 package com.beansgalaxy.backpacks.util;
 
-import com.beansgalaxy.backpacks.components.StackableComponent;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
-import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
 import net.minecraft.world.entity.player.Player;
@@ -15,12 +13,6 @@ import java.util.function.BiConsumer;
 public interface DraggingTrait {
 
       static void runIfPresent(ItemStack backpack, Level level, BiConsumer<DraggingTrait, PatchedComponentHolder> consumer) {
-            StackableComponent component = backpack.get(ITraitData.STACKABLE);
-            if (component != null) {
-                  consumer.accept(component, PatchedComponentHolder.of(backpack));
-                  return;
-            }
-
             Optional<ItemStorageTraits> optionalStorage = ItemStorageTraits.get(backpack);
             if (optionalStorage.isPresent()) {
                   consumer.accept(optionalStorage.get(), PatchedComponentHolder.of(backpack));

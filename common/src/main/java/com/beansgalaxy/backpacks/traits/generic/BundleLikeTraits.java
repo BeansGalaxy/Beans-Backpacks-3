@@ -45,7 +45,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
       }
 
       public static Optional<BundleLikeTraits> get(PatchedComponentHolder stack) {
-            for (TraitComponentKind<? extends BundleLikeTraits> type : Traits.BUNDLE_TRAITS) {
+            for (TraitComponentKind<? extends BundleLikeTraits> type : TraitComponentKind.BUNDLE_TRAITS) {
                   BundleLikeTraits traits = stack.get(type);
                   if (traits != null)
                         return Optional.of(traits);

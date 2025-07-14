@@ -2,13 +2,11 @@ package com.beansgalaxy.backpacks;
 
 import com.beansgalaxy.backpacks.access.MinecraftAccessor;
 import com.beansgalaxy.backpacks.client.KeyPress;
-import com.beansgalaxy.backpacks.components.StackableComponent;
 import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.container.UtilitySlot;
 import com.beansgalaxy.backpacks.data.EnderStorage;
-import com.beansgalaxy.backpacks.network.serverbound.SyncSelectedSlot;
 import com.beansgalaxy.backpacks.container.BackSlot;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
@@ -21,14 +19,12 @@ import com.beansgalaxy.backpacks.util.Tint;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.ChatFormatting;
-import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.item.ClampedItemPropertyFunction;
@@ -59,9 +55,7 @@ import org.apache.commons.lang3.math.Fraction;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Optional;
 
 public class CommonClient {
@@ -133,9 +127,6 @@ public class CommonClient {
       };
 
       public static final ItemColor BUNDLE_ITEM_COLOR = (itemStack, layer) -> layer != 1 ?
-                  componentTint(itemStack, 0xFFcd7b46) : 0xFFFFFFFF;
-
-      public static final ItemColor BULK_POUCH_ITEM_COLOR = (itemStack, layer) -> layer != 1 ?
                   componentTint(itemStack, 0xFFcd7b46) : 0xFFFFFFFF;
 
       private static int componentTint(ItemStack itemStack, int rgbBase) {
@@ -446,30 +437,6 @@ public class CommonClient {
       }
 
       public static boolean scrollTraits(ItemStack stack, ClientLevel level, int containerId, int scrolled, Slot hoveredSlot) {
-            StackableComponent component = stack.get(ITraitData.STACKABLE);
-            if (component != null) {
-                  LocalPlayer player = Minecraft.getInstance().player;
-                  int startSlot = component.selection.getSelectedSlot(player);
-
-                  ItemStack carried = player.containerMenu.getCarried();
-                  if (!carried.isEmpty())
-                        return false;
-
-
-                  int selectedSlot = startSlot - scrolled;
-                  int size = component.stacks().size();
-                  int i = size == 0 || selectedSlot < 0 ? 0
-                          : Math.min(selectedSlot, size - 1);
-
-                  if (startSlot == i)
-                        return true;
-
-                  component.selection.setSelectedSlot(player, i);
-                  SyncSelectedSlot.send(containerId, hoveredSlot.index, i);
-
-                  return true;
-            }
-
             Optional<ItemStorageTraits> optionalStorage = ItemStorageTraits.get(stack);
             if (optionalStorage.isPresent()) {
                   ItemStorageTraits traits = optionalStorage.get();
@@ -491,28 +458,4 @@ public class CommonClient {
             return false;
       }
 
-      public static void addStackableLines(int selectedSlot, StackableComponent component, List<Component> lines) {
-            MutableComponent empty = Component.empty();
-            MutableComponent pre = Component.literal("|".repeat(selectedSlot)).withStyle(ChatFormatting.GRAY);
-            empty.append(pre).append(Component.literal("|").withStyle(ChatFormatting.GOLD));
-            int postCount = component.stacks().size() - 1 - selectedSlot;
-            MutableComponent post = Component.literal("|".repeat(postCount)).withStyle(ChatFormatting.GRAY);
-            empty.append(post);
-            lines.add(empty);
-      }
-
-      public static int getAdvancements(HashSet<ResourceLocation> locations) {
-            ClientPacketListener connection = Minecraft.getInstance().getConnection();
-            if (connection == null)
-                  return 0;
-
-            int i = 0;
-            for (ResourceLocation location : locations) {
-                  AdvancementHolder holder = connection.getAdvancements().get(location);
-                  if (holder != null)
-                        i++;
-            }
-
-            return i;
-      }
 }

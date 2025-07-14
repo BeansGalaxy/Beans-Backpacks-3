@@ -1,21 +1,17 @@
 package com.beansgalaxy.backpacks.traits;
 
 import com.beansgalaxy.backpacks.components.SlotSelection;
-import com.beansgalaxy.backpacks.components.StackableComponent;
 import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.platform.Services;
-import com.beansgalaxy.backpacks.traits.bulk.BulkMutable;
 import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemContainerContents;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,14 +39,8 @@ public abstract class ITraitData<T> {
       public static final TraitDataComponentType<Integer>
                   AMOUNT = register("data_amount", ExtraCodecs.NON_NEGATIVE_INT, ByteBufCodecs.INT, Amount::new);
 
-      public static final TraitDataComponentType<BulkMutable.BulkStacks>
-                  BULK_STACKS = register("data_bulk_list", BulkMutable.BulkStacks.CODEC, BulkMutable.BulkStacks.STREAM_CODEC, BulkList::new);
-
       public static final DataComponentType<SlotSelection>
                   SLOT_SELECTION = Traits.register("data_selection", Codec.unit(SlotSelection::new), SlotSelection.STREAM_CODEC);
-
-      public static final DataComponentType<StackableComponent>
-                  STACKABLE = Traits.register("stackable", StackableComponent.CODEC, StackableComponent.STREAM_CODEC);
 
       public static final DataComponentType<UtilityComponent>
                   UTILITIES = Traits.register("utility_slots", UtilityComponent.CODEC, UtilityComponent.STREAM_CODEC);
@@ -283,38 +273,4 @@ public abstract class ITraitData<T> {
             }
       }
 
-      static class BulkList extends ITraitData<BulkMutable.BulkStacks> {
-            private final PatchedComponentHolder holder;
-
-            public BulkList(PatchedComponentHolder holder) {
-                  this.holder = holder;
-            }
-
-            @Override
-            public DataComponentType<BulkMutable.BulkStacks> type() {
-                  return BULK_STACKS;
-            }
-
-            @Override
-            public PatchedComponentHolder holder() {
-                  return holder;
-            }
-
-            @Override
-            public boolean isEmpty(BulkMutable.BulkStacks data) {
-                  return data.isEmpty();
-            }
-
-            @Override
-            public BulkMutable.BulkStacks get() {
-                  if (value == null) {
-                        markDirty();
-                        BulkMutable.BulkStacks bulkStacks = holder.get(type());
-                        value = Objects.requireNonNullElseGet(bulkStacks,
-                                    () -> new BulkMutable.BulkStacks(BuiltInRegistries.ITEM.wrapAsHolder(Items.AIR), List.of())
-                        );
-                  }
-                  return value;
-            }
-      }
 }

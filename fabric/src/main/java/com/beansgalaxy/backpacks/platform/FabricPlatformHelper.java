@@ -6,11 +6,6 @@ import com.beansgalaxy.backpacks.network.Network2S;
 import com.beansgalaxy.backpacks.network.clientbound.Packet2C;
 import com.beansgalaxy.backpacks.network.serverbound.Packet2S;
 import com.beansgalaxy.backpacks.platform.services.IPlatformHelper;
-import com.beansgalaxy.backpacks.trait.battery.BatteryCodecs;
-import com.beansgalaxy.backpacks.trait.battery.BatteryTraits;
-import com.beansgalaxy.backpacks.trait.bucket.BucketCodecs;
-import com.beansgalaxy.backpacks.trait.bucket.BucketTraits;
-import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.mojang.serialization.Codec;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -24,7 +19,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -53,7 +47,7 @@ public class FabricPlatformHelper implements IPlatformHelper {
     public boolean isDevelopmentEnvironment() {
         return FabricLoader.getInstance().isDevelopmentEnvironment();
     }
-
+ 
     @Override
     public Supplier<Item> register(String name, Supplier<Item> item) {
         ResourceLocation resourceLocation = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, name);
@@ -84,16 +78,6 @@ public class FabricPlatformHelper implements IPlatformHelper {
             if (player != sender)
                 send(network2C, msg, player);
         }
-    }
-
-    @Override
-    public TraitComponentKind<BucketTraits> registerBucket() {
-        return TraitComponentKind.register(BucketTraits.NAME, BucketCodecs.INSTANCE);
-    }
-
-    @Override
-    public TraitComponentKind<BatteryTraits> registerBattery() {
-        return TraitComponentKind.register(BatteryTraits.NAME, BatteryCodecs.INSTANCE);
     }
 
     @Override

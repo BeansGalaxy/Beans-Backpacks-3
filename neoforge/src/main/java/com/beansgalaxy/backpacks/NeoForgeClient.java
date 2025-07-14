@@ -58,7 +58,6 @@ public class NeoForgeClient {
             public static void registerColorHandlers(final RegisterColorHandlersEvent.Item event) {
                   event.register(CommonClient.LEATHER_BACKPACK_ITEM_COLOR, ModItems.LEATHER_BACKPACK.get());
                   event.register(CommonClient.BUNDLE_ITEM_COLOR, ModItems.BUNDLE.get());
-                  event.register(CommonClient.BULK_POUCH_ITEM_COLOR, ModItems.BULK_POUCH.get());
             }
 
             @SubscribeEvent

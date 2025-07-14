@@ -34,9 +34,6 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 @Mod(Constants.MOD_ID)
 public class NeoForgeMain {
 
-    public static final DataComponentType<FluidStack>
-                DATA_FLUID = Traits.register("data_fluid", FluidStack.CODEC, FluidStack.STREAM_CODEC);
-
     public static final DeferredRegister<EntityDataSerializer<?>> ENTITY_SERIALIZERS = DeferredRegister.create(NeoForgeRegistries.ENTITY_DATA_SERIALIZERS.key(), Constants.MOD_ID);
     public static final DeferredRegister<CreativeModeTab> CREATIVE_TAB_REGISTRY = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, Constants.MOD_ID);
 

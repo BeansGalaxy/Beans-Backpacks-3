@@ -1,9 +1,7 @@
 package com.beansgalaxy.backpacks.mixin.client;
 
 import com.beansgalaxy.backpacks.CommonClient;
-import com.beansgalaxy.backpacks.components.StackableComponent;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
-import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.util.DraggingContainer;
 import com.beansgalaxy.backpacks.util.DraggingTrait;
@@ -13,15 +11,11 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.inventory.tooltip.TooltipComponent;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -70,31 +64,6 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
                         trait.client().renderTooltip(trait, itemstack, enderTraits, gui, mouseX, mouseY, ci)
                   )));
             }
-      }
-
-      @Inject(method = "renderTooltip", cancellable = true, at = @At(value = "INVOKE",
-                  target = "Lnet/minecraft/world/inventory/Slot;getItem()Lnet/minecraft/world/item/ItemStack;"))
-      private void backpacks_renderStackable(GuiGraphics pGuiGraphics, int pX, int pY, CallbackInfo ci) {
-            ItemStack itemstack = hoveredSlot.getItem();
-            StackableComponent component = itemstack.get(ITraitData.STACKABLE);
-            if (component == null)
-                  return;
-
-            int selectedSlot = component.selection.getSelectedSlot(minecraft.player);
-            Holder<Item> item = itemstack.getItemHolder();
-            ItemStack selectedStack = component.stacks().get(selectedSlot).withItem(item);
-
-            List<Component> lines;
-            if (!selectedStack.has(DataComponents.HIDE_TOOLTIP)) {
-                  List<Component> tooltip = this.getTooltipFromContainerItem(selectedStack);
-                  lines = new ArrayList<>(tooltip);
-                  CommonClient.addStackableLines(selectedSlot, component, lines);
-            }
-            else lines = List.of();
-
-            Optional<TooltipComponent> tooltipImage = selectedStack.getTooltipImage();
-            pGuiGraphics.renderTooltip(this.font, lines, tooltipImage, pX, pY);
-            ci.cancel();
       }
 
       @Override

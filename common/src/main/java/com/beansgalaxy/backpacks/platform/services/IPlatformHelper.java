@@ -82,10 +82,6 @@ public interface IPlatformHelper {
 
     void send(Network2S network, Packet2S packet2S);
 
-    <T extends GenericTraits> TraitComponentKind<T> registerBucket();
-
-    <T extends GenericTraits> TraitComponentKind<T> registerBattery();
-
     ModelResourceLocation getModelVariant(ResourceLocation location);
 
     Path getConfigDir();

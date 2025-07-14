@@ -31,15 +31,6 @@ public enum ModItems {
       QUIVER("quiver", "quiver"),
       ALCHEMIST_BAG("alchemy_bag", "alchemy_bag"),
       NETHERITE_LUNCH_BOX("netherite_lunch_box", "netherite_lunch_box"),
-
-// ===================================================================================================================== EXPERIMENTS
-
-      COPPER_LEGGINGS("copper_leggings", "copper_leggings", p -> p.requiredFeatures(((ExperimentFlagAccess) new FeatureFlags()).backpacks_flag())),
-      NETHERITE_BUCKET("netherite_bucket", "netherite_bucket", p -> p.requiredFeatures(((ExperimentFlagAccess) new FeatureFlags()).backpacks_flag())),
-      EXPERIENCE_VIAL("experience_vial", "experience_vial", p -> p.requiredFeatures(((ExperimentFlagAccess) new FeatureFlags()).backpacks_flag())
-                  .rarity(Rarity.UNCOMMON).component(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true).stacksTo(16)),
-      BULK_POUCH("bulk_pouch", "bulk_pouch", p -> p.requiredFeatures(((ExperimentFlagAccess) new FeatureFlags()).backpacks_flag())),
-      ROSE_BOOTS("rose_boots", "rose_boots", p -> p.requiredFeatures(((ExperimentFlagAccess) new FeatureFlags()).backpacks_flag())),
       ;
 
       public static final UnaryOperator<CreativeModeTab.Builder> CREATIVE_TAB = builder -> builder

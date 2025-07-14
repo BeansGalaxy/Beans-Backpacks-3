@@ -6,11 +6,6 @@ import com.beansgalaxy.backpacks.network.Network2S;
 import com.beansgalaxy.backpacks.network.clientbound.Packet2C;
 import com.beansgalaxy.backpacks.network.serverbound.Packet2S;
 import com.beansgalaxy.backpacks.platform.services.IPlatformHelper;
-import com.beansgalaxy.backpacks.traits.TraitComponentKind;
-import com.beansgalaxy.backpacks.traits.battery.BatteryCodecs;
-import com.beansgalaxy.backpacks.traits.battery.BatteryTraits;
-import com.beansgalaxy.backpacks.traits.bucket.BucketCodecs;
-import com.beansgalaxy.backpacks.traits.bucket.BucketTraits;
 import com.mojang.serialization.Codec;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Holder;
@@ -152,15 +147,5 @@ public class NeoForgePlatformHelper implements IPlatformHelper {
         IModInfo modInfo = optional.get().getModInfo();
         Path resourcePath = modInfo.getOwningFile().getFile().findResource("features");
         return Optional.ofNullable(resourcePath);
-    }
-
-    @Override
-    public TraitComponentKind<BucketTraits> registerBucket() {
-        return TraitComponentKind.register(BucketTraits.NAME, BucketCodecs.INSTANCE);
-    }
-
-    @Override
-    public TraitComponentKind<BatteryTraits> registerBattery() {
-        return TraitComponentKind.register(BatteryTraits.NAME, BatteryCodecs.INSTANCE);
     }
 }

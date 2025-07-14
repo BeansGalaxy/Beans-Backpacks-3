@@ -10,24 +10,17 @@ import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
 import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.traits.alchemy.AlchemyCodecs;
 import com.beansgalaxy.backpacks.traits.alchemy.AlchemyTraits;
-import com.beansgalaxy.backpacks.traits.bulk.BulkCodecs;
-import com.beansgalaxy.backpacks.traits.bulk.BulkTraits;
 import com.beansgalaxy.backpacks.traits.bundle.BundleCodecs;
 import com.beansgalaxy.backpacks.traits.bundle.BundleTraits;
 import com.beansgalaxy.backpacks.traits.chest.ChestCodecs;
 import com.beansgalaxy.backpacks.traits.chest.ChestTraits;
-import com.beansgalaxy.backpacks.traits.experience.XpCodecs;
-import com.beansgalaxy.backpacks.traits.experience.XpTraits;
-import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
-import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
 import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxCodecs;
 import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxTraits;
 import com.beansgalaxy.backpacks.traits.quiver.QuiverCodecs;
 import com.beansgalaxy.backpacks.traits.quiver.QuiverTraits;
 import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.PrimitiveCodec;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -62,49 +55,22 @@ public interface Traits {
                   EMPTY_ENDER = register("empty_ender", EmptyEnderItem.CODEC, EmptyEnderItem.STREAM_CODEC);
 
       TraitComponentKind<BundleTraits>
-                  BUNDLE = TraitComponentKind.register(BundleTraits.NAME, BundleCodecs.INSTANCE);
-
-      TraitComponentKind<BulkTraits>
-                  BULK = TraitComponentKind.register(BulkTraits.NAME, BulkCodecs.INSTANCE);
+                  BUNDLE = TraitComponentKind.registerBundleLike(BundleTraits.NAME, BundleCodecs.INSTANCE);
 
       TraitComponentKind<LunchBoxTraits>
-                  LUNCH_BOX = TraitComponentKind.register(LunchBoxTraits.NAME, LunchBoxCodecs.INSTANCE);
-
-      TraitComponentKind<? extends GenericTraits>
-                  BUCKET = Services.PLATFORM.registerBucket();
-
-      TraitComponentKind<? extends GenericTraits>
-                  BATTERY = Services.PLATFORM.registerBattery();
-
-      TraitComponentKind<XpTraits>
-                  EXPERIENCE = TraitComponentKind.register(XpTraits.NAME, XpCodecs.INSTANCE);
+                  LUNCH_BOX = TraitComponentKind.registerBundleLike(LunchBoxTraits.NAME, LunchBoxCodecs.INSTANCE);
 
       TraitComponentKind<QuiverTraits>
-                  QUIVER = TraitComponentKind.register(QuiverTraits.NAME, QuiverCodecs.INSTANCE);
+                  QUIVER = TraitComponentKind.registerBundleLike(QuiverTraits.NAME, QuiverCodecs.INSTANCE);
 
       TraitComponentKind<AlchemyTraits>
-                  ALCHEMY = TraitComponentKind.register(AlchemyTraits.NAME, AlchemyCodecs.INSTANCE);
-
-      TraitComponentKind<ChestTraits>
-                  CHEST = TraitComponentKind.register(ChestTraits.NAME, ChestCodecs.INSTANCE);
+                  ALCHEMY = TraitComponentKind.registerBundleLike(AlchemyTraits.NAME, AlchemyCodecs.INSTANCE);
 
       DataComponentType<Byte>
                   UTILITIES = register(UtilityComponent.NAME, UtilityComponent.SIZE_CODEC, ByteBufCodecs.BYTE);
 
-      List<TraitComponentKind<? extends GenericTraits>> ALL_TRAITS = List.of(
-                  BUNDLE,     LUNCH_BOX,        BULK,       BUCKET,
-                  BATTERY,    EXPERIENCE,       QUIVER,     ALCHEMY,
-                  CHEST
-      );
-
-      List<TraitComponentKind<? extends ItemStorageTraits>> STORAGE_TRAITS = List.of(
-                  BUNDLE,     LUNCH_BOX,        BULK,       QUIVER,
-                  ALCHEMY,    CHEST
-      );
-
-      List<TraitComponentKind<? extends BundleLikeTraits>> BUNDLE_TRAITS = List.of(
-                  BUNDLE,     LUNCH_BOX,        QUIVER,     ALCHEMY
-      );
+      TraitComponentKind<ChestTraits>
+                  CHEST = TraitComponentKind.registerItemStorage(ChestTraits.NAME, ChestCodecs.INSTANCE);
 
       static <T> DataComponentType<T> register(String name, Codec<T> codec, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec) {
             DataComponentType.Builder<T> builder = DataComponentType.builder();
@@ -117,7 +83,7 @@ public interface Traits {
       }
 
       static Optional<GenericTraits> get(PatchedComponentHolder stack) {
-            for (TraitComponentKind<? extends GenericTraits> type : ALL_TRAITS) {
+            for (TraitComponentKind<? extends GenericTraits> type : TraitComponentKind.TRAITS) {
                   GenericTraits traits = stack.get(type);
                   if (traits != null)
                         return Optional.of(traits);

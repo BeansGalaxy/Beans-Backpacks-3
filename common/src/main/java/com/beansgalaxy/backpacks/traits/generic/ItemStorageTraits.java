@@ -43,7 +43,7 @@ public abstract class ItemStorageTraits extends GenericTraits implements Draggin
       }
 
       public static Optional<ItemStorageTraits> get(DataComponentHolder stack) {
-            for (TraitComponentKind<? extends ItemStorageTraits> type : Traits.STORAGE_TRAITS) {
+            for (TraitComponentKind<? extends ItemStorageTraits> type : TraitComponentKind.STORAGE_TRAITS) {
                   ItemStorageTraits traits = stack.get(type);
                   if (traits != null)
                         return Optional.of(traits);
@@ -72,12 +72,6 @@ public abstract class ItemStorageTraits extends GenericTraits implements Draggin
                   Optional<ItemStorageTraits> traits = get(stack);
                   traits.ifPresentOrElse(runnable, orElse);
             }
-      }
-
-      public static void runIfPresentOrEnder(ItemStack stack, Consumer<ItemStorageTraits> runnable) {
-            runIfPresent(stack, runnable, () -> {
-
-            });
       }
 
       public static void runIfEquipped(Player player, BiPredicate<ItemStorageTraits, EquipmentSlot> runnable) {

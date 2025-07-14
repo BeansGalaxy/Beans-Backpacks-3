@@ -26,7 +26,6 @@
     "common.ServerPlayerMixin",
     "common.ServerPlayMixin",
     "common.TrialSpawnerDataMixin",
-    "common.data_features.FeatureFlagsMixin",
     "common.data_features.ServerPackSource"
   ],
   "client": [

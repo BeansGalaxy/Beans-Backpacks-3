@@ -1,8 +1,6 @@
 package com.beansgalaxy.backpacks.mixin.common;
 
-import com.beansgalaxy.backpacks.components.StackableComponent;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
-import com.beansgalaxy.backpacks.data.ServerSave;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
@@ -70,12 +68,6 @@ public class ItemMixin {
             Traits.runIfPresent(backpack, traits -> {
                   traits.stackedOnOther(PatchedComponentHolder.of(backpack), slot.getItem(), slot, click, player, cir);
             });
-      }
-
-      @Inject(method = "overrideOtherStackedOnMe", cancellable = true, at = @At("TAIL"))
-      private void backpacks_stackableOnMe(ItemStack pStack, ItemStack pOther, Slot pSlot, ClickAction pAction, Player pPlayer, SlotAccess pAccess, CallbackInfoReturnable<Boolean> cir) {
-            if (ServerSave.CONFIG.do_nbt_stacking.get())
-                  StackableComponent.stackItems(pStack, pSlot, pOther, pAccess, pAction, pPlayer, cir);
       }
 
       @Inject(method = "inventoryTick", at = @At("HEAD"))

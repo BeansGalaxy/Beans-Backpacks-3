@@ -2,7 +2,10 @@ package com.beansgalaxy.backpacks.traits;
 
 import com.beansgalaxy.backpacks.components.reference.NonTrait;
 import com.beansgalaxy.backpacks.platform.Services;
+import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
+import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
+import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
@@ -13,11 +16,16 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 
 public class TraitComponentKind<T extends GenericTraits> implements DataComponentType<T> {
-      private static final HashSet<TraitComponentKind<? extends GenericTraits>> TRAITS = new HashSet<>();
+      public static final List<TraitComponentKind<? extends GenericTraits>> TRAITS = Lists.newArrayList();
+      public static final List<TraitComponentKind<? extends ItemStorageTraits>> STORAGE_TRAITS = Lists.newArrayList();
+      public static final List<TraitComponentKind<? extends BundleLikeTraits>> BUNDLE_TRAITS = Lists.newArrayList();
+
       public static final StreamCodec<RegistryFriendlyByteBuf, TraitComponentKind<? extends GenericTraits>> STREAM_CODEC =
                   StreamCodec.of((buf, type) -> buf.writeInt(type.i), buf -> {
                         int integer = buf.readInt();
@@ -50,8 +58,7 @@ public class TraitComponentKind<T extends GenericTraits> implements DataComponen
       private final String name;
       private final ITraitCodec<T> codecs;
 
-      public TraitComponentKind(int i, String name, ITraitCodec<T> codecs)
-      {
+      public TraitComponentKind(int i, String name, ITraitCodec<T> codecs) {
             this.i = i;
             this.name = name;
             this.codecs = codecs;
@@ -63,6 +70,18 @@ public class TraitComponentKind<T extends GenericTraits> implements DataComponen
             TRAITS.add(componentType);
             Services.PLATFORM.register(name, componentType);
             return componentType;
+      }
+
+      public static <T extends ItemStorageTraits> TraitComponentKind<T> registerItemStorage(String name, ITraitCodec<T> codecs) {
+            TraitComponentKind<T> kind = register(name, codecs);
+            STORAGE_TRAITS.add(kind);
+            return kind;
+      }
+
+      public static <T extends BundleLikeTraits> TraitComponentKind<T> registerBundleLike(String name, ITraitCodec<T> codecs) {
+            TraitComponentKind<T> kind = registerItemStorage(name, codecs);
+            BUNDLE_TRAITS.add(kind);
+            return kind;
       }
 
       @Override @NotNull

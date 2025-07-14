@@ -1,9 +1,0 @@
-{
-  "pack": {
-    "pack_format": 48,
-    "description": "Adds Additional \"Half Cooked\" Bundle-Like Items"
-  },
-  "features": {
-    "enabled": ["beansbackpacks:experiments"]
-  }
-}

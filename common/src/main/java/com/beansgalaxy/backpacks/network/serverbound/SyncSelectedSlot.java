@@ -1,10 +1,8 @@
 package com.beansgalaxy.backpacks.network.serverbound;
 
 import com.beansgalaxy.backpacks.Constants;
-import com.beansgalaxy.backpacks.components.StackableComponent;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.network.Network2S;
-import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
@@ -62,12 +60,6 @@ public class SyncSelectedSlot implements Packet2S {
             ItemStack stack = slot.getItem();
             if (stack.isEmpty())
                   return;
-
-            StackableComponent component = stack.get(ITraitData.STACKABLE);
-            if (component != null) {
-                  component.selection.setSelectedSlot(sender, selectedSlot);
-                  return;
-            }
 
             Optional<BundleLikeTraits> optional = BundleLikeTraits.get(PatchedComponentHolder.of(stack));
             BundleLikeTraits traits;

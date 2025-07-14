@@ -1,7 +1,6 @@
 package com.beansgalaxy.backpacks.mixin.common;
 
 import com.beansgalaxy.backpacks.access.BackData;
-import com.beansgalaxy.backpacks.components.StackableComponent;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.data.ServerSave;
@@ -94,48 +93,7 @@ public abstract class InventoryMixin implements BackData {
                         ItemStack backpack = player.getItemBySlot(equipmentSlot);
                         return traits.pickupToBackpack(player, equipmentSlot, instance, backpack, stack, cir);
                   });
-
-                  if (ServerSave.CONFIG.do_nbt_stacking.get())
-                        backpacks_tryStackingComponent(stack, cir);
             }
-      }
-
-      @Unique
-      private void backpacks_tryStackingComponent(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
-            ItemStack selectedStack = this.getItem(this.selected);
-            if (this.backpacks_hasSpaceForStackable(selectedStack, stack)) {
-                  if (StackableComponent.stackItems(instance, selected, selectedStack, stack)) {
-                        cir.setReturnValue(true);
-                  }
-            }
-
-            ItemStack offHandStack = this.getItem(40);
-            if (this.backpacks_hasSpaceForStackable(offHandStack, stack)) {
-                  if (StackableComponent.stackItems(instance, 40, offHandStack, stack)) {
-                        cir.setReturnValue(true);
-                  }
-            }
-
-            for(int i = 0; i < this.items.size(); ++i) {
-                  ItemStack destination = this.items.get(i);
-                  if (this.backpacks_hasSpaceForStackable(destination, stack)) {
-                        if (StackableComponent.stackItems(instance, i, destination, stack)) {
-                              cir.setReturnValue(true);
-                        }
-                  }
-            }
-      }
-
-      @Unique
-      private boolean backpacks_hasSpaceForStackable(ItemStack pDestination, ItemStack pOrigin) {
-            if (pOrigin.isEmpty())
-                  return true;
-
-            return pOrigin.getCount() < pOrigin.getMaxStackSize()
-                        && !pDestination.isEmpty()
-                        && ItemStack.isSameItem(pDestination, pOrigin)
-                        && pDestination.isStackable()
-                        && pDestination.getCount() < pDestination.getMaxStackSize();
       }
 
       @Inject(method = "add(ILnet/minecraft/world/item/ItemStack;)Z", at = @At("RETURN"), cancellable = true)
