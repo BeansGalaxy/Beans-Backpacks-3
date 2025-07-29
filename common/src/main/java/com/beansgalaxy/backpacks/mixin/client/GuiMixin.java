@@ -1,6 +1,7 @@
 package com.beansgalaxy.backpacks.mixin.client;
 
 import com.beansgalaxy.backpacks.Constants;
+import com.beansgalaxy.backpacks.client.KeyPress;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
@@ -11,11 +12,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.EntityHitResult;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
@@ -44,14 +47,29 @@ public class GuiMixin {
             return pScopeScale * pScopeScale * 1.5f;
       }
 
-      private static final ResourceLocation CROSSHAIR_PLACE_INDICATOR = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "place_indicator");
+      @Unique private static final ResourceLocation CROSSHAIR_PLACE_INDICATOR = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "place_indicator");
+      @Unique private static final ResourceLocation CROSSHAIR_PLACE_BACKGROUND = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "place_indicator_background");
 
       @Inject(method = "renderCrosshair", at = @At(value = "FIELD", ordinal = 0,
                   target = "Lnet/minecraft/client/Minecraft;crosshairPickEntity:Lnet/minecraft/world/entity/Entity;"))
-      private void backpacks_renderPlaceProgress(GuiGraphics gui, DeltaTracker tick, CallbackInfo ci, @Local LocalFloatRef f, @Local LocalBooleanRef field) {
+      private void backpacks_renderPlaceProgress(GuiGraphics gui, DeltaTracker tick, CallbackInfo ci, @Local float f, @Local boolean field) {
+            if (field || f < 1.0f)
+                  return;
 
             int j = gui.guiHeight() / 2 - 7 + 15;
             int k = gui.guiWidth() / 2 - 8;
-            gui.blitSprite(CROSSHAIR_PLACE_INDICATOR, k, j, 16, 16);
+
+            float progress = KeyPress.INSTANCE.placementProgress();
+            if (progress == 0f)
+                  return;
+
+            float ticks = tick.getGameTimeDeltaTicks();
+            float t = (progress * 10) - ticks;
+            int i = (int) t - 2;
+
+            if (i > 1) {
+                  gui.blitSprite(CROSSHAIR_PLACE_INDICATOR, 16, 16, 0, 0, k, j, 4, 16, i);
+                  gui.blitSprite(CROSSHAIR_PLACE_BACKGROUND, k, j, 16, 16);
+            }
       }
 }

@@ -3,6 +3,7 @@ package com.beansgalaxy.backpacks.client;
 import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.access.PlayerAccessor;
+import com.beansgalaxy.backpacks.components.PlaceableComponent;
 import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.network.serverbound.BackpackUseOn;
 import com.beansgalaxy.backpacks.network.serverbound.InstantKeyPress;
@@ -10,12 +11,13 @@ import com.beansgalaxy.backpacks.network.serverbound.SyncHotkey;
 import com.beansgalaxy.backpacks.traits.chest.screen.MenuChestScreen;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -23,10 +25,15 @@ import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
+
+import java.util.Optional;
+import java.util.OptionalInt;
 
 public class KeyPress {
       public static final KeyPress INSTANCE = new KeyPress();
@@ -64,7 +71,14 @@ public class KeyPress {
                   GLFW.GLFW_KEY_B,
                   KEY_CATEGORY);
 
-      public void tick(Minecraft minecraft, LocalPlayer player) {
+      public void tick(Minecraft minecraft, LocalPlayer player, DeltaTracker delta) {
+            if (coyoteClick != null) {
+                  if (!minecraft.options.keyUse.isDown())
+                        unloadCoyoteClick(minecraft, player, coyoteClick);
+                  else if (player.isUsingItem())
+                        cancelCoyoteClick();
+            }
+
             isPressed actionKey = KeyPress.isPressed(minecraft, KeyPress.getActionKeyBind());
             boolean actionKeyPressed = actionKey.pressed() && INSTANT_KEY.isUnbound();
             isPressed menusKey = KeyPress.isPressed(minecraft, KeyPress.getMenusKeyBind());
@@ -82,36 +96,116 @@ public class KeyPress {
             SyncHotkey.send(actionKeyPressed, menuKeyPressed, tinyChestSlot);
       }
 
-      public boolean consumeActionUseOn(Minecraft instance, BlockHitResult hitResult) {
-            doCoyoteClick = false;
+      private void unloadCoyoteClick(Minecraft minecraft, LocalPlayer player, CoyoteClick coyoteClick) {
+            for (InteractionHand interactionhand : InteractionHand.values()) {
+                  ItemStack itemstack = player.getItemInHand(interactionhand);
+                  if (!itemstack.isItemEnabled(minecraft.level.enabledFeatures()))
+                        break;
 
-            BlockPos blockPos = hitResult.getBlockPos();
-            if (!instance.level.getWorldBorder().isWithinBounds(blockPos))
-                  return false;
+                  int i = itemstack.getCount();
+                  InteractionResult interactionresult = minecraft.gameMode.useItemOn(player, interactionhand, coyoteClick.blockhitresult);
+                  if (!interactionresult.consumesAction())
+                        continue;
 
-            LocalPlayer player = instance.player;
-            if (INSTANCE.ACTION_KEY.isUnbound()) {
-                  Vec3 movement = player.getDeltaMovement();
-                  if (Math.abs(movement.x) + Math.abs(movement.z) != 0) {
-                        if (pickUpThru(player))
-                              return true;
+                  if (interactionresult.shouldSwing()) {
+                        player.swing(interactionhand);
+                        if (!itemstack.isEmpty() && (itemstack.getCount() != i || minecraft.gameMode.hasInfiniteItems())) {
+                              minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionhand);
+                        }
+                  }
 
-                        doCoyoteClick = true;
-                        return false;
+                  break;
+            }
+
+            cancelCoyoteClick();
+      }
+
+      public OptionalInt loadCoyoteClick(LocalPlayer player, BlockHitResult hitResult) {
+            if (coyoteClick != null) {
+                  if (coyoteClick.isFinished()) {
+                        EquipmentSlot slot = coyoteClick.slot;
+                        PlaceableComponent placeable = coyoteClick.placeable;
+                        coyoteClick = null;
+
+                        ItemStack backpack = player.getItemBySlot(slot);
+                        if (BackpackUseOn.placeBackpack(player, hitResult, backpack, placeable)) {
+                              BackpackUseOn.send(hitResult, slot);
+                              return OptionalInt.of(8);
+                        }
+
+                        return OptionalInt.of(4);
+                  }
+                  else {
+                        coyoteClick.indexProgress();
+                        return OptionalInt.of(0);
                   }
             }
 
-            return placeBackpack(player, hitResult) || pickUpThru(player);
-      }
-
-      private boolean doCoyoteClick = false;
-      public boolean tryCoyoteClick(LocalPlayer player, BlockHitResult hitResult) {
-            if (doCoyoteClick) {
-                  doCoyoteClick = false;
-                  return placeBackpack(player, hitResult);
+            if (pickUpThru(player)) {
+                  return OptionalInt.of(0);
             }
 
-            return false;
+            EquipmentSlot[] slots = {
+                        EquipmentSlot.BODY,
+                        EquipmentSlot.MAINHAND,
+                        EquipmentSlot.OFFHAND
+            };
+
+            for (EquipmentSlot slot : slots) {
+                  ItemStack backpack = player.getItemBySlot(slot);
+
+                  Optional<PlaceableComponent> component = PlaceableComponent.get(backpack);
+                  if (component.isEmpty())
+                        continue;
+
+                  PlaceableComponent placeable = component.get();
+                  coyoteClick = new CoyoteClick(slot, placeable, hitResult);
+                  return OptionalInt.of(0);
+            }
+
+            return OptionalInt.empty();
+      }
+
+      public void cancelCoyoteClick() {
+            coyoteClick = null;
+      }
+
+      @Nullable
+      private KeyPress.CoyoteClick coyoteClick = null;
+
+      public boolean hasCoyoteClick() {
+            return coyoteClick != null;
+      }
+
+      private static class CoyoteClick {
+            final EquipmentSlot slot;
+            final PlaceableComponent placeable;
+            final BlockHitResult blockhitresult;
+            int progress = 1;
+
+            private CoyoteClick(EquipmentSlot slot, PlaceableComponent placeable, BlockHitResult blockhitresult) {
+                  this.slot = slot;
+                  this.placeable = placeable;
+                  this.blockhitresult = blockhitresult;
+            }
+
+
+            void indexProgress() {
+                  System.out.println(progress);
+                  progress += 1;
+            }
+
+            boolean isFinished() {
+                  return progress > 4;
+            }
+      }
+
+      public float placementProgress() {
+            if (coyoteClick == null) {
+                  return 0f;
+            }
+
+            return coyoteClick.progress / 4f;
       }
 
       public boolean pickUpThru(LocalPlayer player) {
@@ -165,17 +259,22 @@ public class KeyPress {
             return false;
       }
 
-
       public static boolean placeBackpack(Player player, BlockHitResult hitResult) {
-            EquipmentSlot equipmentSlot;
-            if (BackpackUseOn.placeBackpack(player, hitResult, EquipmentSlot.MAINHAND))
-                  equipmentSlot = EquipmentSlot.MAINHAND;
-            else if (BackpackUseOn.placeBackpack(player, hitResult, EquipmentSlot.BODY))
-                  equipmentSlot = EquipmentSlot.BODY;
-            else return false;
+            return tryPlace(player, hitResult, EquipmentSlot.MAINHAND) || tryPlace(player, hitResult, EquipmentSlot.BODY);
+      }
 
-            BackpackUseOn.send(hitResult, equipmentSlot);
-            return true;
+      private static boolean tryPlace(Player player, BlockHitResult hitResult, EquipmentSlot slot) {
+            ItemStack backpack = player.getItemBySlot(slot);
+            Optional<PlaceableComponent> component = PlaceableComponent.get(backpack);
+            if (component.isEmpty())
+                  return false;
+
+            if (BackpackUseOn.placeBackpack(player, hitResult, backpack, component.get())) {
+                  BackpackUseOn.send(hitResult, slot);
+                  return true;
+            }
+
+            return false;
       }
 
       public static KeyMapping getDefaultKeyBind() {

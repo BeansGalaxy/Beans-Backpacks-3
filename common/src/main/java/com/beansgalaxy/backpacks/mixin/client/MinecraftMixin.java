@@ -5,18 +5,25 @@ import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.access.MinecraftAccessor;
 import com.beansgalaxy.backpacks.client.KeyPress;
 import com.beansgalaxy.backpacks.data.EnderStorage;
+import com.llamalad7.mixinextras.sugar.Local;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.OptionalInt;
 
 
 @Mixin(Minecraft.class)
@@ -26,6 +33,12 @@ public abstract class MinecraftMixin implements MinecraftAccessor {
       @Shadow public ClientLevel level;
 
       @Shadow @Nullable public HitResult hitResult;
+      @Shadow private int rightClickDelay;
+      @Shadow @Final private DeltaTracker.Timer timer;
+
+      @Shadow public abstract DeltaTracker getTimer();
+
+      @Shadow private volatile boolean pause;
       @Unique public final EnderStorage beans_Backpacks_2$enderStorage = new EnderStorage();
 
       @Override
@@ -33,21 +46,47 @@ public abstract class MinecraftMixin implements MinecraftAccessor {
             return beans_Backpacks_2$enderStorage;
       }
 
-      @Inject(method = "startUseItem", cancellable = true, at = @At(value = "INVOKE",
-                  ordinal = 0, target = "Lnet/minecraft/world/item/ItemStack;getCount()I"))
+      @Inject(method = "startUseItem", cancellable = true, at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;rightClickDelay:I"))
       private void hotkeyUseItemOn(CallbackInfo ci) {
-            if(BackData.get(player).isActionKeyDown() && KeyPress.INSTANCE.consumeActionUseOn(instance, (BlockHitResult) instance.hitResult))
+            boolean isBlockHit = HitResult.Type.BLOCK.equals(instance.hitResult.getType());
+            if(!isBlockHit || !BackData.get(player).isActionKeyDown()) {
+                  return;
+            }
+
+            BlockHitResult blockHitResult = (BlockHitResult) instance.hitResult;
+            BlockPos blockPos = blockHitResult.getBlockPos();
+            if (!instance.level.getWorldBorder().isWithinBounds(blockPos))
+                  return;
+
+            KeyPress keyPress = KeyPress.INSTANCE;
+            LocalPlayer player = instance.player;
+
+            if (keyPress.ACTION_KEY.isUnbound()) {
+                  OptionalInt callback = keyPress.loadCoyoteClick(player, blockHitResult);
+                  if (callback.isPresent()) {
+                        rightClickDelay = callback.getAsInt();
+                        ci.cancel();
+                  }
+            }
+            else if (KeyPress.placeBackpack(player, blockHitResult) || keyPress.pickUpThru(player))
                   ci.cancel();
       }
 
-      @Inject(method = "startUseItem", cancellable = true, at = @At(value = "FIELD", shift = At.Shift.BEFORE, target = "Lnet/minecraft/world/InteractionResult;FAIL:Lnet/minecraft/world/InteractionResult;"))
-      private void tryCoyoteClick(CallbackInfo ci) {
-            if (KeyPress.INSTANCE.tryCoyoteClick(player, (BlockHitResult) instance.hitResult))
-                  ci.cancel();
+      @Inject(method = "startUseItem", at = @At(value = "INVOKE", ordinal = 1, target = "Lnet/minecraft/world/InteractionResult;shouldSwing()Z"))
+      private void tryCoyoteClick(CallbackInfo ci, @Local(ordinal = 1) InteractionResult result) {
+            KeyPress.INSTANCE.cancelCoyoteClick();
       }
 
       @Inject(method = "handleKeybinds", at = @At("TAIL"))
       private void handleBackpackKeybinds(CallbackInfo ci) {
             CommonClient.handleKeyBinds(player, hitResult);
+      }
+
+      @Inject(method = "runTick", at = @At(value = "INVOKE", ordinal = 1, target = "Lnet/minecraft/util/profiling/ProfilerFiller;pop()V"))
+      private void runTickTest(boolean pRenderLevel, CallbackInfo ci) {
+            if (player != null && !pause) {
+                  DeltaTracker tracker = getTimer();
+                  KeyPress.INSTANCE.tick(instance, player, tracker);
+            }
       }
 }

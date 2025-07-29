@@ -49,7 +49,25 @@ public class BackpackUseOn implements Packet2S {
 
       @Override
       public void handle(Player sender) {
-            placeBackpack(sender, blockHitResult, equipmentSlot);
+            ItemStack backpack = sender.getItemBySlot(equipmentSlot);
+            Optional<PlaceableComponent> component = PlaceableComponent.get(backpack);
+            if (component.isEmpty())
+                  return;
+
+            PlaceableComponent placeable = component.get();
+            placeBackpack(sender, blockHitResult, backpack, placeable);
+      }
+
+      public static boolean placeBackpack(Player player, BlockHitResult hitResult, ItemStack backpack, PlaceableComponent placeable) {
+            Optional<GenericTraits> traits = Traits.get(backpack);
+            UseOnContext context = new UseOnContext(player, InteractionHand.MAIN_HAND, hitResult);
+            BackpackEntity entity = BackpackEntity.create(context, backpack, placeable, traits);
+            if (entity == null) {
+                  return false;
+            }
+
+            entity.getPlaceable().sound().at(entity, ModSound.Type.PLACE);
+            return true;
       }
 
       public static boolean placeBackpack(Player player, BlockHitResult hitResult, EquipmentSlot slot) {

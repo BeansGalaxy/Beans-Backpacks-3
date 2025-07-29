@@ -33,7 +33,6 @@ import java.util.Optional;
 public abstract class InventoryMixin implements BackData {
       @Shadow @Final public Player player;
       @Shadow @Final public NonNullList<ItemStack> items;
-      @Shadow public int selected;
 
       @Shadow public abstract ItemStack getItem(int pIndex);
 

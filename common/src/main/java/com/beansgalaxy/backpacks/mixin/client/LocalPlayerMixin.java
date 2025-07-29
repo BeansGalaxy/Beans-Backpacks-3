@@ -25,12 +25,6 @@ public abstract class LocalPlayerMixin extends LivingEntity {
             super(pEntityType, pLevel);
       }
 
-      @Inject(method = "tick", at = @At("TAIL"))
-      public void tick(CallbackInfo ci) {
-            LocalPlayer player = (LocalPlayer) (Object) this;
-            KeyPress.INSTANCE.tick(minecraft, player);
-      }
-
       @Inject(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/Input;tick(ZF)V", shift = At.Shift.AFTER))
       private void backpacks_aiStep(CallbackInfo ci, @Local(ordinal = 0) boolean wasJumping) {
             if (input.jumping && !wasJumping && isFallFlying()) {
