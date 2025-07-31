@@ -23,6 +23,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -118,8 +120,6 @@ public final class EquipableComponent {
                         if (EquipmentSlot.Type.HAND.equals(value.getType()) || !equipable.slots().test(value))
                               continue;
 
-                        if (slot == null)
-                              slot = value;
 
                         ItemStack equipped = player.getItemBySlot(value);
                         if (equipped.isEmpty()) {
@@ -128,7 +128,21 @@ public final class EquipableComponent {
                               cir.setReturnValue(InteractionResultHolder.success(backpack));
                               return;
                         }
+
+                        if (slot != null) continue;
+
+                        if (player.isCreative())
+                              slot = value;
+                        else {
+                              boolean hasBinding = EnchantmentHelper.has(equipped, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE);
+                              boolean removable = EquipableComponent.testIfPresent(equipped, EquipableComponent::traitRemovable);
+                              boolean isEmpty = !Traits.testIfPresent(equipped, traits -> !traits.isEmpty(equipped));
+                              if (!hasBinding && (removable || isEmpty)) {
+                                    slot = value;
+                              }
+                        }
                   }
+
                   if (slot != null) {
                         ItemStack equipped = player.getItemBySlot(slot);
                         player.setItemSlot(slot, backpack);

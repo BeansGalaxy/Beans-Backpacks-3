@@ -1,6 +1,7 @@
 package com.beansgalaxy.backpacks.traits.generic;
 
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
+import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
 import com.beansgalaxy.backpacks.screen.TinyClickType;
 import com.beansgalaxy.backpacks.traits.ITraitData;
@@ -82,6 +83,10 @@ public abstract class ItemStorageTraits extends GenericTraits implements Draggin
 
                   Optional<ItemStorageTraits> traits = get(stack);
                   if (traits.isEmpty())
+                        continue;
+
+                  if (!EquipableComponent.testIfPresent(stack, equip ->
+                              equip.traitRemovable() || equip.slots().test(slot)))
                         continue;
 
                   if (runnable.test(traits.get(), slot))
