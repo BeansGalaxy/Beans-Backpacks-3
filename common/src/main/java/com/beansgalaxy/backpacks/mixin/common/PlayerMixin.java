@@ -8,6 +8,7 @@ import com.beansgalaxy.backpacks.access.ViewableAccessor;
 import com.beansgalaxy.backpacks.components.PlaceableComponent;
 import com.beansgalaxy.backpacks.components.SlotSelection;
 import com.beansgalaxy.backpacks.data.ServerSave;
+import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
@@ -15,12 +16,15 @@ import com.beansgalaxy.backpacks.traits.quiver.QuiverTraits;
 import com.beansgalaxy.backpacks.util.ModSound;
 import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
+import com.google.gson.annotations.Since;
 import com.mojang.serialization.DataResult;
 import net.minecraft.core.Direction;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -38,6 +42,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -64,6 +69,9 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
       @Shadow public abstract Inventory getInventory();
 
       @Shadow @Final private Inventory inventory;
+
+      @Shadow public abstract void displayClientMessage(Component pChatComponent, boolean pActionBar);
+
       @Unique public final Player instance = (Player) (Object) this;
 
       @Unique private static final EntityDataAccessor<Boolean> IS_OPEN = SynchedEntityData.defineId(Player.class, EntityDataSerializers.BOOLEAN);
@@ -196,6 +204,8 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
             saveSelectedSlots("back", back, instance, selectedSlots);
             backpacks.put("slot_selection", selectedSlots);
 
+            legacySaveShorthandBackup(backpacks);
+
             pCompound.put(Constants.MOD_ID, backpacks);
       }
 
@@ -252,7 +262,43 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
             readSlotSelection("offhand", offhand, instance, slotSelection);
             ItemStack back = BackData.get(instance).beans_Backpacks_3$getBody().getFirst();
             readSlotSelection("back", back, instance, slotSelection);
+
+            legacyReadShorthandBackup(backpacks);
       }
+
+      @Nullable @Deprecated(since = "0.9-beta") @Unique
+      private CompoundTag legacyShorthandItems = null;
+      @Deprecated(since = "0.9-beta") @Unique
+      private boolean legacyShouldSendShorthandWarning = false;
+
+      @Deprecated(since = "0.9-beta") @Unique
+      private void legacySaveShorthandBackup(CompoundTag backpacks) {
+            if (legacyShorthandItems != null)
+                  backpacks.put("shorthand", legacyShorthandItems);
+      }
+
+      @Deprecated(since = "0.9-beta") @Unique
+      private void legacyReadShorthandBackup(CompoundTag backpacks) {
+            if (!Services.PLATFORM.isModLoaded("beanstoolbelt") && backpacks.contains("shorthand")) {
+                  CompoundTag shorthand = backpacks.getCompound("shorthand");
+                  legacyShorthandItems = shorthand;
+
+                  legacyShouldSendShorthandWarning = true;
+            }
+      }
+
+      @Inject(method = "tick", at = @At("HEAD")) @Deprecated(since = "0.9-beta")
+      private void legacySendWarningMessage(CallbackInfo ci) {
+            if (legacyShouldSendShorthandWarning && getServer() != null && getServer().getConnection() != null) {
+                  MutableComponent literal = Component.literal("THE SHORTHAND IS NO LONGER INCLUDED IN THIS VERSION OF BEANS' BACKPACKS;");
+                  MutableComponent literal2 = Component.literal("QUIT THE GAME AND INSTALL \"BEANS' TOOLBELT\" IMMEDIATELY TO KEEP YOUR TOOLS!!");
+                  displayClientMessage(literal, false);
+                  displayClientMessage(literal2, false);
+
+                  legacyShouldSendShorthandWarning = false;
+            }
+      }
+
 
       @Unique
       private static void readSlotSelection(String name, List<ItemStack> items, Player instance, CompoundTag slotSelection) {
