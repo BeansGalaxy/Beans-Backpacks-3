@@ -5,7 +5,7 @@ import com.beansgalaxy.backpacks.events.NetworkPackages;
 import com.beansgalaxy.backpacks.events.ServerStartEvent;
 import com.beansgalaxy.backpacks.events.SyncDataEvent;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
-import com.beansgalaxy.backpacks.util.ModItems;
+import com.beansgalaxy.backpacks.items.ModItems;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
@@ -20,6 +20,7 @@ public class FabricMain implements ModInitializer {
     @Override
     public void onInitialize() {
         CommonClass.init();
+        BlockItems.register();
         NetworkPackages.registerCommon();
         EntityDataSerializers.registerSerializer(BackpackEntity.PLACEABLE.serializer());
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {

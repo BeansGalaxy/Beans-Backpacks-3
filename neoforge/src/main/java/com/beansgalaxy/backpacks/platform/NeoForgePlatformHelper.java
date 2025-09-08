@@ -1,6 +1,8 @@
 package com.beansgalaxy.backpacks.platform;
 
+import com.beansgalaxy.backpacks.BlockItems;
 import com.beansgalaxy.backpacks.Constants;
+import com.beansgalaxy.backpacks.items.BurlapSackEntity;
 import com.beansgalaxy.backpacks.network.Network2C;
 import com.beansgalaxy.backpacks.network.Network2S;
 import com.beansgalaxy.backpacks.network.clientbound.Packet2C;
@@ -20,12 +22,16 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.schedule.Activity;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforgespi.language.IModInfo;
 
@@ -34,6 +40,8 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public class NeoForgePlatformHelper implements IPlatformHelper {
+
+    public static final DeferredRegister.Blocks BLOCK_REGISTRY = DeferredRegister.createBlocks(Constants.MOD_ID);
 
     @Override
     public String getPlatformName() {
@@ -74,8 +82,17 @@ public class NeoForgePlatformHelper implements IPlatformHelper {
 
     @Override
     public Supplier<Item> register(String name, Supplier<Item> item) {
-        DeferredRegister.Items items = ITEMS_REGISTRY;
-        return items.register(name, item);
+          return ITEMS_REGISTRY.register(name, item);
+    }
+
+    @Override
+    public Supplier<Block> registerBlock(String id, Supplier<Block> block) {
+          return NeoForgePlatformHelper.BLOCK_REGISTRY.register(id, block);
+    }
+
+    @Override
+    public BlockEntityType<BurlapSackEntity> getBurlapSackEntityType() {
+        return BlockItems.BURLAP_SACK_ENTITY.get();
     }
 
     public static final DeferredRegister.DataComponents COMPONENTS_REGISTRY =

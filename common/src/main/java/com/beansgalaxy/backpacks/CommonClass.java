@@ -1,12 +1,13 @@
 package com.beansgalaxy.backpacks;
 
 import com.beansgalaxy.backpacks.data.config.ClientConfig;
+import com.beansgalaxy.backpacks.items.ModBlocks;
 import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
-import com.beansgalaxy.backpacks.util.ModItems;
+import com.beansgalaxy.backpacks.items.ModItems;
 import com.beansgalaxy.backpacks.util.ModSound;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.world.InteractionHand;
@@ -59,10 +60,11 @@ public class CommonClass {
       public static final ClientConfig CLIENT_CONFIG = new ClientConfig();
 
       public static void init() {
-        ModSound.Events.register();
-        Traits.register();
-        ITraitData.register();
-        ModItems.register();
+            ModSound.Events.register();
+            Traits.register();
+            ITraitData.register();
+            ModItems.register();
+            ModBlocks.register();
     }
 
       public static InteractionResult swapBackWith(ArmorStand armorStand, Player player) {

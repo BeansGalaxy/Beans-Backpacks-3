@@ -6,7 +6,7 @@ import com.beansgalaxy.backpacks.data.EnderStorage;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
-import com.beansgalaxy.backpacks.util.ModItems;
+import com.beansgalaxy.backpacks.items.ModItems;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.core.Direction;

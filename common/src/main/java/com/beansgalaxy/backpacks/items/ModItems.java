@@ -1,19 +1,15 @@
-package com.beansgalaxy.backpacks.util;
+package com.beansgalaxy.backpacks.items;
 
-import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.Constants;
-import com.beansgalaxy.backpacks.access.ExperimentFlagAccess;
 import com.beansgalaxy.backpacks.components.ender.EmptyEnderItem;
 import com.beansgalaxy.backpacks.components.ender.EnderItem;
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
 import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.traits.Traits;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.flag.FeatureFlag;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.*;
+import net.minecraft.world.level.block.Block;
 
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -37,10 +33,14 @@ public enum ModItems {
                   .title(Component.translatable("itemGroup." + Constants.MOD_ID))
                   .icon(() -> ModItems.LEATHER_BACKPACK.get().getDefaultInstance())
                   .displayItems((params, output) -> {
-                        for (ModItems value : ModItems.values()) {
+                        for (ModItems value : ModItems.values())
                               if (value.creativeIncluded)
                                     output.accept(value.get());
-                        }
+
+                        for (ModBlocks value : ModBlocks.values())
+                              if (value.creativeIncluded)
+                                    output.accept(value.item.get());
+
                         output.accept(Items.LEATHER_LEGGINGS);
                         output.accept(Items.DECORATED_POT);
                   });

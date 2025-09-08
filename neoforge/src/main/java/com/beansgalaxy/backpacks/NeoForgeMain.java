@@ -8,16 +8,16 @@ import com.beansgalaxy.backpacks.network.clientbound.ConfigureReferences;
 import com.beansgalaxy.backpacks.network.clientbound.Packet2C;
 import com.beansgalaxy.backpacks.network.serverbound.Packet2S;
 import com.beansgalaxy.backpacks.platform.NeoForgePlatformHelper;
-import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
-import com.beansgalaxy.backpacks.util.ModItems;
-import net.minecraft.core.component.DataComponentType;
+import com.beansgalaxy.backpacks.items.ModItems;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.syncher.EntityDataSerializer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -25,7 +25,6 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
-import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -36,6 +35,7 @@ public class NeoForgeMain {
 
     public static final DeferredRegister<EntityDataSerializer<?>> ENTITY_SERIALIZERS = DeferredRegister.create(NeoForgeRegistries.ENTITY_DATA_SERIALIZERS.key(), Constants.MOD_ID);
     public static final DeferredRegister<CreativeModeTab> CREATIVE_TAB_REGISTRY = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, Constants.MOD_ID);
+    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, Constants.MOD_ID);
 
     public NeoForgeMain(IEventBus eventBus) {
         NeoForgePlatformHelper.ITEMS_REGISTRY.register(eventBus);
@@ -45,12 +45,17 @@ public class NeoForgeMain {
         NeoForgePlatformHelper.ATTRIBUTE_REGISTRY.register(eventBus);
         NeoForgePlatformHelper.ACTIVITY_REGISTRY.register(eventBus);
         NeoForgePlatformHelper.MEMORY_MODULE_REGISTRY.register(eventBus);
+        NeoForgePlatformHelper.BLOCK_REGISTRY.register(eventBus);
+
+        BLOCK_ENTITIES.register(eventBus);
         ENTITY_SERIALIZERS.register(eventBus);
         ENTITY_SERIALIZERS.register("placeable_backpack", BackpackEntity.PLACEABLE::serializer);
         CREATIVE_TAB_REGISTRY.register(eventBus);
         CREATIVE_TAB_REGISTRY.register("backpacks",
                     () -> ModItems.CREATIVE_TAB.apply(CreativeModeTab.builder()).build());
+
         CommonClass.init();
+        BlockItems.register(eventBus);
     }
 
     @EventBusSubscriber(modid = Constants.MOD_ID, bus = EventBusSubscriber.Bus.MOD)

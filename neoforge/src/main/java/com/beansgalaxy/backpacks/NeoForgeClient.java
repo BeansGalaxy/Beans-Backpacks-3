@@ -9,7 +9,7 @@ import com.beansgalaxy.backpacks.data.config.screen.ConfigRows;
 import com.beansgalaxy.backpacks.data.config.screen.ConfigScreen;
 import com.beansgalaxy.backpacks.data.config.screen.IConfig;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
-import com.beansgalaxy.backpacks.util.ModItems;
+import com.beansgalaxy.backpacks.items.ModItems;
 import com.beansgalaxy.backpacks.util.TraitTooltip;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.client.Minecraft;
@@ -28,7 +28,6 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.function.Function;
 

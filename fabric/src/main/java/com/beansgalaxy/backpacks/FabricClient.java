@@ -8,7 +8,7 @@ import com.beansgalaxy.backpacks.client.renderer.EntityRender;
 import com.beansgalaxy.backpacks.events.AppendLoadedModels;
 import com.beansgalaxy.backpacks.events.NetworkPackages;
 import com.beansgalaxy.backpacks.events.TooltipImageEvent;
-import com.beansgalaxy.backpacks.util.ModItems;
+import com.beansgalaxy.backpacks.items.ModItems;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.model.loading.v1.PreparableModelLoadingPlugin;

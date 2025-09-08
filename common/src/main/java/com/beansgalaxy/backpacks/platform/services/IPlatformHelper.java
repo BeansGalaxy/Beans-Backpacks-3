@@ -1,6 +1,7 @@
 package com.beansgalaxy.backpacks.platform.services;
 
 import com.beansgalaxy.backpacks.Constants;
+import com.beansgalaxy.backpacks.items.BurlapSackEntity;
 import com.beansgalaxy.backpacks.network.Network2C;
 import com.beansgalaxy.backpacks.network.Network2S;
 import com.beansgalaxy.backpacks.network.clientbound.Packet2C;
@@ -21,6 +22,8 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -61,6 +64,10 @@ public interface IPlatformHelper {
     }
 
     Supplier<Item> register(String name, Supplier<Item> item);
+
+    Supplier<Block> registerBlock(String id, Supplier<Block> item);
+
+    BlockEntityType<BurlapSackEntity> getBurlapSackEntityType();
 
     <T> DataComponentType<T> register(String name, DataComponentType<T> type);
 

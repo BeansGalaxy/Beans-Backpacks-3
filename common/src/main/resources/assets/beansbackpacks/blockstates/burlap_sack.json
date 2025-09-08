@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "open=false": {
+      "model": "beansbackpacks:block/burlap_sack"
+    },
+    "open=true": {
+      "model": "beansbackpacks:block/burlap_sack_open"
+    }
+  }
+}

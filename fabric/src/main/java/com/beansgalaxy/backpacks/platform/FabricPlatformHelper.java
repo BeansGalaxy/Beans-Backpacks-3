@@ -1,6 +1,8 @@
 package com.beansgalaxy.backpacks.platform;
 
+import com.beansgalaxy.backpacks.BlockItems;
 import com.beansgalaxy.backpacks.Constants;
+import com.beansgalaxy.backpacks.items.BurlapSackEntity;
 import com.beansgalaxy.backpacks.network.Network2C;
 import com.beansgalaxy.backpacks.network.Network2S;
 import com.beansgalaxy.backpacks.network.clientbound.Packet2C;
@@ -26,6 +28,8 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -53,6 +57,18 @@ public class FabricPlatformHelper implements IPlatformHelper {
         ResourceLocation resourceLocation = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, name);
         Item register = Registry.register(BuiltInRegistries.ITEM, resourceLocation, item.get());
           return () -> register;
+    }
+
+    @Override
+    public Supplier<Block> registerBlock(String id, Supplier<Block> item) {
+        ResourceLocation resourceLocation = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, id);
+        Block register = Registry.register(BuiltInRegistries.BLOCK, resourceLocation, item.get());
+        return () -> register;
+    }
+
+    @Override
+    public BlockEntityType<BurlapSackEntity> getBurlapSackEntityType() {
+        return BlockItems.BURLAP_SACK_ENTITY;
     }
 
     @Override
