@@ -1,5 +1,6 @@
 package com.beansgalaxy.backpacks.components.reference;
 
+import com.beansgalaxy.backpacks.components.DisplayComponent;
 import com.beansgalaxy.backpacks.components.PlaceableComponent;
 import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
@@ -17,7 +18,7 @@ import java.util.HashMap;
 
 public record ReferenceRegistry(GenericTraits traits, ItemAttributeModifiers modifiers,
                                 PlaceableComponent placeable, EquipableComponent equipable,
-                                byte utilities
+                                byte utilities, DisplayComponent display
 ) {
       public static final HashMap<ResourceLocation, ReferenceRegistry> REFERENCES = new HashMap<>();
 
@@ -30,7 +31,7 @@ public record ReferenceRegistry(GenericTraits traits, ItemAttributeModifiers mod
       }
 
       public static ReferenceRegistry createEmptyReference() {
-            return new ReferenceRegistry(NonTrait.INSTANCE, ItemAttributeModifiers.EMPTY, null, null, (byte) 0);
+            return new ReferenceRegistry(NonTrait.INSTANCE, ItemAttributeModifiers.EMPTY, null, null, (byte) 0, null);
       }
 
       @Nullable
@@ -65,6 +66,11 @@ public record ReferenceRegistry(GenericTraits traits, ItemAttributeModifiers mod
                   if (isEquipment)
                         EquipableComponent.STREAM_CODEC.encode(buf, reference.equipable);
 
+                  boolean hasDisplay = reference.display != null;
+                  buf.writeBoolean(hasDisplay);
+                  if (hasDisplay)
+                        DisplayComponent.STREAM_CODEC.encode(buf, reference.display);
+
                   buf.writeByte(reference.utilities);
             }
 
@@ -85,9 +91,12 @@ public record ReferenceRegistry(GenericTraits traits, ItemAttributeModifiers mod
                   boolean isEquipable = buf.readBoolean();
                   EquipableComponent equipableComponent = isEquipable ? EquipableComponent.STREAM_CODEC.decode(buf) : null;
 
+                  boolean hasDisplay = buf.readBoolean();
+                  DisplayComponent displayComponent = hasDisplay ? DisplayComponent.STREAM_CODEC.decode(buf) : null;
+
                   byte utilities = buf.readByte();
 
-                  return new ReferenceRegistry(fields, modifiers, placeableComponent, equipableComponent, utilities);
+                  return new ReferenceRegistry(fields, modifiers, placeableComponent, equipableComponent, utilities, displayComponent);
             }
       };
 }

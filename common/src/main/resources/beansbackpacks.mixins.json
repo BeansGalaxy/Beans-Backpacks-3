@@ -25,8 +25,7 @@
     "common.PlayerMixin",
     "common.ServerPlayerMixin",
     "common.ServerPlayMixin",
-    "common.TrialSpawnerDataMixin",
-    "common.data_features.ServerPackSource"
+    "common.TrialSpawnerDataMixin"
   ],
   "client": [
     "client.AbstractClientPlayerMixin",
@@ -47,7 +46,6 @@
     "client.MinecraftMixin",
     "client.PalettedPermutationsMixin",
     "client.PlayerRendererMixin",
-    "client.SimpleBakedModelMixin",
     "client.SmithingScreenMixin"
   ],
   "server": [ ],

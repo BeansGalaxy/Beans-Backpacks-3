@@ -1,6 +1,7 @@
 package com.beansgalaxy.backpacks.components.reference;
 
 import com.beansgalaxy.backpacks.Constants;
+import com.beansgalaxy.backpacks.components.DisplayComponent;
 import com.beansgalaxy.backpacks.components.PlaceableComponent;
 import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
@@ -93,6 +94,15 @@ public record ReferenceTrait(ResourceLocation location) {
 
             byte utilities = reference.utilities();
             return utilities == 0 ? Optional.empty() : Optional.of(utilities);
+      }
+
+      @NotNull
+      public Optional<DisplayComponent> getDisplay() {
+            ReferenceRegistry reference = ReferenceRegistry.getNullable(location);
+            if (reference == null)
+                  return Optional.empty();
+
+            return Optional.ofNullable(reference.display());
       }
 
       public static final Codec<ReferenceTrait> CODEC = ResourceLocation.CODEC.flatXmap(

@@ -49,10 +49,6 @@ public class ConfigScreen extends Screen {
             TraitConfig traits = new TraitConfig();
             map.put(traits, configScreen ->
                         new TraitConfigRows(configScreen, minecraft, traits));
-
-            FeaturesConfig features = new FeaturesConfig();
-            map.put(features, configScreen ->
-                        new FeaturesConfigRows(configScreen, minecraft, features));
       }
 
       @Override
