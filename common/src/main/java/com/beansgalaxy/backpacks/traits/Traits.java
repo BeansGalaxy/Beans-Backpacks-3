@@ -1,6 +1,7 @@
 package com.beansgalaxy.backpacks.traits;
 
 import com.beansgalaxy.backpacks.access.EquipmentSlotAccess;
+import com.beansgalaxy.backpacks.components.DisplayComponent;
 import com.beansgalaxy.backpacks.components.PlaceableComponent;
 import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.components.ender.EmptyEnderItem;
@@ -44,6 +45,9 @@ public interface Traits {
 
       DataComponentType<EquipableComponent>
                   EQUIPABLE = register(EquipableComponent.NAME, EquipableComponent.CODEC, EquipableComponent.STREAM_CODEC);
+
+      DataComponentType<DisplayComponent>
+                  DISPLAY = register(DisplayComponent.NAME, DisplayComponent.CODEC, DisplayComponent.STREAM_CODEC);
 
       DataComponentType<ReferenceTrait>
                   REFERENCE = register("reference", ReferenceTrait.CODEC, ReferenceTrait.STREAM_CODEC);

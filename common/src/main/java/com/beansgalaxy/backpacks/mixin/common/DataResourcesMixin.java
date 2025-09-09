@@ -1,6 +1,7 @@
 package com.beansgalaxy.backpacks.mixin.common;
 
 import com.beansgalaxy.backpacks.Constants;
+import com.beansgalaxy.backpacks.components.DisplayComponent;
 import com.beansgalaxy.backpacks.components.PlaceableComponent;
 import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
@@ -75,6 +76,7 @@ public class DataResourcesMixin {
             byte utilities = 0;
             PlaceableComponent placeable = null;
             EquipableComponent equipable = null;
+            DisplayComponent display = null;
             ItemAttributeModifiers attributes = ItemAttributeModifiers.EMPTY;
             GenericTraits fields = NonTrait.INSTANCE;
 
@@ -138,6 +140,20 @@ public class DataResourcesMixin {
 
                               equipable = result.getOrThrow();
                         }
+                        case DisplayComponent.NAME -> {
+                              if (display != null)
+                                    continue;
+
+                              DataResult<DisplayComponent> result = DisplayComponent.CODEC.parse(registryOps, json);
+                              if (result.isError()) {
+                                    String message = "Failure while parsing trait_id \"" + location + "\"; Error while decoding \"" + type + "\"; ";
+                                    String error = result.error().get().message();
+                                    Constants.LOG.warn("{}{}", message, error);
+                                    continue;
+                              }
+
+                              display = result.getOrThrow();
+                        }
                         case NonTrait.NAME -> {
                         }
                         case null -> {
@@ -163,9 +179,9 @@ public class DataResourcesMixin {
                   }
             }
 
-            if (NonTrait.is(fields) && placeable == null && equipable == null && ItemAttributeModifiers.EMPTY.equals(attributes))
+            if (NonTrait.is(fields) && placeable == null && equipable == null && display == null && ItemAttributeModifiers.EMPTY.equals(attributes))
                   return;
 
-            ReferenceRegistry.put(location, new ReferenceRegistry(fields, attributes, placeable, equipable, utilities));
+            ReferenceRegistry.put(location, new ReferenceRegistry(fields, attributes, placeable, equipable, utilities, display));
       }
 }
