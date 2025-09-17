@@ -4,11 +4,14 @@ import com.beansgalaxy.backpacks.data.ServerSave;
 import com.beansgalaxy.backpacks.events.NetworkPackages;
 import com.beansgalaxy.backpacks.events.ServerStartEvent;
 import com.beansgalaxy.backpacks.events.SyncDataEvent;
+import com.beansgalaxy.backpacks.screen.BurlapSackMenu;
+import com.beansgalaxy.backpacks.screen.BurlapSackScreen;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.beansgalaxy.backpacks.items.ModItems;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -20,7 +23,7 @@ public class FabricMain implements ModInitializer {
     @Override
     public void onInitialize() {
         CommonClass.init();
-        BlockItems.register();
+        Registries.register();
         NetworkPackages.registerCommon();
         EntityDataSerializers.registerSerializer(BackpackEntity.PLACEABLE.serializer());
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
@@ -29,6 +32,7 @@ public class FabricMain implements ModInitializer {
 
         ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register(new SyncDataEvent());
         ServerLifecycleEvents.SERVER_STARTED.register(new ServerStartEvent());
+        MenuScreens.register(Registries.BURLAP_SACK_MENU, BurlapSackScreen::new);
     }
 
     public static final CreativeModeTab BACKPACK_TAB = ModItems.CREATIVE_TAB.apply(FabricItemGroup.builder()).build();

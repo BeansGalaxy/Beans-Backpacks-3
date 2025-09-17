@@ -1,15 +1,15 @@
 package com.beansgalaxy.backpacks.platform.services;
 
 import com.beansgalaxy.backpacks.Constants;
-import com.beansgalaxy.backpacks.items.BurlapSackEntity;
+import com.beansgalaxy.backpacks.items.AbstractBurlapSackEntity;
 import com.beansgalaxy.backpacks.network.Network2C;
 import com.beansgalaxy.backpacks.network.Network2S;
 import com.beansgalaxy.backpacks.network.clientbound.Packet2C;
 import com.beansgalaxy.backpacks.network.serverbound.Packet2S;
-import com.beansgalaxy.backpacks.traits.TraitComponentKind;
-import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
+import com.beansgalaxy.backpacks.screen.BurlapSackMenu;
 import com.mojang.serialization.Codec;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.resources.ResourceLocation;
@@ -21,9 +21,12 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.schedule.Activity;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -67,7 +70,7 @@ public interface IPlatformHelper {
 
     Supplier<Block> registerBlock(String id, Supplier<Block> item);
 
-    BlockEntityType<BurlapSackEntity> getBurlapSackEntityType();
+    BlockEntityType<? extends AbstractBurlapSackEntity> getBurlapSackEntityType();
 
     <T> DataComponentType<T> register(String name, DataComponentType<T> type);
 
@@ -98,4 +101,8 @@ public interface IPlatformHelper {
     default Path getConfigPath() {
         return getConfigDir().resolve(Constants.MOD_ID);
     }
+
+    MenuType<BurlapSackMenu> getBurlapSackMenuType();
+
+    BlockEntity createBurlapSackEntity(BlockPos pos, BlockState state);
 }

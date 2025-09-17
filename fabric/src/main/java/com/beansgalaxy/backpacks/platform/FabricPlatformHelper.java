@@ -1,19 +1,22 @@
 package com.beansgalaxy.backpacks.platform;
 
-import com.beansgalaxy.backpacks.BlockItems;
+import com.beansgalaxy.backpacks.BurlapSackEntity;
+import com.beansgalaxy.backpacks.Registries;
 import com.beansgalaxy.backpacks.Constants;
-import com.beansgalaxy.backpacks.items.BurlapSackEntity;
+import com.beansgalaxy.backpacks.items.AbstractBurlapSackEntity;
 import com.beansgalaxy.backpacks.network.Network2C;
 import com.beansgalaxy.backpacks.network.Network2S;
 import com.beansgalaxy.backpacks.network.clientbound.Packet2C;
 import com.beansgalaxy.backpacks.network.serverbound.Packet2S;
 import com.beansgalaxy.backpacks.platform.services.IPlatformHelper;
+import com.beansgalaxy.backpacks.screen.BurlapSackMenu;
 import com.mojang.serialization.Codec;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
@@ -27,9 +30,12 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.schedule.Activity;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.nio.file.Path;
 import java.util.Optional;
@@ -67,8 +73,18 @@ public class FabricPlatformHelper implements IPlatformHelper {
     }
 
     @Override
-    public BlockEntityType<BurlapSackEntity> getBurlapSackEntityType() {
-        return BlockItems.BURLAP_SACK_ENTITY;
+    public BlockEntityType<? extends AbstractBurlapSackEntity> getBurlapSackEntityType() {
+        return Registries.BURLAP_SACK_ENTITY;
+    }
+
+    @Override
+    public MenuType<BurlapSackMenu> getBurlapSackMenuType() {
+        return Registries.BURLAP_SACK_MENU;
+    }
+
+    @Override
+    public BlockEntity createBurlapSackEntity(BlockPos pos, BlockState state) {
+        return new BurlapSackEntity(pos, state);
     }
 
     @Override

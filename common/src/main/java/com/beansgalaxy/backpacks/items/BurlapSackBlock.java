@@ -1,10 +1,9 @@
 package com.beansgalaxy.backpacks.items;
 
+import com.beansgalaxy.backpacks.platform.Services;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -19,7 +18,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
@@ -91,13 +89,13 @@ public class BurlapSackBlock extends BaseEntityBlock implements SimpleWaterlogge
       @Nullable
       @Override
       public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-            return new BurlapSackEntity(pos, state);
+            return Services.PLATFORM.createBurlapSackEntity(pos, state);
       }
 
       @Override
       protected void onRemove(BlockState pState, Level pLevel, BlockPos pPos, BlockState pNewState, boolean pMovedByPiston) {
             if (pState.getBlock() != pNewState.getBlock()) {
-                  if (pLevel.getBlockEntity(pPos) instanceof BurlapSackEntity burlapSack) {
+                  if (pLevel.getBlockEntity(pPos) instanceof AbstractBurlapSackEntity burlapSack) {
                         burlapSack.dropAll();
                         pLevel.updateNeighbourForOutputSignal(pPos, this);
                   }
@@ -108,10 +106,14 @@ public class BurlapSackBlock extends BaseEntityBlock implements SimpleWaterlogge
 
       @Override
       protected ItemInteractionResult useItemOn(ItemStack pStack, BlockState pState, Level pLevel, BlockPos pPos, Player pPlayer, InteractionHand pHand, BlockHitResult pHitResult) {
-            pLevel.playSound(pPlayer, pPos, SoundEvents.GENERIC_SPLASH, SoundSource.BLOCKS, 1f, 1f);
-
-            Boolean isOpen = pState.getValue(OPEN);
-            pLevel.setBlock(pPos, pState.setValue(OPEN, !isOpen), 3);
+            BlockEntity blockEntity = pLevel.getBlockEntity(pPos);
+            if (blockEntity instanceof AbstractBurlapSackEntity entity) {
+                  boolean crouching = pPlayer.isCrouching();
+                  if (!crouching && !pLevel.isClientSide) {
+                        entity.openMenu(pPlayer);
+                        return ItemInteractionResult.SUCCESS;
+                  }
+            }
 
             return ItemInteractionResult.SUCCESS;
       }

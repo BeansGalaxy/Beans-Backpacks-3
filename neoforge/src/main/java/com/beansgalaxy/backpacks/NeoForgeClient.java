@@ -8,6 +8,7 @@ import com.beansgalaxy.backpacks.client.renderer.EntityRender;
 import com.beansgalaxy.backpacks.data.config.screen.ConfigRows;
 import com.beansgalaxy.backpacks.data.config.screen.ConfigScreen;
 import com.beansgalaxy.backpacks.data.config.screen.IConfig;
+import com.beansgalaxy.backpacks.screen.BurlapSackScreen;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.items.ModItems;
 import com.beansgalaxy.backpacks.util.TraitTooltip;
@@ -52,6 +53,11 @@ public class NeoForgeClient {
 
       @EventBusSubscriber(modid = Constants.MOD_ID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
       public static class ModEvents {
+
+            @SubscribeEvent
+            public static void registerScreens(RegisterMenuScreensEvent event) {
+                  event.register(Registries.BURLAP_SACK_MENU.get(), BurlapSackScreen::new);
+            }
 
             @SubscribeEvent
             public static void registerColorHandlers(final RegisterColorHandlersEvent.Item event) {
