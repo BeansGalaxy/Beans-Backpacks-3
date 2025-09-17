@@ -40,7 +40,6 @@
     "client.GuiMixin",
     "client.InventoryScreenMixin",
     "client.ItemInHandRendererMixin",
-    "client.ItemRendererMixin",
     "client.KeyBindEntriesMixin",
     "client.LocalPlayerMixin",
     "client.MinecraftMixin",

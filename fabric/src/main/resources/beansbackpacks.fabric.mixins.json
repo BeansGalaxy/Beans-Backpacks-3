@@ -7,7 +7,8 @@
   "mixins": [
     "InventoryMixin",
     "ItemsMixin",
-    "ItemStackMixin"
+    "ItemStackMixin",
+    "ItemRendererMixin"
   ],
   "client": [
     "MinecraftMixin"
