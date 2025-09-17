@@ -2,7 +2,6 @@
   "replace": false,
   "values": [
     "beansbackpacks:backpack",
-    "beansbackpacks:bundle",
-    "beansbackpacks:bulk_pouch"
+    "beansbackpacks:bundle"
   ]
 }
