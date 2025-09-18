@@ -1,9 +1,11 @@
 package com.beansgalaxy.backpacks.items;
 
 import com.beansgalaxy.backpacks.platform.Services;
+import com.beansgalaxy.backpacks.traits.Traits;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -23,6 +25,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.apache.commons.lang3.math.Fraction;
 import org.jetbrains.annotations.Nullable;
 
 public class BurlapSackBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
@@ -39,6 +42,22 @@ public class BurlapSackBlock extends BaseEntityBlock implements SimpleWaterlogge
                         .setValue(OPEN, false);
 
             this.registerDefaultState(state);
+      }
+
+      @Override
+      protected int getAnalogOutputSignal(BlockState pState, Level pLevel, BlockPos pPos) {
+            if (pLevel.getBlockEntity(pPos) instanceof AbstractBurlapSackEntity entity) {
+                  Fraction weight = Traits.getWeight(entity.getItemStacks(), 16);
+                  float signal = weight.floatValue() * 14f;
+                  return signal == 14f ? 15 : Mth.ceil(signal);
+            }
+
+            return 0;
+      }
+
+      @Override
+      protected boolean hasAnalogOutputSignal(BlockState pState) {
+            return true;
       }
 
       protected boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {

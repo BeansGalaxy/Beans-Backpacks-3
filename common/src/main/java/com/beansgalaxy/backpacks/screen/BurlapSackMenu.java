@@ -14,6 +14,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,23 +48,11 @@ public class BurlapSackMenu extends AbstractContainerMenu {
             ItemStack clicked = slot.getItem();
 
             if (index > 35) {
-                  int stopCount = Math.min(clicked.getCount(), clicked.getMaxStackSize());
 
-                  stopCount = tryStack(8, 0, clicked, stopCount);
-                  if (stopCount == 0)
+                  if(tryToInventory(clicked)) {
+                        entity.setChanged();
                         return ItemStack.EMPTY;
-
-                  stopCount = tryStack(35, 8, clicked, stopCount);
-                  if (stopCount == 0)
-                        return ItemStack.EMPTY;
-
-                  stopCount = findEmpty(8, 0, clicked, stopCount);
-                  if (stopCount == 0)
-                        return ItemStack.EMPTY;
-
-                  stopCount = findEmpty(35, 8, clicked, stopCount);
-                  if (stopCount == 0)
-                        return ItemStack.EMPTY;
+                  }
 
             }
             else {
@@ -76,12 +65,36 @@ public class BurlapSackMenu extends AbstractContainerMenu {
                               int count = Math.min(clicked.getCount(), space);
                               stack.grow(count);
                               clicked.shrink(count);
+                              entity.setChanged();
                               return ItemStack.EMPTY;
                         }
                   }
                   entity.addItem(clicked);
+                  entity.setChanged();
             }
             return ItemStack.EMPTY;
+      }
+
+      private boolean tryToInventory(ItemStack clicked) {
+            int stopCount = Math.min(clicked.getCount(), clicked.getMaxStackSize());
+
+            stopCount = tryStack(8, 0, clicked, stopCount);
+            if (stopCount == 0)
+                  return true;
+
+            stopCount = tryStack(35, 8, clicked, stopCount);
+            if (stopCount == 0)
+                  return true;
+
+            stopCount = findEmpty(8, 0, clicked, stopCount);
+            if (stopCount == 0)
+                  return true;
+
+            stopCount = findEmpty(35, 8, clicked, stopCount);
+            if (stopCount == 0)
+                  return true;
+
+            return false;
       }
 
       private int tryStack(int start, int low, ItemStack clicked, int stopCount) {
@@ -178,12 +191,14 @@ public class BurlapSackMenu extends AbstractContainerMenu {
 
             @Override
             public boolean isHighlightable() {
-                  return entity.getContainerSize() > getContainerSlot();
+                  return entity.getSize() > getContainerSlot();
             }
 
             public ItemStack safeInsert(ItemStack stack, int increment) {
                   if (!stack.isEmpty() && this.mayPlace(stack))
                         entity.addItem(getContainerSlot(), stack, increment);
+
+                  setChanged();
 
                   return stack;
             }
@@ -191,6 +206,12 @@ public class BurlapSackMenu extends AbstractContainerMenu {
             @Override
             public boolean mayPlace(ItemStack pStack) {
                   return entity.getRemainingSpace(pStack) > pStack.getCount();
+            }
+
+            @Override
+            public void setChanged() {
+                  super.setChanged();
+                  entity.setChanged();
             }
       }
 

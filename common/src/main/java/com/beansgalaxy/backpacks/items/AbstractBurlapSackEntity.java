@@ -134,8 +134,11 @@ public abstract class AbstractBurlapSackEntity extends BlockEntity implements Co
 
             amount = Math.min(stack.getMaxStackSize(), amount);
             int count = stack.getCount();
-            if (count <= amount)
-                  return getItemStacks().remove(slot);
+            if (count <= amount) {
+                  ItemStack removed = getItemStacks().remove(slot);
+                  setChanged();
+                  return removed;
+            }
 
             ItemStack removed = stack.copyWithCount(amount);
             stack.shrink(amount);
@@ -149,16 +152,19 @@ public abstract class AbstractBurlapSackEntity extends BlockEntity implements Co
 
       @Override
       public void setItem(int slot, ItemStack stack) {
-            if (stack.isEmpty())
-                  return;
-
             int size = getSize();
-            if (size > slot) {
-                  getItemStacks().set(slot, stack);
+            boolean isEmpty = stack.isEmpty();
+
+            if (!isEmpty) {
+                  if (size > slot)
+                        getItemStacks().set(slot, stack);
+                  else
+                        getItemStacks().add(size, stack);
             }
-            else {
-                  getItemStacks().add(size, stack);
-            }
+            else if (size > slot)
+                  getItemStacks().remove(slot);
+
+            setChanged();
       }
 
       @Override
@@ -168,7 +174,14 @@ public abstract class AbstractBurlapSackEntity extends BlockEntity implements Co
 
       @Override
       public int getContainerSize() {
-            return getSize();
+            int i = 1 - Traits.getWeight(stacks, 16).intValue();
+            int value = getSize() + i;
+            return value;
+      }
+
+      @Override
+      public boolean canPlaceItem(int pSlot, ItemStack pStack) {
+            return Traits.getWeight(stacks, 16).intValue() != 1;
       }
 
       @Override
