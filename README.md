@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.10 Fabric <br> 0.10 NeoForge
+
+- **Burlap Sack Block**
+  - Backpack-like storage block
+  - Holds 16 Stacks
+  - Crafted with Stripped Bamboo + String
+- **Backpack Balancing**
+  - Iron & Gold Backpacks now hold 9 stacks (previously 8)
+  - Netherite Backpacks now hold 16 stacks (previously 12)
+- **Config Features**
+  - Completely removed "Features" (too much bulk)
+- **Miscellaneous** 
+  - Added "beansbackpacks:display" Item Component to redirect an item's model
+  - Added "display" field in "beansbackpacks:references"
+  - Fixed Leather Armor not rendering with any color
+
+## 0.9.1 Fabric <br> 0.9.1 NeoForge
+
+- **Major Shorthand Changes**
+  - The Shorthand has been seperated to the stand-alone mod **["Beans' Toolbelt"](https://modrinth.com/mod/beans-tool-belt)**
+  - Opening your world will send a warning message to install Beans' Toolbelt if any save data is found.
+  - Beans' Backpacks will hold onto the Shorthand's data until Beans' Toolbelt is installed.
+- **Controls**
+  - You must now hold [Sprint] + [Use] about 0.5s to place a backpack
+  - Using a empty backpack in your hand while wearing a filled one will not longer swap backpacks
+  - Quickly moving items into the Backpack with CTRL will no longer move it to the backpack in your hands
+- **Miscellaneous**
+  - Removed all Experimental Features
+  - Subtle re-texture of the Leather Backpack item to appear a simmilar color to when placed
+
+
 ## 0.8 Fabric <br> 0.8 NeoForge
 
 - **Major Shorthand & Tool Belt Changes**
