@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.10 Fabric <br> 0.10 NeoForge
+<h2>0.10 Fabric <br> 0.10 NeoForge</h2><img width="408" height="184" align="right" alt="crafting-grid(1)" src="https://github.com/user-attachments/assets/9144fd7c-36b1-451a-ab49-538c6e0595ff" />
 
 - **Burlap Sack Block**
   - Backpack-like storage block
