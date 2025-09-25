@@ -2,8 +2,8 @@ package com.beansgalaxy.backpacks.mixin.common;
 
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.traits.ITraitData;
-import com.beansgalaxy.backpacks.traits.quiver.QuiverMutable;
-import com.beansgalaxy.backpacks.traits.quiver.QuiverTraits;
+import com.beansgalaxy.backpacks.traits.abstract_traits.IProjectileTrait;
+import com.beansgalaxy.backpacks.traits.generic.MutableBundleLike;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
@@ -37,13 +37,13 @@ public abstract class CrossbowMixin extends ProjectileWeaponItem {
             if (pShooter instanceof Player player) {
                   ProjectileWeaponItem projectileWeaponItem = (ProjectileWeaponItem) pCrossbowStack.getItem();
                   Predicate<ItemStack> predicate = projectileWeaponItem.getAllSupportedProjectiles();
-                  QuiverTraits.runIfQuiverEquipped(player, (traits, slot, quiver, holder) -> {
-                        QuiverMutable mutable = traits.mutable(holder);
+                  IProjectileTrait.runIfEquipped(player, (proTrait, slot, quiver, holder) -> {
+                        MutableBundleLike<?> mutable = proTrait.mutable(holder);
                         List<ItemStack> stacks = mutable.getItemStacks();
                         if (stacks.isEmpty())
                               return false;
 
-                        int selectedSlotSafe = traits.getSelectedSlotSafe(holder, player);
+                        int selectedSlotSafe = mutable.getSelectedSlotSafe(player);
                         ItemStack stack = stacks.get(selectedSlotSafe);
                         if (!predicate.test(stack))
                               return false;
@@ -58,7 +58,7 @@ public abstract class CrossbowMixin extends ProjectileWeaponItem {
                         cir.setReturnValue(true);
                         List<ItemStack> finalStacks = holder.get(ITraitData.ITEM_STACKS);
                         int size = finalStacks == null ? 0 : finalStacks.size();
-                        traits.limitSelectedSlot(holder, selectedSlotSafe, size);
+                        mutable.limitSelectedSlot(selectedSlotSafe, size);
 
                         if (holder instanceof EnderTraits enderTraits)
                               enderTraits.broadcastChanges();

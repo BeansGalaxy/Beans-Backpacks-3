@@ -1,6 +1,5 @@
 package com.beansgalaxy.backpacks.traits.quiver;
 
-import com.beansgalaxy.backpacks.components.SlotSelection;
 import com.beansgalaxy.backpacks.traits.ITraitCodec;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.util.ModSound;

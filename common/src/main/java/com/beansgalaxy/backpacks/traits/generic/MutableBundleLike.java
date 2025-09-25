@@ -148,6 +148,10 @@ public class MutableBundleLike<T extends BundleLikeTraits> implements MutableIte
             return traits.getSelectedSlotSafe(holder, player);
       }
 
+      public void limitSelectedSlot(int safe, int size) {
+            traits.limitSelectedSlot(holder, safe, size);
+      }
+
       @Override
       public Fraction fullness() {
             List<ItemStack> stacks = this.stacks.get();

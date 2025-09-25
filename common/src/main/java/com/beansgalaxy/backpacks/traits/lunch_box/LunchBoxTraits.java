@@ -18,9 +18,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public class LunchBoxTraits extends BundleLikeTraits {
@@ -52,6 +54,27 @@ public class LunchBoxTraits extends BundleLikeTraits {
       @Override
       public String name() {
             return NAME;
+      }
+
+      @Nullable
+      public static LunchBoxTraits get(ItemStack stack) {
+            LunchBoxTraits traits = stack.get(Traits.LUNCH_BOX);
+            if (traits != null) {
+                  return traits;
+            }
+
+            ReferenceTrait reference = stack.get(Traits.REFERENCE);
+            if (reference == null)
+                  return null;
+
+            Optional<GenericTraits> optional = reference.getTrait();
+            if (optional.isEmpty())
+                  return null;
+
+            if (optional.get() instanceof LunchBoxTraits lunch)
+                  return lunch;
+
+            return null;
       }
 
       public static void ifPresent(ItemStack lunchBox, Consumer<LunchBoxTraits> ifPresent) {

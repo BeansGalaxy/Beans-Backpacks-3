@@ -15,6 +15,7 @@ import com.beansgalaxy.backpacks.traits.bundle.BundleCodecs;
 import com.beansgalaxy.backpacks.traits.bundle.BundleTraits;
 import com.beansgalaxy.backpacks.traits.chest.ChestCodecs;
 import com.beansgalaxy.backpacks.traits.chest.ChestTraits;
+import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxCodecs;
 import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxTraits;
@@ -32,6 +33,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.math.Fraction;
+import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Unique;
 
 import java.util.List;
 import java.util.Optional;
@@ -173,4 +176,43 @@ public interface Traits {
 
       }
 
+      static BundleLikeTraits getFoodStuffsTrait(ItemStack stack) {
+            LunchBoxTraits lunch = stack.get(LUNCH_BOX);
+            if (lunch != null)
+                  return lunch;
+
+            AlchemyTraits alchemy = stack.get(ALCHEMY);
+            if (alchemy != null)
+                  return alchemy;
+
+            ReferenceTrait reference = stack.get(REFERENCE);
+            if (reference == null)
+                  return null;
+
+            Optional<GenericTraits> optional = reference.getTrait();
+            if (optional.isEmpty())
+                  return null;
+
+            if (optional.get() instanceof LunchBoxTraits lunchRef)
+                  return lunchRef;
+
+            if (optional.get() instanceof AlchemyTraits alchemyRef)
+                  return alchemyRef;
+
+            return null;
+      }
+
+      @Nullable
+      static ItemStack getFoodStuffsSelection(ItemStack lunchBox, Player player) {
+            List<ItemStack> stacks = lunchBox.get(ITraitData.ITEM_STACKS);
+            if (stacks == null || stacks.isEmpty())
+                  return null;
+
+            BundleLikeTraits traits = getFoodStuffsTrait(lunchBox);
+            if (traits == null)
+                  return null;
+
+            int selectedSlot = traits.getSelectedSlotSafe(PatchedComponentHolder.of(lunchBox), player);
+            return stacks.get(selectedSlot);
+      }
 }

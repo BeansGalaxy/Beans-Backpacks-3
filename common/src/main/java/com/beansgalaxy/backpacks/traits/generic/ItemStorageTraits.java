@@ -8,7 +8,7 @@ import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.util.DraggingContainer;
-import com.beansgalaxy.backpacks.util.DraggingTrait;
+import com.beansgalaxy.backpacks.traits.abstract_traits.IDraggingTrait;
 import com.beansgalaxy.backpacks.util.ModSound;
 import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
 import com.mojang.datafixers.util.Pair;
@@ -37,7 +37,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public abstract class ItemStorageTraits extends GenericTraits implements DraggingTrait {
+public abstract class ItemStorageTraits extends GenericTraits implements IDraggingTrait {
 
       public ItemStorageTraits(ModSound sound) {
             super(sound);

@@ -11,12 +11,11 @@ import com.beansgalaxy.backpacks.data.ServerSave;
 import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.abstract_traits.IProjectileTrait;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
-import com.beansgalaxy.backpacks.traits.quiver.QuiverTraits;
 import com.beansgalaxy.backpacks.util.ModSound;
 import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
-import com.google.gson.annotations.Since;
 import com.mojang.serialization.DataResult;
 import net.minecraft.core.Direction;
 import net.minecraft.core.RegistryAccess;
@@ -161,12 +160,12 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
       @Inject(method = "getProjectile", locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true, at = @At(value = "INVOKE", shift = At.Shift.BEFORE,
                   target = "Lnet/minecraft/world/item/ProjectileWeaponItem;getHeldProjectile(Lnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Predicate;)Lnet/minecraft/world/item/ItemStack;"))
       private void getBackpackProjectile(ItemStack pShootable, CallbackInfoReturnable<ItemStack> cir, Predicate<ItemStack> predicate) {
-            QuiverTraits.runIfQuiverEquipped(instance, (traits, slot, quiver, holder) -> {
+            IProjectileTrait.runIfEquipped(instance, (proTrait, slot, quiver, holder) -> {
                   List<ItemStack> stacks = holder.get(ITraitData.ITEM_STACKS);
                   if (stacks == null || stacks.isEmpty())
                         return false;
 
-                  int selectedSlot = traits.getSelectedSlotSafe(holder, instance);
+                  int selectedSlot = proTrait.getSelectedSlotSafe(holder, instance);
                   ItemStack stack = stacks.get(selectedSlot);
                   if (predicate.test(stack)) {
                         cir.setReturnValue(stack);

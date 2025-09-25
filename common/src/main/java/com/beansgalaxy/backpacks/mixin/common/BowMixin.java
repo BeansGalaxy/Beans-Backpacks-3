@@ -2,8 +2,8 @@ package com.beansgalaxy.backpacks.mixin.common;
 
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.traits.ITraitData;
-import com.beansgalaxy.backpacks.traits.quiver.QuiverMutable;
-import com.beansgalaxy.backpacks.traits.quiver.QuiverTraits;
+import com.beansgalaxy.backpacks.traits.abstract_traits.IProjectileTrait;
+import com.beansgalaxy.backpacks.traits.generic.MutableBundleLike;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -37,14 +37,13 @@ public abstract class BowMixin extends ProjectileWeaponItem {
 
       @Shadow public abstract int getUseDuration(ItemStack pStack, LivingEntity pEntity);
 
-
       @Inject(method = "releaseUsing", cancellable = true, at = @At(value = "INVOKE",
                   target = "Lnet/minecraft/world/entity/player/Player;getProjectile(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack;"))
       private void useBackpackQuiverArrow(ItemStack bowStack, Level level, LivingEntity pEntityLiving, int pTimeLeft, CallbackInfo ci) {
             Player player = (Player) pEntityLiving;
             Predicate<ItemStack> predicate = getAllSupportedProjectiles();
-            QuiverTraits.runIfQuiverEquipped(player, (traits, slot, quiver, holder) -> {
-                  QuiverMutable mutable = traits.mutable(holder);
+            IProjectileTrait.runIfEquipped(player, (proTrait, slot, quiver, holder) -> {
+                  MutableBundleLike<?> mutable = proTrait.mutable(holder);
                   List<ItemStack> stacks = mutable.getItemStacks();
                   if (stacks.isEmpty())
                         return false;
@@ -69,7 +68,7 @@ public abstract class BowMixin extends ProjectileWeaponItem {
                               int selectedSlotSafe = mutable.getSelectedSlotSafe(player);
                               List<ItemStack> finalStacks = holder.get(ITraitData.ITEM_STACKS);
                               int size = finalStacks == null ? 0 : finalStacks.size();
-                              traits.limitSelectedSlot(holder, selectedSlotSafe, size);
+                              mutable.limitSelectedSlot(selectedSlotSafe, size);
                               ci.cancel();
 
                               if (holder instanceof EnderTraits enderTraits)

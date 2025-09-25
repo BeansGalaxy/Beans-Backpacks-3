@@ -4,7 +4,7 @@ import com.beansgalaxy.backpacks.CommonClient;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.util.DraggingContainer;
-import com.beansgalaxy.backpacks.util.DraggingTrait;
+import com.beansgalaxy.backpacks.traits.abstract_traits.IDraggingTrait;
 import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.GuiGraphics;
@@ -94,14 +94,14 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
                   return;
 
             if (slot != lastClickSlot && slot != drag.backpackDraggedSlot) {
-                  DraggingTrait.runIfPresent(backpack, minecraft.level, ((trait, holder) -> {
+                  IDraggingTrait.runIfPresent(backpack, minecraft.level, ((trait, holder) -> {
                         beans_Backpacks_3$dragTrait(pButton, trait, slot, cir, holder);
                   }));
             }
       }
 
       @Unique
-      private void beans_Backpacks_3$dragTrait(int pButton, DraggingTrait traits, Slot slot, CallbackInfoReturnable<Boolean> cir, PatchedComponentHolder holder) {
+      private void beans_Backpacks_3$dragTrait(int pButton, IDraggingTrait traits, Slot slot, CallbackInfoReturnable<Boolean> cir, PatchedComponentHolder holder) {
             isQuickCrafting = false;
             skipNextRelease = true;
             if (drag.backpackDraggedSlots.isEmpty()) {
@@ -127,7 +127,7 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
                   if (drag.backpackDraggedSlot != null) {
                         ItemStack backpack = menu.getCarried();
 
-                        DraggingTrait.runIfPresent(backpack, minecraft.level, (trait, holder) -> {
+                        IDraggingTrait.runIfPresent(backpack, minecraft.level, (trait, holder) -> {
                               trait.clickSlot(drag, minecraft.player, PatchedComponentHolder.of(backpack));
                         });
 
