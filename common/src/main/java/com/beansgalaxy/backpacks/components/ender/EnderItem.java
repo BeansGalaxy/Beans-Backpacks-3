@@ -48,27 +48,11 @@ public class EnderItem extends Item {
       }
 
       @Override
-      public InteractionResult useOn(UseOnContext ctx) {
-            Player player = ctx.getPlayer();
-            ItemStack ender = ctx.getItemInHand();
-
-            EnderCallback<InteractionResult> cir = EnderCallback.of(InteractionResult.PASS);
-            runIfPresent(ender, player, cir, (enderTraits, genericTraits) ->
-                  genericTraits.useOn(ctx, enderTraits, cir)
-            );
-
-            return cir.getReturnValue();
-      }
-
-      @Override
       public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pUsedHand) {
             ItemStack ender = pPlayer.getItemInHand(pUsedHand);
 
             InteractionResultHolder<ItemStack> pass = InteractionResultHolder.pass(ender);
             EnderCallback<InteractionResultHolder<ItemStack>> cir = EnderCallback.of(pass);
-            runIfPresent(ender, pPlayer, cir, (enderTraits, genericTraits) ->
-                  genericTraits.use(pLevel, pPlayer, pUsedHand, enderTraits, cir)
-            );
 
             return cir.getReturnValue();
       }
@@ -89,13 +73,6 @@ public class EnderItem extends Item {
                         genericTraits.stackedOnOther(enderTraits, slot.getItem(), slot, $$2, player, cir)
             );
             return cir.getReturnValue();
-      }
-
-      @Override
-      public void inventoryTick(ItemStack ender, Level level, Entity entity, int slot, boolean selected) {
-            getEnderTrait(ender).ifPresent(enderTraits -> {
-                  enderTraits.getTrait(level).inventoryTick(enderTraits, level, entity, slot, selected);
-            });
       }
 
       // ==================================================================================================================== CLIENT SYNC ONLY

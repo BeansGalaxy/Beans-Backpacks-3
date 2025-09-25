@@ -13,7 +13,6 @@ import java.util.function.Function;
 public enum Network2S {
       HOTKEY_2S(SyncHotkey.class, SyncHotkey.ID, SyncHotkey::encode, SyncHotkey::new, SyncHotkey::handle),
       PLACE_BACKPACK_2S(BackpackUseOn.class, BackpackUseOn.ID, BackpackUseOn::encode, BackpackUseOn::new, BackpackUseOn::handle),
-      USE_BACKPACK_2S(BackpackUse.class, BackpackUse.ID, BackpackUse::encode, BackpackUse::new, BackpackUse::handle),
       PICK_BLOCK_2S(PickBlock.class, PickBlock.ID, PickBlock::encode, PickBlock::new, PickBlock::handle),
       TINY_SUB_CHEST_2S(TinyChestClick.class, TinyChestClick.ID, TinyChestClick::encode, TinyChestClick::new, TinyChestClick::handle),
       TINY_MENU_2S(TinyMenuClick.class, TinyMenuClick.ID, TinyMenuClick::encode, TinyMenuClick::new, TinyMenuClick::handle),

@@ -32,20 +32,6 @@ import java.util.Optional;
 @Mixin(Item.class)
 public class ItemMixin {
 
-      @Inject(method = "useOn", at = @At("HEAD"), cancellable = true)
-      private void backpackUseOn(UseOnContext ctx, CallbackInfoReturnable<InteractionResult> cir) {
-            ItemStack backpack = ctx.getItemInHand();
-            PatchedComponentHolder holder = PatchedComponentHolder.of(backpack);
-            Optional<GenericTraits> optionalTr = Traits.get(holder);
-            if (optionalTr.isPresent()) {
-                  GenericTraits traits = optionalTr.get();
-                  traits.useOn(ctx, holder, cir);
-                  if (cir.isCancelled()) {
-                        return;
-                  }
-            }
-      }
-
       @Inject(method = "use", at = @At("HEAD"), cancellable = true)
       private void backpackUseOn(Level level, Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
             ItemStack backpack = player.getItemInHand(hand);
@@ -67,13 +53,6 @@ public class ItemMixin {
       private void backpackOnStack(ItemStack backpack, Slot slot, ClickAction click, Player player, CallbackInfoReturnable<Boolean> cir) {
             Traits.runIfPresent(backpack, traits -> {
                   traits.stackedOnOther(PatchedComponentHolder.of(backpack), slot.getItem(), slot, click, player, cir);
-            });
-      }
-
-      @Inject(method = "inventoryTick", at = @At("HEAD"))
-      private void backpackInInventoryTick(ItemStack stack, Level level, Entity entity, int slot, boolean selected, CallbackInfo ci) {
-            Traits.runIfPresent(stack, traits -> {
-                  traits.inventoryTick(PatchedComponentHolder.of(stack), level, entity, slot, selected);
             });
       }
 

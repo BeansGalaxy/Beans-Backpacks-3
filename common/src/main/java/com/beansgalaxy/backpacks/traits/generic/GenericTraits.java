@@ -8,14 +8,12 @@ import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.apache.commons.lang3.math.Fraction;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -65,15 +63,7 @@ public abstract class GenericTraits {
 
       public abstract void stackedOnOther(PatchedComponentHolder backpack, ItemStack other, Slot slot, ClickAction click, Player player, CallbackInfoReturnable<Boolean> cir);
 
-      public void useOn(UseOnContext ctx, PatchedComponentHolder holder, CallbackInfoReturnable<InteractionResult> cir) {
-
-      }
-
       public void use(Level level, Player player, InteractionHand hand, PatchedComponentHolder holder, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
-
-      }
-
-      public void inventoryTick(PatchedComponentHolder backpack, Level level, Entity entity, int slot, boolean selected) {
 
       }
 
