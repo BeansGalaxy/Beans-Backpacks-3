@@ -3,7 +3,7 @@ package com.beansgalaxy.backpacks.traits;
 import com.beansgalaxy.backpacks.screen.TraitMenu;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -31,16 +31,16 @@ public interface IClientTraits<T extends GenericTraits> {
       int BLUE_BAR = Mth.color(0.4F, 0.4F, 1.0F);
       int RED_BAR = Mth.color(0.9F, 0.2F, 0.3F);
 
-      void renderTooltip(T trait, ItemStack itemStack, PatchedComponentHolder holder, GuiGraphics gui, int mouseX, int mouseY, CallbackInfo ci);
+      void renderTooltip(T trait, ItemStack itemStack, ComponentHolder holder, GuiGraphics gui, int mouseX, int mouseY, CallbackInfo ci);
 
       void appendTooltipLines(T traits, List<Component> lines);
 
       void appendEquipmentLines(T traits, Consumer<Component> pTooltipAdder);
 
       @Nullable
-      ClientTooltipComponent getTooltipComponent(T traits, ItemStack itemStack, PatchedComponentHolder holder, Component title);
+      ClientTooltipComponent getTooltipComponent(T traits, ItemStack itemStack, ComponentHolder holder, Component title);
 
-      default boolean mouseScrolled(T traits, PatchedComponentHolder holder, Level level, Slot hoveredSlot, int containerId, int scrolled) {
+      default boolean mouseScrolled(T traits, ComponentHolder holder, Level level, Slot hoveredSlot, int containerId, int scrolled) {
             return false;
       }
 
@@ -48,15 +48,15 @@ public interface IClientTraits<T extends GenericTraits> {
 
       }
 
-      default boolean isBarVisible(T trait, PatchedComponentHolder holder) {
+      default boolean isBarVisible(T trait, ComponentHolder holder) {
             return !trait.isEmpty(holder);
       }
 
-      int getBarWidth(T trait, PatchedComponentHolder holder);
+      int getBarWidth(T trait, ComponentHolder holder);
 
-      int getBarColor(T trait, PatchedComponentHolder holder);
+      int getBarColor(T trait, ComponentHolder holder);
 
-      default void renderItemDecorations(T trait, PatchedComponentHolder holder, GuiGraphics gui, Font font, ItemStack stack, int x, int y) {
+      default void renderItemDecorations(T trait, ComponentHolder holder, GuiGraphics gui, Font font, ItemStack stack, int x, int y) {
             if (isBarVisible(trait, holder)) {
                   int l = getBarWidth(trait, holder);
                   int i = getBarColor(trait, holder);
@@ -72,10 +72,10 @@ public interface IClientTraits<T extends GenericTraits> {
             }
       }
 
-      default void renderItemInHand(ItemRenderer itemRenderer, T traits, LivingEntity entity, PatchedComponentHolder holder, ItemDisplayContext context, boolean hand, PoseStack stack1, MultiBufferSource buffer, int seed, CallbackInfo ci) {
+      default void renderItemInHand(ItemRenderer itemRenderer, T traits, LivingEntity entity, ComponentHolder holder, ItemDisplayContext context, boolean hand, PoseStack stack1, MultiBufferSource buffer, int seed, CallbackInfo ci) {
 
       }
 
       @Nullable
-      TraitMenu<T> createTooltip(Minecraft minecraft, int leftPos, int topPos, @Nullable Slot slot, PatchedComponentHolder holder, T traits);
+      TraitMenu<T> createTooltip(Minecraft minecraft, int leftPos, int topPos, @Nullable Slot slot, ComponentHolder holder, T traits);
 }

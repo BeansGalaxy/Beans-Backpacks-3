@@ -6,7 +6,7 @@ import com.beansgalaxy.backpacks.network.Network2S;
 import com.beansgalaxy.backpacks.screen.TinyClickType;
 import com.beansgalaxy.backpacks.traits.chest.ChestTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
@@ -62,7 +62,7 @@ public class TinyChestClick implements Packet2S {
                   return;
 
             Slot slot = menu.getSlot(containerSlot);
-            PatchedComponentHolder holder = PatchedComponentHolder.of(slot);
+            ComponentHolder holder = ComponentHolder.of(slot);
             Optional<ChestTraits> optional = ChestTraits.get(holder);
             ChestTraits chestTraits;
             if (optional.isEmpty()) {

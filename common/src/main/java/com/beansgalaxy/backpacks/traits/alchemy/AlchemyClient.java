@@ -3,22 +3,17 @@ package com.beansgalaxy.backpacks.traits.alchemy;
 import com.beansgalaxy.backpacks.components.SlotSelection;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.bundle.BundleClient;
-import com.beansgalaxy.backpacks.traits.bundle.BundleTooltip;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
@@ -26,12 +21,12 @@ public class AlchemyClient extends BundleClient {
       static final AlchemyClient INSTANCE = new AlchemyClient();
 
       @Override
-      public int getBarColor(BundleLikeTraits trait, PatchedComponentHolder holder) {
+      public int getBarColor(BundleLikeTraits trait, ComponentHolder holder) {
             return BAR_COLOR;
       }
 
       @Override
-      public void renderItemInHand(ItemRenderer itemRenderer, BundleLikeTraits traits, LivingEntity entity, PatchedComponentHolder holder, ItemDisplayContext context, boolean hand, PoseStack pose, MultiBufferSource buffer, int seed, CallbackInfo ci) {
+      public void renderItemInHand(ItemRenderer itemRenderer, BundleLikeTraits traits, LivingEntity entity, ComponentHolder holder, ItemDisplayContext context, boolean hand, PoseStack pose, MultiBufferSource buffer, int seed, CallbackInfo ci) {
             List<ItemStack> stacks = holder.get(ITraitData.ITEM_STACKS);
             if (stacks != null && !stacks.isEmpty()) {
                   Minecraft minecraft = Minecraft.getInstance();

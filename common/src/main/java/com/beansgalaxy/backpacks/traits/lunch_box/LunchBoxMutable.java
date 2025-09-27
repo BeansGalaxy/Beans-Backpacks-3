@@ -2,7 +2,7 @@ package com.beansgalaxy.backpacks.traits.lunch_box;
 
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.generic.MutableBundleLike;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.List;
 public class LunchBoxMutable extends MutableBundleLike<LunchBoxTraits> {
       private final ITraitData<List<ItemStack>> nonEdibles;
 
-      public LunchBoxMutable(LunchBoxTraits traits, PatchedComponentHolder holder) {
+      public LunchBoxMutable(LunchBoxTraits traits, ComponentHolder holder) {
             super(traits, holder);
             this.nonEdibles = ITraitData.NON_EDIBLES.get(holder);
       }

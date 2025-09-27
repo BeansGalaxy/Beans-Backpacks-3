@@ -5,7 +5,7 @@ import com.beansgalaxy.backpacks.screen.TinyTraitScreen;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.bundle.BundleTooltip;
 import com.beansgalaxy.backpacks.traits.chest.ChestTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.blaze3d.platform.Window;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -50,7 +50,7 @@ public abstract class TinyChestScreen extends TinyTraitScreen {
 
       public abstract ItemStack getStack();
 
-      public abstract PatchedComponentHolder getHolder();
+      public abstract ComponentHolder getHolder();
 
       public abstract boolean isFocused();
 

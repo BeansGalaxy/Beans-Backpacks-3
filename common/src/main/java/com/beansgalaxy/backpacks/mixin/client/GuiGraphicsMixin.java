@@ -3,7 +3,7 @@ package com.beansgalaxy.backpacks.mixin.client;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -28,7 +28,7 @@ public abstract class GuiGraphicsMixin {
             Optional<GenericTraits> traitsOptional = Traits.get(pStack);
             if (traitsOptional.isPresent()) {
                   GenericTraits traits = traitsOptional.get();
-                  traits.client().renderItemDecorations(traits, PatchedComponentHolder.of(pStack), (GuiGraphics)(Object) this, pFont, pStack, pX, pY);
+                  traits.client().renderItemDecorations(traits, ComponentHolder.of(pStack), (GuiGraphics)(Object) this, pFont, pStack, pX, pY);
                   return;
             }
 

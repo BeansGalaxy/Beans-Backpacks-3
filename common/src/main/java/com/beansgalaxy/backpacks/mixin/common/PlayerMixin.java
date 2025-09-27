@@ -14,7 +14,7 @@ import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.abstract_traits.IProjectileTrait;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.beansgalaxy.backpacks.util.ModSound;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
 import com.mojang.serialization.DataResult;
 import net.minecraft.core.Direction;
@@ -91,8 +91,8 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
                   return instance;
             }
 
-            @Override protected PatchedComponentHolder holder() {
-                  return PatchedComponentHolder.of(toStack());
+            @Override protected ComponentHolder holder() {
+                  return ComponentHolder.of(toStack());
             }
 
             @Override public ItemStack toStack() {

@@ -1,6 +1,5 @@
 package com.beansgalaxy.backpacks.traits.generic;
 
-import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.components.SlotSelection;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
@@ -12,7 +11,7 @@ import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.bundle.BundleScreen;
 import com.beansgalaxy.backpacks.util.ModSound;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.NonNullList;
@@ -45,7 +44,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
             this.size = size;
       }
 
-      public static Optional<BundleLikeTraits> get(PatchedComponentHolder stack) {
+      public static Optional<BundleLikeTraits> get(ComponentHolder stack) {
             for (TraitComponentKind<? extends BundleLikeTraits> type : TraitComponentKind.BUNDLE_TRAITS) {
                   BundleLikeTraits traits = stack.get(type);
                   if (traits != null)
@@ -68,7 +67,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
       }
 
       @Override
-      public Fraction fullness(PatchedComponentHolder holder) {
+      public Fraction fullness(ComponentHolder holder) {
             List<ItemStack> stacks = holder.get(ITraitData.ITEM_STACKS);
             if (stacks == null) {
                   return Fraction.ZERO;
@@ -82,13 +81,13 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
       }
 
       @Override
-      public boolean isEmpty(PatchedComponentHolder holder) {
+      public boolean isEmpty(ComponentHolder holder) {
             List<ItemStack> stacks = holder.get(ITraitData.ITEM_STACKS);
             return stacks == null || stacks.isEmpty();
       }
 
       @Override
-      public int getAnalogOutput(PatchedComponentHolder holder) {
+      public int getAnalogOutput(ComponentHolder holder) {
             Fraction fullness = fullness(holder);
             if (fullness.compareTo(Fraction.ZERO) == 0)
                   return 0;
@@ -99,12 +98,12 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
       }
 
       @Override @Nullable
-      public ItemStack getFirst(PatchedComponentHolder holder) {
+      public ItemStack getFirst(ComponentHolder holder) {
             List<ItemStack> stacks = holder.get(ITraitData.ITEM_STACKS);
             return stacks == null ? null : stacks.getFirst();
       }
 
-      private SlotSelection getSlotSelection(PatchedComponentHolder holder) {
+      private SlotSelection getSlotSelection(ComponentHolder holder) {
             SlotSelection slotSelection = holder.get(ITraitData.SLOT_SELECTION);
             if (slotSelection != null)
                   return slotSelection;
@@ -114,34 +113,34 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
             return selection;
       }
 
-      public int getSelectedSlot(PatchedComponentHolder holder, Player player) {
+      public int getSelectedSlot(ComponentHolder holder, Player player) {
             return getSlotSelection(holder).getSelectedSlot(player);
       }
 
-      public int getSelectedSlotSafe(PatchedComponentHolder holder, Player player) {
+      public int getSelectedSlotSafe(ComponentHolder holder, Player player) {
             int selectedSlot = getSelectedSlot(holder, player);
             return selectedSlot == 0 ? selectedSlot : selectedSlot - 1;
       }
 
-      public void setSelectedSlot(PatchedComponentHolder holder, Player player, int selectedSlot) {
+      public void setSelectedSlot(ComponentHolder holder, Player player, int selectedSlot) {
             getSlotSelection(holder).setSelectedSlot(player, selectedSlot);
       }
 
       @Override
-      public void limitSelectedSlot(PatchedComponentHolder holder, int slot, int size) {
+      public void limitSelectedSlot(ComponentHolder holder, int slot, int size) {
             getSlotSelection(holder).limit(slot, size);
       }
 
-      public void growSelectedSlot(PatchedComponentHolder holder, int slot) {
+      public void growSelectedSlot(ComponentHolder holder, int slot) {
             getSlotSelection(holder).grow(slot);
       }
 
       @Override
-      public void stackedOnMe(PatchedComponentHolder backpack, ItemStack other, Slot slot, ClickAction click, Player player, SlotAccess access, CallbackInfoReturnable<Boolean> cir) {
+      public void stackedOnMe(ComponentHolder backpack, ItemStack other, Slot slot, ClickAction click, Player player, SlotAccess access, CallbackInfoReturnable<Boolean> cir) {
       }
 
       @Override
-      public void stackedOnOther(PatchedComponentHolder backpack, ItemStack other, Slot slot, ClickAction click, Player player, CallbackInfoReturnable<Boolean> cir) {
+      public void stackedOnOther(ComponentHolder backpack, ItemStack other, Slot slot, ClickAction click, Player player, CallbackInfoReturnable<Boolean> cir) {
             if (!ClickAction.SECONDARY.equals(click))
                   return;
 
@@ -170,16 +169,16 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
       }
 
       @Override
-      public boolean canItemFit(PatchedComponentHolder holder, ItemStack inserted) {
+      public boolean canItemFit(ComponentHolder holder, ItemStack inserted) {
             return !inserted.isEmpty() && super.canItemFit(holder, inserted);
       }
 
-      public abstract MutableBundleLike<?> mutable(PatchedComponentHolder holder);
+      public abstract MutableBundleLike<?> mutable(ComponentHolder holder);
 
       @Override
       public void hotkeyUse(Slot slot, EquipmentSlot selectedEquipment, int button, ClickType actionType, Player player, CallbackInfo ci) {
             if (selectedEquipment == null) {
-                  PatchedComponentHolder holder = PatchedComponentHolder.of(slot.getItem());
+                  ComponentHolder holder = ComponentHolder.of(slot.getItem());
                   MutableBundleLike<?> mutable = mutable(holder);
                   if (mutable.isEmpty()) {
                         ci.cancel();
@@ -238,7 +237,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                   }
             } else {
                   ItemStack backpack = player.getItemBySlot(selectedEquipment);
-                  PatchedComponentHolder holder = PatchedComponentHolder.of(backpack);
+                  ComponentHolder holder = ComponentHolder.of(backpack);
                   MutableBundleLike<?> mutable = mutable(holder);
                   if (mutable.isFull())
                         return;
@@ -291,7 +290,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
       }
 
       @Override
-      public void hotkeyThrow(Slot slot, PatchedComponentHolder backpack, int button, Player player, boolean menuKeyDown, CallbackInfo ci) {
+      public void hotkeyThrow(Slot slot, ComponentHolder backpack, int button, Player player, boolean menuKeyDown, CallbackInfo ci) {
             if (isEmpty(backpack))
                   return;
 
@@ -337,7 +336,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                         return true;
                   }
 
-                  MutableBundleLike<?> mutable = mutable(PatchedComponentHolder.of(backpack));
+                  MutableBundleLike<?> mutable = mutable(ComponentHolder.of(backpack));
                   Iterator<ItemStack> iterator = mutable.getItemStacks().iterator();
                   while (iterator.hasNext() && !stack.isEmpty()) {
                         ItemStack itemStack = iterator.next();
@@ -394,7 +393,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
             sound().atClient(player, ModSound.Type.REMOVE);
             ci.cancel();
 
-            limitSelectedSlot(PatchedComponentHolder.of(backpack), slot, size);
+            limitSelectedSlot(ComponentHolder.of(backpack), slot, size);
       }
 
       @Override
@@ -425,7 +424,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
       }
 
       @Override
-      public void tinyMenuClick(PatchedComponentHolder holder, int index, TinyClickType clickType, SlotAccess carriedAccess, Player player) {
+      public void tinyMenuClick(ComponentHolder holder, int index, TinyClickType clickType, SlotAccess carriedAccess, Player player) {
             MutableBundleLike<?> mutable = mutable(holder);
             if (clickType.isHotbar()) {
                   Inventory inventory = player.getInventory();
@@ -504,7 +503,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                   ItemStack stack = stacks.get(index);
                   ItemStorageTraits.runIfEquipped(player, ((storageTraits, slot) -> {
                         ItemStack backpack = player.getItemBySlot(slot);
-                        MutableItemStorage itemStorage = storageTraits.mutable(PatchedComponentHolder.of(backpack));
+                        MutableItemStorage itemStorage = storageTraits.mutable(ComponentHolder.of(backpack));
                         if (canItemFit(holder, stack)) {
                               if (itemStorage.addItem(stack, player) != null) {
                                     mutable.push();
@@ -598,7 +597,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
       }
 
       @Override
-      public void tinyHotbarClick(PatchedComponentHolder holder, int slotId, TinyClickType clickType, InventoryMenu menu, Player player) {
+      public void tinyHotbarClick(ComponentHolder holder, int slotId, TinyClickType clickType, InventoryMenu menu, Player player) {
             if (TinyClickType.I_SHIFT.equals(clickType)) {
                   Slot slot = menu.getSlot(slotId);
                   ItemStack hotbar = slot.getItem();
@@ -623,7 +622,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
       }
 
       @Override
-      public void menuClick(PatchedComponentHolder holder, int index, TraitMenuClick.Kind clickType, SlotAccess carriedAccess, Player player) {
+      public void menuClick(ComponentHolder holder, int index, TraitMenuClick.Kind clickType, SlotAccess carriedAccess, Player player) {
             MutableBundleLike<?> mutable = mutable(holder);
 //            if (clickType.isHotbar()) {
 //                  Inventory inventory = player.getInventory();
@@ -702,7 +701,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                   ItemStack stack = stacks.get(index);
                   ItemStorageTraits.runIfEquipped(player, ((storageTraits, slot) -> {
                         ItemStack backpack = player.getItemBySlot(slot);
-                        MutableItemStorage itemStorage = storageTraits.mutable(PatchedComponentHolder.of(backpack));
+                        MutableItemStorage itemStorage = storageTraits.mutable(ComponentHolder.of(backpack));
                         if (canItemFit(holder, stack)) {
                               if (itemStorage.addItem(stack, player) != null) {
                                     mutable.push();

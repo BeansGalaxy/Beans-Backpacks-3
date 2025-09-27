@@ -6,7 +6,7 @@ import com.beansgalaxy.backpacks.network.Network2S;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
@@ -61,9 +61,9 @@ public class SyncSelectedSlot implements Packet2S {
             if (stack.isEmpty())
                   return;
 
-            Optional<BundleLikeTraits> optional = BundleLikeTraits.get(PatchedComponentHolder.of(stack));
+            Optional<BundleLikeTraits> optional = BundleLikeTraits.get(ComponentHolder.of(stack));
             BundleLikeTraits traits;
-            PatchedComponentHolder holder;
+            ComponentHolder holder;
             if (optional.isEmpty()) {
                   EnderTraits enderTraits = stack.get(Traits.ENDER);
                   if (enderTraits == null)
@@ -78,7 +78,7 @@ public class SyncSelectedSlot implements Packet2S {
             }
             else {
                   traits = optional.get();
-                  holder = PatchedComponentHolder.of(stack);
+                  holder = ComponentHolder.of(stack);
             }
 
             traits.setSelectedSlot(holder, sender, selectedSlot);

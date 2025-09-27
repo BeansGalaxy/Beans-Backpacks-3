@@ -9,17 +9,17 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
 
-public interface PatchedComponentHolder {
+public interface ComponentHolder {
 
-      static PatchedComponentHolder of(Slot slot) {
+      static ComponentHolder of(Slot slot) {
             return new SlotTraitHolder(slot);
       }
 
-      static PatchedComponentHolder of(ItemStack stack) {
+      static ComponentHolder of(ItemStack stack) {
             return new ItemStackTraitHolder(stack);
       }
 
-      static PatchedComponentHolder of(ItemStack stack, Player player) {
+      static ComponentHolder of(ItemStack stack, Player player) {
             return new StackReturningTraitHolder(stack, player);
       }
 
@@ -52,7 +52,7 @@ public interface PatchedComponentHolder {
             return t;
       }
 
-      class StackReturningTraitHolder implements PatchedComponentHolder {
+      class StackReturningTraitHolder implements ComponentHolder {
             private final ItemStack stack;
             private final Player player;
 
@@ -95,7 +95,7 @@ public interface PatchedComponentHolder {
 
       }
 
-      class ItemStackTraitHolder implements PatchedComponentHolder {
+      class ItemStackTraitHolder implements ComponentHolder {
             private final ItemStack stack;
 
             private ItemStackTraitHolder(ItemStack stack) {
@@ -119,7 +119,7 @@ public interface PatchedComponentHolder {
 
       }
 
-      class SlotTraitHolder implements PatchedComponentHolder {
+      class SlotTraitHolder implements ComponentHolder {
             private final Slot slot;
 
             public SlotTraitHolder(Slot slot) {

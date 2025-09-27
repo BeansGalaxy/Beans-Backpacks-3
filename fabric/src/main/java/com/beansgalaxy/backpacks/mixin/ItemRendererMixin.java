@@ -3,10 +3,7 @@ package com.beansgalaxy.backpacks.mixin;
 import com.beansgalaxy.backpacks.CommonClient;
 import com.beansgalaxy.backpacks.components.DisplayComponent;
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
-import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
-import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -29,7 +26,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.List;
 import java.util.Optional;
 
 @Mixin(ItemRenderer.class)

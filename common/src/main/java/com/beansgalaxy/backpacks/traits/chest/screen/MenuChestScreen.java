@@ -3,11 +3,10 @@ package com.beansgalaxy.backpacks.traits.chest.screen;
 import com.beansgalaxy.backpacks.client.KeyPress;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.network.serverbound.TinyChestClick;
-import com.beansgalaxy.backpacks.network.serverbound.TinyMenuInteract;
 import com.beansgalaxy.backpacks.screen.TinyClickType;
 import com.beansgalaxy.backpacks.traits.chest.ChestTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
@@ -76,13 +75,13 @@ public class MenuChestScreen extends TinyChestScreen {
       }
 
       @Override
-      public PatchedComponentHolder getHolder() {
+      public ComponentHolder getHolder() {
             ItemStack stack = getStack();
             Optional<EnderTraits> optional = EnderTraits.get(stack);
             if (optional.isPresent())
                   return optional.get();
 
-            return PatchedComponentHolder.of(stack);
+            return ComponentHolder.of(stack);
       }
 
       @Override

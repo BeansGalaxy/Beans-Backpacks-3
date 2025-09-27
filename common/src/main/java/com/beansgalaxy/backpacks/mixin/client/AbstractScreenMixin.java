@@ -1,12 +1,11 @@
 package com.beansgalaxy.backpacks.mixin.client;
 
 import com.beansgalaxy.backpacks.CommonClient;
-import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.access.EquipmentSlotAccess;
 import com.beansgalaxy.backpacks.screen.TraitMenu;
 import com.beansgalaxy.backpacks.util.DraggingContainer;
 import com.beansgalaxy.backpacks.traits.abstract_traits.IDraggingTrait;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -144,7 +143,7 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
       }
 
       @Unique
-      private void beans_Backpacks_3$dragTrait(IDraggingTrait traits, int pButton, Slot slot, CallbackInfoReturnable<Boolean> cir, PatchedComponentHolder holder) {
+      private void beans_Backpacks_3$dragTrait(IDraggingTrait traits, int pButton, Slot slot, CallbackInfoReturnable<Boolean> cir, ComponentHolder holder) {
             isQuickCrafting = false;
             skipNextRelease = true;
             if (drag.allSlots.isEmpty()) {
@@ -171,7 +170,7 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
                         ItemStack backpack = menu.getCarried();
 
                         IDraggingTrait.runIfPresent(backpack, minecraft.level, (trait, holder) -> {
-                              trait.clickSlot(drag, minecraft.player, PatchedComponentHolder.of(backpack));
+                              trait.clickSlot(drag, minecraft.player, ComponentHolder.of(backpack));
                         });
 
                         drag.firstSlot = null;

@@ -6,7 +6,7 @@ import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.generic.MutableBundleLike;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.datafixers.util.Function4;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -40,14 +40,14 @@ public interface IProjectileTrait {
                    : null;
       }
 
-      static void runIfEquipped(Player player, Function4<IProjectileTrait, @Nullable EquipmentSlot, ItemStack, PatchedComponentHolder, Boolean> runnable) {
+      static void runIfEquipped(Player player, Function4<IProjectileTrait, @Nullable EquipmentSlot, ItemStack, ComponentHolder, Boolean> runnable) {
             for (EquipmentSlot slot : EquipmentSlot.values()) {
                   ItemStack stack = player.getItemBySlot(slot);
                   if (stack.isEmpty())
                         continue;
 
                   IProjectileTrait trait = get(stack);
-                  PatchedComponentHolder holder;
+                  ComponentHolder holder;
                   if (trait == null) {
                         Optional<EnderTraits> optionalEnder = EnderTraits.get(stack);
                         if (optionalEnder.isEmpty()) {
@@ -63,7 +63,7 @@ public interface IProjectileTrait {
                         else continue;
                   }
                   else {
-                        holder = PatchedComponentHolder.of(stack);
+                        holder = ComponentHolder.of(stack);
                   }
 
                   if (runnable.apply(trait, slot, stack, holder))
@@ -71,7 +71,7 @@ public interface IProjectileTrait {
             }
       }
 
-      MutableBundleLike<?> mutable(PatchedComponentHolder holder);
+      MutableBundleLike<?> mutable(ComponentHolder holder);
 
-      int getSelectedSlotSafe(PatchedComponentHolder holder, Player instance);
+      int getSelectedSlotSafe(ComponentHolder holder, Player instance);
 }

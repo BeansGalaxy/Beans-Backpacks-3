@@ -7,8 +7,8 @@ import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
 
-public record TraitTooltip<T extends GenericTraits>(T traits, ItemStack itemStack, PatchedComponentHolder holder, Component title)
-            implements TooltipComponent, PatchedComponentHolder {
+public record TraitTooltip<T extends GenericTraits>(T traits, ItemStack itemStack, ComponentHolder holder, Component title)
+            implements TooltipComponent, ComponentHolder {
 
       @Override
       public <T> @Nullable T remove(DataComponentType<? extends T> type) {

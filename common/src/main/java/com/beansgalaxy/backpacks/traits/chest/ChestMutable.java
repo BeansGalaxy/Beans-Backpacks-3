@@ -4,7 +4,7 @@ import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.beansgalaxy.backpacks.traits.generic.MutableItemStorage;
 import com.beansgalaxy.backpacks.util.ModSound;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -16,9 +16,9 @@ import org.apache.commons.lang3.math.Fraction;
 public class ChestMutable implements MutableItemStorage {
       private final ChestTraits traits;
       private final NonNullList<ItemStack> stacks;
-      private final PatchedComponentHolder holder;
+      private final ComponentHolder holder;
 
-      public ChestMutable(ChestTraits traits, PatchedComponentHolder holder) {
+      public ChestMutable(ChestTraits traits, ComponentHolder holder) {
             this.traits = traits;
             this.holder = holder;
             ItemContainerContents contents = holder.get(ITraitData.CHEST);

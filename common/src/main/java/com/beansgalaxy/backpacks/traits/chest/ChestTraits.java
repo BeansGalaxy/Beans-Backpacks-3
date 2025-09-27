@@ -13,7 +13,7 @@ import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
 import com.beansgalaxy.backpacks.traits.generic.MutableItemStorage;
 import com.beansgalaxy.backpacks.util.ModSound;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.NonNullList;
@@ -56,7 +56,7 @@ public class ChestTraits extends ItemStorageTraits {
             this.columns = columns;
       }
 
-      public static Optional<ChestTraits> get(PatchedComponentHolder backpack) {
+      public static Optional<ChestTraits> get(ComponentHolder backpack) {
             ChestTraits chestTraits = backpack.get(Traits.CHEST);
             if (chestTraits != null)
                   return Optional.of(chestTraits);
@@ -92,7 +92,7 @@ public class ChestTraits extends ItemStorageTraits {
       }
 
       @Override
-      public Fraction fullness(PatchedComponentHolder holder) {
+      public Fraction fullness(ComponentHolder holder) {
             ItemContainerContents contents = holder.get(ITraitData.CHEST);
             if (contents == null)
                   return Fraction.ZERO;
@@ -102,7 +102,7 @@ public class ChestTraits extends ItemStorageTraits {
       }
 
       @Override
-      public boolean isFull(PatchedComponentHolder holder) {
+      public boolean isFull(ComponentHolder holder) {
             ItemContainerContents contents = holder.get(ITraitData.CHEST);
             if (contents == null)
                   return false;
@@ -113,7 +113,7 @@ public class ChestTraits extends ItemStorageTraits {
       }
 
       @Override
-      public void use(Level level, Player player, InteractionHand hand, PatchedComponentHolder holder, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
+      public void use(Level level, Player player, InteractionHand hand, ComponentHolder holder, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
             if (player.level().isClientSide)
                   client().openTinyMenu(this, hand, player);
 
@@ -122,7 +122,7 @@ public class ChestTraits extends ItemStorageTraits {
       }
 
       @Override
-      public void stackedOnMe(PatchedComponentHolder backpack, ItemStack other, Slot slot, ClickAction click, Player player, SlotAccess access, CallbackInfoReturnable<Boolean> cir) {
+      public void stackedOnMe(ComponentHolder backpack, ItemStack other, Slot slot, ClickAction click, Player player, SlotAccess access, CallbackInfoReturnable<Boolean> cir) {
             BackData backData = BackData.get(player);
             int tinySlot = backData.getTinySlot();
             if (tinySlot != -1) {
@@ -142,17 +142,17 @@ public class ChestTraits extends ItemStorageTraits {
       }
 
       @Override
-      public void stackedOnOther(PatchedComponentHolder backpack, ItemStack other, Slot slot, ClickAction click, Player player, CallbackInfoReturnable<Boolean> cir) {
+      public void stackedOnOther(ComponentHolder backpack, ItemStack other, Slot slot, ClickAction click, Player player, CallbackInfoReturnable<Boolean> cir) {
 
       }
 
       @Override
-      public boolean isEmpty(PatchedComponentHolder holder) {
+      public boolean isEmpty(ComponentHolder holder) {
             return !holder.has(ITraitData.CHEST);
       }
 
       @Override
-      public int getAnalogOutput(PatchedComponentHolder holder) {
+      public int getAnalogOutput(ComponentHolder holder) {
             Fraction fullness = fullness(holder);
             if (fullness.compareTo(Fraction.ZERO) == 0)
                   return 0;
@@ -163,7 +163,7 @@ public class ChestTraits extends ItemStorageTraits {
       }
 
       @Override
-      public ChestMutable mutable(PatchedComponentHolder holder) {
+      public ChestMutable mutable(ComponentHolder holder) {
             return new ChestMutable(this, holder);
       }
 
@@ -173,7 +173,7 @@ public class ChestTraits extends ItemStorageTraits {
                   return;
 
             ItemStack backpack = player.getItemBySlot(selectedEquipment);
-            PatchedComponentHolder holder = PatchedComponentHolder.of(backpack);
+            ComponentHolder holder = ComponentHolder.of(backpack);
             ChestMutable mutable = mutable(holder);
             if (mutable.isFull())
                   return;
@@ -225,7 +225,7 @@ public class ChestTraits extends ItemStorageTraits {
       }
 
       @Override
-      public void hotkeyThrow(Slot slot, PatchedComponentHolder backpack, int button, Player player, boolean menuKeyDown, CallbackInfo ci) {
+      public void hotkeyThrow(Slot slot, ComponentHolder backpack, int button, Player player, boolean menuKeyDown, CallbackInfo ci) {
             if (isEmpty(backpack))
                   return;
 
@@ -268,7 +268,7 @@ public class ChestTraits extends ItemStorageTraits {
                         return true;
                   }
 
-                  ChestMutable mutable = mutable(PatchedComponentHolder.of(backpack));
+                  ChestMutable mutable = mutable(ComponentHolder.of(backpack));
                   Iterator<ItemStack> iterator = mutable.getItemStacks().iterator();
                   while (iterator.hasNext() && !stack.isEmpty()) {
                         ItemStack itemStack = iterator.next();
@@ -345,7 +345,7 @@ public class ChestTraits extends ItemStorageTraits {
       }
 
       @Override
-      public @Nullable ItemStack getFirst(PatchedComponentHolder backpack) {
+      public @Nullable ItemStack getFirst(ComponentHolder backpack) {
             ItemContainerContents contents = backpack.get(ITraitData.CHEST);
             if (contents == null) {
                   return null;
@@ -354,7 +354,7 @@ public class ChestTraits extends ItemStorageTraits {
             return contents.copyOne();
       }
 
-      public void tinySubMenuClick(PatchedComponentHolder holder, int index, TinyClickType clickType, SlotAccess carriedAccess, Player player) {
+      public void tinySubMenuClick(ComponentHolder holder, int index, TinyClickType clickType, SlotAccess carriedAccess, Player player) {
             if (index < 0 || index >= size()) {
                   return;
             }
@@ -373,7 +373,7 @@ public class ChestTraits extends ItemStorageTraits {
       }
 
       @Override
-      public void tinyMenuClick(PatchedComponentHolder holder, int index, TinyClickType clickType, SlotAccess carriedAccess, Player player) {
+      public void tinyMenuClick(ComponentHolder holder, int index, TinyClickType clickType, SlotAccess carriedAccess, Player player) {
             if (index < 0 || index >= size()) {
                   return;
             }
@@ -417,7 +417,7 @@ public class ChestTraits extends ItemStorageTraits {
             tinyMenuClick(holder, index, clickType, carriedAccess, player, mutable);
       }
 
-      private void tinyMenuClick(PatchedComponentHolder holder, int index, TinyClickType clickType, SlotAccess carriedAccess, Player player, ChestMutable mutable) {
+      private void tinyMenuClick(ComponentHolder holder, int index, TinyClickType clickType, SlotAccess carriedAccess, Player player, ChestMutable mutable) {
             if (clickType.isHotbar()) {
                   Inventory inventory = player.getInventory();
                   ItemStack hotbarStack = inventory.items.get(clickType.hotbarSlot);
@@ -436,7 +436,7 @@ public class ChestTraits extends ItemStorageTraits {
                   CallbackInfo ci = new CallbackInfo("chest_tiny_menu", true);
                   ItemStorageTraits.runIfEquipped(player, ((storageTraits, slot) -> {
                         ItemStack backpack = player.getItemBySlot(slot);
-                        MutableItemStorage itemStorage = storageTraits.mutable(PatchedComponentHolder.of(backpack));
+                        MutableItemStorage itemStorage = storageTraits.mutable(ComponentHolder.of(backpack));
                         if (canItemFit(holder, stack)) {
                               if (itemStorage.addItem(stack, player) != null) {
                                     itemStorage.push();

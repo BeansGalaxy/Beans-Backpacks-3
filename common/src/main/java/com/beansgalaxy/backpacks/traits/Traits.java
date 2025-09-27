@@ -21,7 +21,7 @@ import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxCodecs;
 import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxTraits;
 import com.beansgalaxy.backpacks.traits.quiver.QuiverCodecs;
 import com.beansgalaxy.backpacks.traits.quiver.QuiverTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.NonNullList;
@@ -36,7 +36,6 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.math.Fraction;
 import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.Unique;
 
 import java.util.List;
 import java.util.Optional;
@@ -94,10 +93,10 @@ public interface Traits {
       }
 
       static Optional<GenericTraits> get(ItemStack stack) {
-            return stack.isEmpty() ? Optional.empty() : get(PatchedComponentHolder.of(stack));
+            return stack.isEmpty() ? Optional.empty() : get(ComponentHolder.of(stack));
       }
 
-      static Optional<GenericTraits> get(PatchedComponentHolder stack) {
+      static Optional<GenericTraits> get(ComponentHolder stack) {
             for (TraitComponentKind<? extends GenericTraits> type : TraitComponentKind.TRAITS) {
                   GenericTraits traits = stack.get(type);
                   if (traits != null)
@@ -130,10 +129,10 @@ public interface Traits {
             if (stack.isEmpty())
                   return false;
 
-            return testIfPresent(PatchedComponentHolder.of(stack), predicate);
+            return testIfPresent(ComponentHolder.of(stack), predicate);
       }
 
-      static boolean testIfPresent(PatchedComponentHolder stack, Predicate<GenericTraits> predicate) {
+      static boolean testIfPresent(ComponentHolder stack, Predicate<GenericTraits> predicate) {
             Optional<GenericTraits> genericTraits = get(stack);
             if (genericTraits.isEmpty()) return false;
 
@@ -220,7 +219,7 @@ public interface Traits {
             if (traits == null)
                   return null;
 
-            int selectedSlot = traits.getSelectedSlotSafe(PatchedComponentHolder.of(lunchBox), player);
+            int selectedSlot = traits.getSelectedSlotSafe(ComponentHolder.of(lunchBox), player);
             return stacks.get(selectedSlot);
       }
 }

@@ -5,7 +5,7 @@ import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.network.Network2S;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
@@ -61,7 +61,7 @@ public class TraitMenuClick implements Packet2S {
                   return;
 
             Slot slot = menu.getSlot(containerSlot);
-            PatchedComponentHolder holder = PatchedComponentHolder.of(slot);
+            ComponentHolder holder = ComponentHolder.of(slot);
             Optional<GenericTraits> optional = Traits.get(holder);
             GenericTraits traits;
             if (optional.isEmpty()) {

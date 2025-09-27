@@ -2,7 +2,7 @@ package com.beansgalaxy.backpacks.traits.lunch_box;
 
 import com.beansgalaxy.backpacks.traits.bundle.BundleTooltip;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.google.common.collect.Lists;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -18,7 +18,7 @@ public class LunchBoxTooltip extends BundleTooltip {
       private final int edibleSize;
       private final boolean selectNonEdible;
 
-      public LunchBoxTooltip(BundleLikeTraits traits, ItemStack itemStack, List<ItemStack> stacks, List<ItemStack> nonEdibles, PatchedComponentHolder holder, Component title) {
+      public LunchBoxTooltip(BundleLikeTraits traits, ItemStack itemStack, List<ItemStack> stacks, List<ItemStack> nonEdibles, ComponentHolder holder, Component title) {
             super(traits, itemStack, concatList(stacks, nonEdibles), holder, title);
             this.edibleSize = stacks.size();
             this.hasNonEdibles = nonEdibles != null;

@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 
-public abstract class ViewableBackpack implements PatchedComponentHolder {
+public abstract class ViewableBackpack implements ComponentHolder {
 
       @Nullable
       public static ViewableBackpack get(LivingEntity livingEntity) {
@@ -115,7 +115,7 @@ public abstract class ViewableBackpack implements PatchedComponentHolder {
             return entity().getId();
       }
 
-      protected abstract PatchedComponentHolder holder();
+      protected abstract ComponentHolder holder();
 
       public abstract ItemStack toStack();
 

@@ -10,7 +10,7 @@ import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.util.DraggingContainer;
 import com.beansgalaxy.backpacks.traits.abstract_traits.IDraggingTrait;
 import com.beansgalaxy.backpacks.util.ModSound;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.component.DataComponentHolder;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
@@ -113,7 +113,7 @@ public abstract class ItemStorageTraits extends GenericTraits implements IDraggi
                         other = traits.mutable(enderTraits);
                   else return false;
             }
-            else other = optional.get().mutable(PatchedComponentHolder.of(from));
+            else other = optional.get().mutable(ComponentHolder.of(from));
 
             if (other.isEmpty())
                   return false;
@@ -122,17 +122,17 @@ public abstract class ItemStorageTraits extends GenericTraits implements IDraggi
             return true;
       }
 
-      public abstract MutableItemStorage mutable(PatchedComponentHolder holder);
+      public abstract MutableItemStorage mutable(ComponentHolder holder);
 
       public abstract void hotkeyUse(Slot slot, EquipmentSlot selectedEquipment, int button, ClickType actionType, Player player, CallbackInfo ci);
 
-      public abstract void hotkeyThrow(Slot slot, PatchedComponentHolder backpack, int button, Player player, boolean menuKeyDown, CallbackInfo ci);
+      public abstract void hotkeyThrow(Slot slot, ComponentHolder backpack, int button, Player player, boolean menuKeyDown, CallbackInfo ci);
 
       public abstract boolean pickupToBackpack(Player player, EquipmentSlot equipmentSlot, Inventory inventory, ItemStack backpack, ItemStack stack, CallbackInfoReturnable<Boolean> cir);
 
       public abstract void clientPickBlock(EquipmentSlot equipmentSlot, boolean instantBuild, Inventory inventory, ItemStack itemStack, Player player, CallbackInfo ci);
 
-      public void serverPickBlock(PatchedComponentHolder holder, int index, ServerPlayer sender) {
+      public void serverPickBlock(ComponentHolder holder, int index, ServerPlayer sender) {
             Inventory inventory = sender.getInventory();
 
             int freeSlot = inventory.getFreeSlot();
@@ -170,12 +170,12 @@ public abstract class ItemStorageTraits extends GenericTraits implements IDraggi
                   sender.connection.send(new ClientboundContainerSetSlotPacket(-2, 0, overflowSlot, inventory.getItem(overflowSlot)));
       }
 
-      public void limitSelectedSlot(PatchedComponentHolder holder, int slot, int size) {
+      public void limitSelectedSlot(ComponentHolder holder, int slot, int size) {
       }
 
       public boolean overflowFromInventory(EquipmentSlot equipmentSlot, Player player, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
             ItemStack backpack = player.getItemBySlot(equipmentSlot);
-            MutableItemStorage mutable = mutable(PatchedComponentHolder.of(backpack));
+            MutableItemStorage mutable = mutable(ComponentHolder.of(backpack));
             ItemStack itemStack = mutable.addItem(stack, player);
             if (itemStack != null) {
                   mutable.push();
@@ -192,16 +192,16 @@ public abstract class ItemStorageTraits extends GenericTraits implements IDraggi
             return false;
       }
 
-      public boolean canItemFit(PatchedComponentHolder holder, ItemStack inserted) {
+      public boolean canItemFit(ComponentHolder holder, ItemStack inserted) {
             return inserted.getItem().canFitInsideContainerItems() && Traits.get(inserted).isEmpty();
       }
 
       public abstract void breakTrait(ServerPlayer pPlayer, ItemStack instance);
 
       @Nullable
-      public abstract ItemStack getFirst(PatchedComponentHolder backpack);
+      public abstract ItemStack getFirst(ComponentHolder backpack);
 
-      public void tinyHotbarClick(PatchedComponentHolder holder, int slotId, TinyClickType clickType, InventoryMenu menu, Player player) {
+      public void tinyHotbarClick(ComponentHolder holder, int slotId, TinyClickType clickType, InventoryMenu menu, Player player) {
             Slot slot = menu.getSlot(slotId);
             ItemStack hotbar = slot.getItem();
             if (ItemStorageTraits.tryMoveItems(mutable(holder), hotbar, player))
@@ -210,8 +210,8 @@ public abstract class ItemStorageTraits extends GenericTraits implements IDraggi
             if (clickType.isAction()) {
                   ItemStorageTraits.runIfEquipped(player, ((storageTraits, equipment) -> {
                         ItemStack backpack = player.getItemBySlot(equipment);
-                        MutableItemStorage itemStorage = storageTraits.mutable(PatchedComponentHolder.of(backpack));
-                        if (canItemFit(PatchedComponentHolder.of(backpack), hotbar)) {
+                        MutableItemStorage itemStorage = storageTraits.mutable(ComponentHolder.of(backpack));
+                        if (canItemFit(ComponentHolder.of(backpack), hotbar)) {
                               if (itemStorage.addItem(hotbar, player) != null) {
                                     sound().atClient(player, ModSound.Type.INSERT);
                                     itemStorage.push();
@@ -268,9 +268,9 @@ public abstract class ItemStorageTraits extends GenericTraits implements IDraggi
             }
       }
 
-      public abstract void tinyMenuClick(PatchedComponentHolder holder, int index, TinyClickType clickType, SlotAccess carriedAccess, Player player);
+      public abstract void tinyMenuClick(ComponentHolder holder, int index, TinyClickType clickType, SlotAccess carriedAccess, Player player);
 
-      public void clickSlot(DraggingContainer drag, Player player, PatchedComponentHolder holder) {
+      public void clickSlot(DraggingContainer drag, Player player, ComponentHolder holder) {
             Slot slot = drag.firstSlot;
 
             if (drag.isPickup) {

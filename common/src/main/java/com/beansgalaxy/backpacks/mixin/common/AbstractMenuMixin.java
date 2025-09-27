@@ -4,7 +4,7 @@ import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.access.EquipmentSlotAccess;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
@@ -31,7 +31,7 @@ public abstract class AbstractMenuMixin {
             ItemStack stack = slot.getItem();
             if (ClickType.THROW.equals(actionType)) {
                   ItemStorageTraits.runIfPresent(stack, trait -> {
-                        trait.hotkeyThrow(slot, PatchedComponentHolder.of(stack), button, player, menuKeyDown, ci);
+                        trait.hotkeyThrow(slot, ComponentHolder.of(stack), button, player, menuKeyDown, ci);
                   }, () -> EnderTraits.get(stack).ifPresent(enderTraits -> enderTraits.getTrait().ifPresent(traits -> {
                         if (traits instanceof ItemStorageTraits storageTraits) {
                               storageTraits.hotkeyThrow(slot, enderTraits, button, player, menuKeyDown, ci);

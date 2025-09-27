@@ -2,15 +2,13 @@ package com.beansgalaxy.backpacks.screen;
 
 import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
-import com.beansgalaxy.backpacks.container.BackSlot;
 import com.beansgalaxy.backpacks.traits.IClientTraits;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
@@ -19,7 +17,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
@@ -28,7 +25,7 @@ import java.util.Optional;
 public abstract class TraitMenu<T extends GenericTraits> {
       protected final Minecraft minecraft;
       public final Slot slot;
-      public final PatchedComponentHolder holder;
+      public final ComponentHolder holder;
       public final T traits;
 
       protected final int slotX;
@@ -37,11 +34,11 @@ public abstract class TraitMenu<T extends GenericTraits> {
       protected int leftPos;
       protected int topPos;
 
-      public TraitMenu(Minecraft minecraft, int screenLeft, int screenTop, Slot slot, PatchedComponentHolder holder, T traits) {
+      public TraitMenu(Minecraft minecraft, int screenLeft, int screenTop, Slot slot, ComponentHolder holder, T traits) {
             this(minecraft, slot, holder, traits, screenLeft + slot.x, screenTop + slot.y);
       }
 
-      public TraitMenu(Minecraft minecraft, Slot slot, PatchedComponentHolder holder, T traits, int slotX, int slotY) {
+      public TraitMenu(Minecraft minecraft, Slot slot, ComponentHolder holder, T traits, int slotX, int slotY) {
             this.minecraft = minecraft;
             this.slot = slot;
             this.holder = holder;
@@ -62,7 +59,7 @@ public abstract class TraitMenu<T extends GenericTraits> {
             Optional<GenericTraits> optional = Traits.get(stack);
 
             GenericTraits traits;
-            PatchedComponentHolder holder;
+            ComponentHolder holder;
 
             if (optional.isEmpty()) {
                   Optional<EnderTraits> oEnderTraits = EnderTraits.get(stack);
@@ -75,7 +72,7 @@ public abstract class TraitMenu<T extends GenericTraits> {
             }
             else {
                   traits = optional.get();
-                  holder = PatchedComponentHolder.of(slot);
+                  holder = ComponentHolder.of(slot);
             }
 
             IClientTraits<GenericTraits> client = traits.client();

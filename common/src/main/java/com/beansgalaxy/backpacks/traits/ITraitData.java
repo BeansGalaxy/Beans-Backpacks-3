@@ -3,7 +3,7 @@ package com.beansgalaxy.backpacks.traits;
 import com.beansgalaxy.backpacks.components.SlotSelection;
 import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.platform.Services;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import net.minecraft.core.component.DataComponentType;
@@ -49,7 +49,7 @@ public abstract class ITraitData<T> {
 
       }
 
-      public static <T> TraitDataComponentType<T> register(String name, Codec<T> codec, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec, Function<PatchedComponentHolder, ITraitData<T>> getData) {
+      public static <T> TraitDataComponentType<T> register(String name, Codec<T> codec, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec, Function<ComponentHolder, ITraitData<T>> getData) {
             TraitDataComponentType<T> type = new TraitDataComponentType<>(codec, streamCodec, getData);
             Services.PLATFORM.register(name, type);
             return type;
@@ -62,9 +62,9 @@ public abstract class ITraitData<T> {
       public static class TraitDataComponentType<T> implements DataComponentType<T> {
             private final Codec<T> codec;
             private final StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec;
-            private final Function<PatchedComponentHolder, ITraitData<T>> getData;
+            private final Function<ComponentHolder, ITraitData<T>> getData;
 
-            public TraitDataComponentType(Codec<T> codec, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec, Function<PatchedComponentHolder, ITraitData<T>> getData) {
+            public TraitDataComponentType(Codec<T> codec, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec, Function<ComponentHolder, ITraitData<T>> getData) {
                   this.codec = codec;
                   this.streamCodec = streamCodec;
                   this.getData = getData;
@@ -80,14 +80,14 @@ public abstract class ITraitData<T> {
                   return this.streamCodec;
             }
 
-            public ITraitData<T> get(PatchedComponentHolder holder) {
+            public ITraitData<T> get(ComponentHolder holder) {
                   return getData.apply(holder);
             }
       }
 
       public abstract DataComponentType<T> type();
 
-      public abstract PatchedComponentHolder holder();
+      public abstract ComponentHolder holder();
 
       public abstract boolean isEmpty(T data);
 
@@ -134,9 +134,9 @@ public abstract class ITraitData<T> {
 // ===================================================================================================================== TRAIT DATA
 
       static class SoloItem extends ITraitData<ItemStack> {
-            private final PatchedComponentHolder holder;
+            private final ComponentHolder holder;
 
-            public SoloItem(PatchedComponentHolder holder) {
+            public SoloItem(ComponentHolder holder) {
                   this.holder = holder;
             }
 
@@ -146,7 +146,7 @@ public abstract class ITraitData<T> {
             }
 
             @Override
-            public PatchedComponentHolder holder() {
+            public ComponentHolder holder() {
                   return holder;
             }
 
@@ -167,9 +167,9 @@ public abstract class ITraitData<T> {
       }
 
       static class ItemList extends ITraitData<List<ItemStack>> {
-            private final PatchedComponentHolder holder;
+            private final ComponentHolder holder;
 
-            public ItemList(PatchedComponentHolder holder) {
+            public ItemList(ComponentHolder holder) {
                   this.holder = holder;
             }
 
@@ -179,7 +179,7 @@ public abstract class ITraitData<T> {
             }
 
             @Override
-            public PatchedComponentHolder holder() {
+            public ComponentHolder holder() {
                   return holder;
             }
 
@@ -219,7 +219,7 @@ public abstract class ITraitData<T> {
       }
 
       static class NonEdibles extends ItemList {
-            public NonEdibles(PatchedComponentHolder holder) {
+            public NonEdibles(ComponentHolder holder) {
                   super(holder);
             }
 
@@ -230,9 +230,9 @@ public abstract class ITraitData<T> {
       }
 
       static class Amount extends ITraitData<Integer> {
-            private final PatchedComponentHolder holder;
+            private final ComponentHolder holder;
 
-            public Amount(PatchedComponentHolder holder) {
+            public Amount(ComponentHolder holder) {
                   this.holder = holder;
             }
 
@@ -242,7 +242,7 @@ public abstract class ITraitData<T> {
             }
 
             @Override
-            public PatchedComponentHolder holder() {
+            public ComponentHolder holder() {
                   return holder;
             }
 

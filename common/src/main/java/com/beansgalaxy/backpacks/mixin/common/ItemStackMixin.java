@@ -5,7 +5,7 @@ import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.components.reference.NonTrait;
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
 import com.beansgalaxy.backpacks.traits.Traits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
@@ -21,7 +21,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.component.ItemAttributeModifiers;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -45,7 +44,7 @@ public abstract class ItemStackMixin {
       @Inject(method = "isStackable", at = @At("HEAD"), cancellable = true)
       private void backpackIsStackable(CallbackInfoReturnable<Boolean> cir) {
             Traits.runIfPresent(instance, traits -> {
-                  if (!traits.isStackable(PatchedComponentHolder.of(instance)))
+                  if (!traits.isStackable(ComponentHolder.of(instance)))
                         cir.setReturnValue(false);
             });
       }

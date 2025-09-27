@@ -5,7 +5,7 @@ import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.util.ModSound;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -59,19 +59,19 @@ public class AlchemyTraits extends BundleLikeTraits {
       }
 
       @Override
-      public boolean canItemFit(PatchedComponentHolder holder, ItemStack inserted) {
+      public boolean canItemFit(ComponentHolder holder, ItemStack inserted) {
             Item item = inserted.getItem();
             boolean isPotion = item instanceof PotionItem || Items.HONEY_BOTTLE.equals(item) || Items.MILK_BUCKET.equals(item);
             return isPotion && super.canItemFit(holder, inserted);
       }
 
       @Override
-      public AlchemyMutable mutable(PatchedComponentHolder holder) {
+      public AlchemyMutable mutable(ComponentHolder holder) {
             return new AlchemyMutable(this, holder);
       }
 
       @Override
-      public void use(Level level, Player player, InteractionHand hand, PatchedComponentHolder holder, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
+      public void use(Level level, Player player, InteractionHand hand, ComponentHolder holder, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
             if (isEmpty(holder))
                   return;
 

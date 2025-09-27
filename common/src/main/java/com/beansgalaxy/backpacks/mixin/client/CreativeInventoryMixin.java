@@ -5,7 +5,7 @@ import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.container.*;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
@@ -17,7 +17,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
@@ -117,7 +116,7 @@ public abstract class CreativeInventoryMixin extends EffectRenderingInventoryScr
                   ClientLevel level = minecraft.level;
                   if (
                         ItemStorageTraits.testIfPresent(stack, traits ->
-                                    traits.client().mouseScrolled(traits, PatchedComponentHolder.of(stack), level, hoveredSlot, containerId, Mth.floor(pScrollY + 0.5)))
+                                    traits.client().mouseScrolled(traits, ComponentHolder.of(stack), level, hoveredSlot, containerId, Mth.floor(pScrollY + 0.5)))
                         ||
                         EnderTraits.get(stack).flatMap(enderTraits -> enderTraits.getTrait().map(traits -> {
                               if (traits instanceof ItemStorageTraits storageTraits)

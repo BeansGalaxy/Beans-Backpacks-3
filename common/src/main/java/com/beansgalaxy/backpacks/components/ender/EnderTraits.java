@@ -6,7 +6,7 @@ import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
 import com.beansgalaxy.backpacks.items.ModItems;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.UUIDUtil;
@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-public final class EnderTraits implements PatchedComponentHolder {
+public final class EnderTraits implements ComponentHolder {
       private final UUID uuid;
       private final ResourceLocation location;
       private @Nullable Level level = null;

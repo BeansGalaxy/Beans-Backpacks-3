@@ -2,7 +2,7 @@ package com.beansgalaxy.backpacks.traits.common;
 
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.bundle.BundleTooltip;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -15,9 +15,9 @@ public class BatteryTooltip implements ClientTooltipComponent {
       private final Minecraft minecraft;
       private final Component title;
       private final ItemStack itemstack;
-      private final PatchedComponentHolder holder;
+      private final ComponentHolder holder;
 
-      public BatteryTooltip(ItemStack itemStack, PatchedComponentHolder holder, Component title) {
+      public BatteryTooltip(ItemStack itemStack, ComponentHolder holder, Component title) {
             this.minecraft = Minecraft.getInstance();
             this.itemstack = itemStack;
             this.holder = holder;

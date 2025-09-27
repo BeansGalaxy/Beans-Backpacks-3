@@ -1,13 +1,12 @@
 package com.beansgalaxy.backpacks.traits.bundle;
 
-import com.beansgalaxy.backpacks.components.SlotSelection;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.generic.MutableBundleLike;
 import com.beansgalaxy.backpacks.util.ModSound;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 
 public class BundleTraits extends BundleLikeTraits {
       public static final String NAME = "bundle";
@@ -32,7 +31,7 @@ public class BundleTraits extends BundleLikeTraits {
       }
 
       @Override
-      public MutableBundleLike<BundleTraits> mutable(PatchedComponentHolder holder) {
+      public MutableBundleLike<BundleTraits> mutable(ComponentHolder holder) {
             return new MutableBundleLike<>(this, holder);
       }
 

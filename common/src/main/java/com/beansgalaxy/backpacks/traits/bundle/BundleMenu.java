@@ -5,7 +5,7 @@ import com.beansgalaxy.backpacks.network.serverbound.TraitMenuClick;
 import com.beansgalaxy.backpacks.screen.TraitMenu;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -27,7 +27,7 @@ import java.util.List;
 public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
       int rows, columns, size;
 
-      public BundleMenu(Minecraft minecraft, int screenLeft, int screenTop, Slot slot, PatchedComponentHolder holder, T traits) {
+      public BundleMenu(Minecraft minecraft, int screenLeft, int screenTop, Slot slot, ComponentHolder holder, T traits) {
             super(minecraft, screenLeft, screenTop, slot, holder, traits);
             updateSize();
             topPos -= rows * 6;

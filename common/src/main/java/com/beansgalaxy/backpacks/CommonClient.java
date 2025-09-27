@@ -13,7 +13,7 @@ import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
 import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.beansgalaxy.backpacks.util.SmoothRandomFloat;
 import com.beansgalaxy.backpacks.util.Tint;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -88,10 +88,10 @@ public class CommonClient {
       public static final ClampedItemPropertyFunction FULLNESS_ITEM_PREDICATE = (itemStack, clientLevel, livingEntity, i) -> {
             Optional<GenericTraits> optional = Traits.get(itemStack);
             GenericTraits traits;
-            PatchedComponentHolder holder;
+            ComponentHolder holder;
             if (optional.isPresent()) {
                   traits = optional.get();
-                  holder = PatchedComponentHolder.of(itemStack);
+                  holder = ComponentHolder.of(itemStack);
             }
             else {
                   EnderTraits enderTraits = itemStack.get(Traits.ENDER);
@@ -440,7 +440,7 @@ public class CommonClient {
             Optional<ItemStorageTraits> optionalStorage = ItemStorageTraits.get(stack);
             if (optionalStorage.isPresent()) {
                   ItemStorageTraits traits = optionalStorage.get();
-                  PatchedComponentHolder holder = PatchedComponentHolder.of(stack);
+                  ComponentHolder holder = ComponentHolder.of(stack);
                   return traits.client().mouseScrolled(traits, holder, level, hoveredSlot, containerId, scrolled);
             }
 

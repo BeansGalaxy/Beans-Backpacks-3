@@ -5,7 +5,7 @@ import com.beansgalaxy.backpacks.traits.ITraitCodec;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.generic.MutableTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -54,27 +54,27 @@ public class NonTrait extends GenericTraits implements ITraitCodec<NonTrait>, Mu
       }
 
       @Override
-      public Fraction fullness(PatchedComponentHolder holder) {
+      public Fraction fullness(ComponentHolder holder) {
             return Fraction.ONE;
       }
 
       @Override
-      public void stackedOnMe(PatchedComponentHolder backpack, ItemStack other, Slot slot, ClickAction click, Player player, SlotAccess access, CallbackInfoReturnable<Boolean> cir) {
+      public void stackedOnMe(ComponentHolder backpack, ItemStack other, Slot slot, ClickAction click, Player player, SlotAccess access, CallbackInfoReturnable<Boolean> cir) {
 
       }
 
       @Override
-      public void stackedOnOther(PatchedComponentHolder backpack, ItemStack other, Slot slot, ClickAction click, Player player, CallbackInfoReturnable<Boolean> cir) {
+      public void stackedOnOther(ComponentHolder backpack, ItemStack other, Slot slot, ClickAction click, Player player, CallbackInfoReturnable<Boolean> cir) {
 
       }
 
       @Override
-      public boolean isEmpty(PatchedComponentHolder holder) {
+      public boolean isEmpty(ComponentHolder holder) {
             return true;
       }
 
       @Override
-      public MutableTraits mutable(PatchedComponentHolder holder) {
+      public MutableTraits mutable(ComponentHolder holder) {
             return this;
       }
 

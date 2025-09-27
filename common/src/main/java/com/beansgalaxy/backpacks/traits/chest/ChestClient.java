@@ -3,7 +3,7 @@ package com.beansgalaxy.backpacks.traits.chest;
 import com.beansgalaxy.backpacks.screen.TraitMenu;
 import com.beansgalaxy.backpacks.traits.IClientTraits;
 import com.beansgalaxy.backpacks.traits.chest.screen.MenuChestScreen;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -19,7 +19,6 @@ import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.math.Fraction;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -28,12 +27,12 @@ public class ChestClient implements IClientTraits<ChestTraits> {
       static final ChestClient INSTANCE = new ChestClient();
 
       @Override
-      public void renderTooltip(ChestTraits trait, ItemStack itemStack, PatchedComponentHolder holder, GuiGraphics gui, int mouseX, int mouseY, CallbackInfo ci) {
+      public void renderTooltip(ChestTraits trait, ItemStack itemStack, ComponentHolder holder, GuiGraphics gui, int mouseX, int mouseY, CallbackInfo ci) {
 
       }
 
       @Override
-      public int getBarWidth(ChestTraits trait, PatchedComponentHolder holder) {
+      public int getBarWidth(ChestTraits trait, ComponentHolder holder) {
             Fraction fullness = trait.fullness(holder);
             if (trait.isFull(holder))
                   return (14);
@@ -44,7 +43,7 @@ public class ChestClient implements IClientTraits<ChestTraits> {
       }
 
       @Override
-      public int getBarColor(ChestTraits trait, PatchedComponentHolder holder) {
+      public int getBarColor(ChestTraits trait, ComponentHolder holder) {
             if (trait.isFull(holder))
                   return RED_BAR;
             else
@@ -52,7 +51,7 @@ public class ChestClient implements IClientTraits<ChestTraits> {
       }
 
       @Override @Nullable
-      public TraitMenu<ChestTraits> createTooltip(Minecraft minecraft, int leftPos, int topPos, @Nullable Slot slot, PatchedComponentHolder holder, ChestTraits traits) {
+      public TraitMenu<ChestTraits> createTooltip(Minecraft minecraft, int leftPos, int topPos, @Nullable Slot slot, ComponentHolder holder, ChestTraits traits) {
             return null;
       }
 
@@ -91,7 +90,7 @@ public class ChestClient implements IClientTraits<ChestTraits> {
       }
 
       @Override
-      public @Nullable ClientTooltipComponent getTooltipComponent(ChestTraits traits, ItemStack itemStack, PatchedComponentHolder holder, Component title) {
+      public @Nullable ClientTooltipComponent getTooltipComponent(ChestTraits traits, ItemStack itemStack, ComponentHolder holder, Component title) {
             return null;
       }
 

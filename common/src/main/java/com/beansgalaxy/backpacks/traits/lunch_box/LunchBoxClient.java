@@ -5,14 +5,12 @@ import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.components.SlotSelection;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.bundle.BundleClient;
-import com.beansgalaxy.backpacks.traits.bundle.BundleTooltip;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.beansgalaxy.backpacks.util.TraitTooltip;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.player.LocalPlayer;
@@ -35,7 +33,7 @@ public class LunchBoxClient extends BundleClient {
       static final LunchBoxClient INSTANCE = new LunchBoxClient();
 
       @Override
-      public void renderTooltip(BundleLikeTraits trait, ItemStack itemStack, PatchedComponentHolder holder, GuiGraphics gui, int mouseX, int mouseY, CallbackInfo ci) {
+      public void renderTooltip(BundleLikeTraits trait, ItemStack itemStack, ComponentHolder holder, GuiGraphics gui, int mouseX, int mouseY, CallbackInfo ci) {
             if (!trait.isEmpty(holder)) {
                   Minecraft minecraft = Minecraft.getInstance();
 
@@ -71,14 +69,14 @@ public class LunchBoxClient extends BundleClient {
       }
 
       @Override @Nullable
-      public ClientTooltipComponent getTooltipComponent(BundleLikeTraits traits, ItemStack itemStack, PatchedComponentHolder holder, Component title) {
+      public ClientTooltipComponent getTooltipComponent(BundleLikeTraits traits, ItemStack itemStack, ComponentHolder holder, Component title) {
             List<ItemStack> stacks = holder.getOrDefault(ITraitData.ITEM_STACKS, List.of());
             List<ItemStack> nonEdibles = holder.get(ITraitData.NON_EDIBLES);
             return new LunchBoxTooltip(traits, itemStack, stacks, nonEdibles, holder, title);
       }
 
       @Override
-      public int getBarWidth(BundleLikeTraits trait, PatchedComponentHolder holder) {
+      public int getBarWidth(BundleLikeTraits trait, ComponentHolder holder) {
             Fraction fullness = trait.fullness(holder);
             if (trait.isEmpty(holder))
                   return (0);
@@ -91,12 +89,12 @@ public class LunchBoxClient extends BundleClient {
       }
 
       @Override
-      public int getBarColor(BundleLikeTraits trait, PatchedComponentHolder holder) {
+      public int getBarColor(BundleLikeTraits trait, ComponentHolder holder) {
             return BAR_COLOR;
       }
 
       @Override
-      public void renderItemInHand(ItemRenderer itemRenderer, BundleLikeTraits traits, LivingEntity entity, PatchedComponentHolder holder, ItemDisplayContext context, boolean hand, PoseStack pose, MultiBufferSource buffer, int seed, CallbackInfo ci) {
+      public void renderItemInHand(ItemRenderer itemRenderer, BundleLikeTraits traits, LivingEntity entity, ComponentHolder holder, ItemDisplayContext context, boolean hand, PoseStack pose, MultiBufferSource buffer, int seed, CallbackInfo ci) {
             List<ItemStack> stacks = holder.get(ITraitData.ITEM_STACKS);
             if (stacks != null && !stacks.isEmpty()) {
                   Minecraft minecraft = Minecraft.getInstance();

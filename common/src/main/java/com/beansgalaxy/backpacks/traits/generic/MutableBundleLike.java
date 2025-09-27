@@ -3,7 +3,7 @@ package com.beansgalaxy.backpacks.traits.generic;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.util.ModSound;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.math.Fraction;
@@ -13,10 +13,10 @@ import java.util.List;
 
 public class MutableBundleLike<T extends BundleLikeTraits> implements MutableItemStorage {
       public final ITraitData<List<ItemStack>> stacks;
-      private final PatchedComponentHolder holder;
+      private final ComponentHolder holder;
       protected final T traits;
 
-      public MutableBundleLike(T traits, PatchedComponentHolder holder) {
+      public MutableBundleLike(T traits, ComponentHolder holder) {
             this.holder = holder;
             this.traits = traits;
             stacks = ITraitData.ITEM_STACKS.get(holder);

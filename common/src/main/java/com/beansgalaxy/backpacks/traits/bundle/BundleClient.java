@@ -7,7 +7,7 @@ import com.beansgalaxy.backpacks.screen.TraitMenu;
 import com.beansgalaxy.backpacks.traits.IClientTraits;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.beansgalaxy.backpacks.util.TraitTooltip;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.ChatFormatting;
@@ -33,7 +33,7 @@ public class BundleClient implements IClientTraits<BundleLikeTraits> {
       static final BundleClient INSTANCE = new BundleClient();
 
       @Override
-      public void renderTooltip(BundleLikeTraits trait, ItemStack itemStack, PatchedComponentHolder holder, GuiGraphics gui, int mouseX, int mouseY, CallbackInfo ci) {
+      public void renderTooltip(BundleLikeTraits trait, ItemStack itemStack, ComponentHolder holder, GuiGraphics gui, int mouseX, int mouseY, CallbackInfo ci) {
             if (!trait.isEmpty(holder)) {
                   Minecraft minecraft = Minecraft.getInstance();
 
@@ -61,7 +61,7 @@ public class BundleClient implements IClientTraits<BundleLikeTraits> {
       }
 
       @Override
-      public int getBarWidth(BundleLikeTraits trait, PatchedComponentHolder holder) {
+      public int getBarWidth(BundleLikeTraits trait, ComponentHolder holder) {
             Fraction fullness = trait.fullness(holder);
             if (trait.isFull(holder))
                   return (14);
@@ -72,7 +72,7 @@ public class BundleClient implements IClientTraits<BundleLikeTraits> {
       }
 
       @Override
-      public int getBarColor(BundleLikeTraits trait, PatchedComponentHolder holder) {
+      public int getBarColor(BundleLikeTraits trait, ComponentHolder holder) {
             if (trait.isFull(holder))
                   return RED_BAR;
             else
@@ -80,18 +80,18 @@ public class BundleClient implements IClientTraits<BundleLikeTraits> {
       }
 
       @Override
-      public TraitMenu<BundleLikeTraits> createTooltip(Minecraft minecraft, int leftPos, int topPos, @Nullable Slot slot, PatchedComponentHolder holder, BundleLikeTraits traits) {
+      public TraitMenu<BundleLikeTraits> createTooltip(Minecraft minecraft, int leftPos, int topPos, @Nullable Slot slot, ComponentHolder holder, BundleLikeTraits traits) {
             return new BundleMenu<>(minecraft, leftPos, topPos, slot, holder, traits);
       }
 
       @Override @Nullable
-      public ClientTooltipComponent getTooltipComponent(BundleLikeTraits traits, ItemStack itemStack, PatchedComponentHolder holder, Component title) {
+      public ClientTooltipComponent getTooltipComponent(BundleLikeTraits traits, ItemStack itemStack, ComponentHolder holder, Component title) {
             ArrayList<ItemStack> stacks = new ArrayList<>(holder.getOrDefault(ITraitData.ITEM_STACKS, List.of()));
             return new BundleTooltip(traits, itemStack, stacks, holder, title);
       }
 
       @Override
-      public boolean mouseScrolled(BundleLikeTraits trait, PatchedComponentHolder holder, Level level, Slot hoveredSlot, int containerId, int scrolled) {
+      public boolean mouseScrolled(BundleLikeTraits trait, ComponentHolder holder, Level level, Slot hoveredSlot, int containerId, int scrolled) {
             LocalPlayer player = Minecraft.getInstance().player;
             int startSlot = trait.getSelectedSlot(holder, player);
 

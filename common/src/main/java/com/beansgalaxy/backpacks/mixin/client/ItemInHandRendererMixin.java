@@ -3,7 +3,7 @@ package com.beansgalaxy.backpacks.mixin.client;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemInHandRenderer;
@@ -29,7 +29,7 @@ public class ItemInHandRendererMixin {
                   target = "Lnet/minecraft/client/renderer/entity/ItemRenderer;renderStatic(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;ZLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/level/Level;III)V"))
       private void backpacks_renderItem(LivingEntity pEntity, ItemStack pItemStack, ItemDisplayContext pDisplayContext, boolean pLeftHand, PoseStack pPoseStack, MultiBufferSource pBuffer, int pSeed, CallbackInfo ci) {
             BundleLikeTraits.get(pItemStack).ifPresentOrElse(traits -> {
-                  traits.client().renderItemInHand(itemRenderer, traits, pEntity, PatchedComponentHolder.of(pItemStack), pDisplayContext, pLeftHand, pPoseStack, pBuffer, pSeed, ci);
+                  traits.client().renderItemInHand(itemRenderer, traits, pEntity, ComponentHolder.of(pItemStack), pDisplayContext, pLeftHand, pPoseStack, pBuffer, pSeed, ci);
             }, () -> EnderTraits.get(pItemStack).ifPresent(enderTraits -> {
                   GenericTraits traits = enderTraits.getTrait(minecraft.level);
                   traits.client().renderItemInHand(itemRenderer, traits, pEntity, enderTraits, pDisplayContext, pLeftHand, pPoseStack, pBuffer, pSeed, ci);

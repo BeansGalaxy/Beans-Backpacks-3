@@ -9,7 +9,7 @@ import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.generic.MutableBundleLike;
 import com.beansgalaxy.backpacks.util.ModSound;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
 import net.minecraft.server.level.ServerPlayer;
@@ -50,7 +50,7 @@ public class QuiverTraits extends BundleLikeTraits implements IProjectileTrait {
       }
 
       @Override
-      public boolean isFull(PatchedComponentHolder holder) {
+      public boolean isFull(ComponentHolder holder) {
             List<ItemStack> stacks = holder.get(ITraitData.ITEM_STACKS);
             if (stacks == null || stacks.isEmpty() || stacks.size() < size())
                   return false;
@@ -73,7 +73,7 @@ public class QuiverTraits extends BundleLikeTraits implements IProjectileTrait {
 
             int i = Fraction.getFraction(size(), 1).compareTo(fraction);
             if (i > 0) {
-                  MutableBundleLike<QuiverTraits> mutable = this.mutable(PatchedComponentHolder.of(backpack));
+                  MutableBundleLike<QuiverTraits> mutable = this.mutable(ComponentHolder.of(backpack));
                   if (mutable.addItem(stack, player) != null) {
                         cir.setReturnValue(true);
                         sound().toClient(player, ModSound.Type.INSERT, 1, 1);
@@ -101,7 +101,7 @@ public class QuiverTraits extends BundleLikeTraits implements IProjectileTrait {
       }
 
       @Override
-      public boolean canItemFit(PatchedComponentHolder holder, ItemStack inserted) {
+      public boolean canItemFit(ComponentHolder holder, ItemStack inserted) {
             return canInsertProjectile(inserted.getItem()) && super.canItemFit(holder, inserted);
       }
 
@@ -110,7 +110,7 @@ public class QuiverTraits extends BundleLikeTraits implements IProjectileTrait {
       }
 
       @Override
-      public MutableBundleLike<QuiverTraits> mutable(PatchedComponentHolder holder) {
+      public MutableBundleLike<QuiverTraits> mutable(ComponentHolder holder) {
             return new MutableBundleLike<>(this, holder);
       }
 

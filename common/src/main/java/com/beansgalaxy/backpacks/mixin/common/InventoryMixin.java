@@ -6,7 +6,7 @@ import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.data.ServerSave;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import net.minecraft.core.NonNullList;
@@ -69,7 +69,7 @@ public abstract class InventoryMixin implements BackData {
                   if (optional.isPresent()) {
                         EquipableComponent equipable = optional.get();
 
-                        if (Traits.testIfPresent(stack, traits -> !traits.isEmpty(PatchedComponentHolder.of(stack)))) {
+                        if (Traits.testIfPresent(stack, traits -> !traits.isEmpty(ComponentHolder.of(stack)))) {
                               for (EquipmentSlot value : equipable.values()) {
                                     ItemStack itemBySlot = player.getItemBySlot(value);
                                     if (!itemBySlot.isEmpty())

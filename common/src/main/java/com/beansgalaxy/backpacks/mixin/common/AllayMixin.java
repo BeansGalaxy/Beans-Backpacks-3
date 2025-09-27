@@ -3,16 +3,12 @@ package com.beansgalaxy.backpacks.mixin.common;
 import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.access.ViewableAccessor;
-import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.util.ModSound;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -27,7 +23,6 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -38,12 +33,10 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyArgs;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -197,8 +190,8 @@ public abstract class AllayMixin extends PathfinderMob implements ViewableAccess
                   return AllayMixin.this;
             }
 
-            @Override protected PatchedComponentHolder holder() {
-                  return PatchedComponentHolder.of(toStack());
+            @Override protected ComponentHolder holder() {
+                  return ComponentHolder.of(toStack());
             }
 
             @Override public ItemStack toStack() {

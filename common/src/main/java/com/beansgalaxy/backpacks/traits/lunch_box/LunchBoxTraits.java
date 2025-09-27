@@ -1,19 +1,17 @@
 package com.beansgalaxy.backpacks.traits.lunch_box;
 
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
-import com.beansgalaxy.backpacks.screen.TinyClickType;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.util.ModSound;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
@@ -43,7 +41,7 @@ public class LunchBoxTraits extends BundleLikeTraits {
       }
 
       @Override
-      public boolean isEmpty(PatchedComponentHolder holder) {
+      public boolean isEmpty(ComponentHolder holder) {
             if (!super.isEmpty(holder))
                   return false;
 
@@ -101,14 +99,14 @@ public class LunchBoxTraits extends BundleLikeTraits {
                         return;
 
                   int selectedSlotSafe = entity instanceof Player player
-                              ? traits.getSelectedSlotSafe(PatchedComponentHolder.of(lunchBox), player)
+                              ? traits.getSelectedSlotSafe(ComponentHolder.of(lunchBox), player)
                               : 0;
 
                   ifPresent.accept(stacks.get(selectedSlotSafe));
             });
       }
 
-      public void finishUsingItem(PatchedComponentHolder holder, ItemStack backpack, Level level, LivingEntity entity, CallbackInfoReturnable<ItemStack> cir) {
+      public void finishUsingItem(ComponentHolder holder, ItemStack backpack, Level level, LivingEntity entity, CallbackInfoReturnable<ItemStack> cir) {
             LunchBoxMutable mutable = mutable(holder);
             int selectedSlot = entity instanceof Player player
                         ? getSelectedSlotSafe(holder, player)
@@ -125,7 +123,7 @@ public class LunchBoxTraits extends BundleLikeTraits {
       }
 
       @Override
-      public void use(Level level, Player player, InteractionHand hand, PatchedComponentHolder holder, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
+      public void use(Level level, Player player, InteractionHand hand, ComponentHolder holder, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
             List<ItemStack> stacks = holder.get(ITraitData.ITEM_STACKS);
             if (stacks == null || stacks.isEmpty())
                   return;
@@ -143,12 +141,12 @@ public class LunchBoxTraits extends BundleLikeTraits {
       }
 
       @Override
-      public boolean canItemFit(PatchedComponentHolder holder, ItemStack inserted) {
+      public boolean canItemFit(ComponentHolder holder, ItemStack inserted) {
             return inserted.has(DataComponents.FOOD) && super.canItemFit(holder, inserted);
       }
 
       @Override
-      public LunchBoxMutable mutable(PatchedComponentHolder holder) {
+      public LunchBoxMutable mutable(ComponentHolder holder) {
             return new LunchBoxMutable(this, holder);
       }
 

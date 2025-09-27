@@ -8,7 +8,7 @@ import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -72,7 +72,7 @@ public class TinyHotbarClick implements Packet2S {
                   ItemStack backpack = owner.getItemBySlot(EquipmentSlot.BODY);
                   Optional<GenericTraits> optional = Traits.get(backpack);
                   if (optional.isPresent() && optional.get() instanceof ItemStorageTraits storageTraits) {
-                        storageTraits.tinyHotbarClick(PatchedComponentHolder.of(backpack), index, clickType, sender.inventoryMenu, sender);
+                        storageTraits.tinyHotbarClick(ComponentHolder.of(backpack), index, clickType, sender.inventoryMenu, sender);
                   }
             }
       }

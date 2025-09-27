@@ -5,13 +5,12 @@ import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.util.OptionalEitherMapCodec;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.*;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
@@ -64,7 +63,7 @@ public final class EquipableComponent {
             this.values = list;
       }
 
-      public static Optional<EquipableComponent> get(PatchedComponentHolder backpack) {
+      public static Optional<EquipableComponent> get(ComponentHolder backpack) {
             if (backpack instanceof EnderTraits)
                   return Optional.empty();
 
@@ -99,7 +98,7 @@ public final class EquipableComponent {
             }
       }
 
-      public static boolean canEquip(PatchedComponentHolder backpack, Slot slot) {
+      public static boolean canEquip(ComponentHolder backpack, Slot slot) {
             if (slot instanceof EquipmentSlotAccess access) {
                   return get(backpack).map(equipable -> {
                         EquipmentSlot accessSlot = access.getSlot();
@@ -153,10 +152,10 @@ public final class EquipableComponent {
       }
 
       public static boolean testIfPresent(ItemStack backpack, Predicate<EquipableComponent> predicate) {
-            return testIfPresent(PatchedComponentHolder.of(backpack), predicate);
+            return testIfPresent(ComponentHolder.of(backpack), predicate);
       }
 
-      public static boolean testIfPresent(PatchedComponentHolder backpack, Predicate<EquipableComponent> predicate) {
+      public static boolean testIfPresent(ComponentHolder backpack, Predicate<EquipableComponent> predicate) {
             Optional<EquipableComponent> optional = get(backpack);
             if (optional.isEmpty())
                   return false;

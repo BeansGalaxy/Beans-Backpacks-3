@@ -7,7 +7,7 @@ import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.util.ModSound;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -201,8 +201,8 @@ public abstract class ArmorStandMixin extends LivingEntity implements ViewableAc
                   return instance;
             }
 
-            @Override protected PatchedComponentHolder holder() {
-                  return PatchedComponentHolder.of(toStack());
+            @Override protected ComponentHolder holder() {
+                  return ComponentHolder.of(toStack());
             }
 
             @Override public ItemStack toStack() {

@@ -3,7 +3,7 @@ package com.beansgalaxy.backpacks.traits.bundle;
 import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -42,7 +42,7 @@ public class BundleTooltip implements ClientTooltipComponent {
       protected final int selectedSlot;
       protected final boolean carriedEmpty;
 
-      public BundleTooltip(BundleLikeTraits traits, ItemStack itemStack, ArrayList<ItemStack> stacks, PatchedComponentHolder holder, Component title) {
+      public BundleTooltip(BundleLikeTraits traits, ItemStack itemStack, ArrayList<ItemStack> stacks, ComponentHolder holder, Component title) {
             this.itemstack = itemStack;
             this.title = title;
             this.itemStacks = stacks;

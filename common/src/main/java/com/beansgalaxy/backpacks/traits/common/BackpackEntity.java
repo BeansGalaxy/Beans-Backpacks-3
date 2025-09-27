@@ -11,7 +11,7 @@ import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.generic.MutableTraits;
 import com.beansgalaxy.backpacks.items.ModItems;
 import com.beansgalaxy.backpacks.util.ModSound;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
 import com.beansgalaxy.backpacks.util.data_fixers.RecoverLocalData;
 import net.minecraft.core.BlockPos;
@@ -61,7 +61,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Optional;
 
-public class BackpackEntity extends Entity implements PatchedComponentHolder {
+public class BackpackEntity extends Entity implements ComponentHolder {
       public static final EntityDataAccessor<Boolean> IS_OPEN = SynchedEntityData.defineId(BackpackEntity.class, EntityDataSerializers.BOOLEAN);
       public static final EntityDataAccessor<ItemStack> ITEM_STACK = SynchedEntityData.defineId(BackpackEntity.class, EntityDataSerializers.ITEM_STACK);
       public static final EntityDataAccessor<Direction> DIRECTION = SynchedEntityData.defineId(BackpackEntity.class, EntityDataSerializers.DIRECTION);
@@ -95,7 +95,7 @@ public class BackpackEntity extends Entity implements PatchedComponentHolder {
                   return BackpackEntity.this;
             }
 
-            @Override protected PatchedComponentHolder holder() {
+            @Override protected ComponentHolder holder() {
                   return BackpackEntity.this;
             }
 

@@ -4,7 +4,7 @@ import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.access.EquipmentSlotAccess;
 import com.beansgalaxy.backpacks.network.Network2S;
 import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -44,7 +44,7 @@ public class PickBlock implements Packet2S {
       @Override
       public void handle(Player sender) {
             ItemStack backpack = sender.getItemBySlot(equipmentSlot);
-            PatchedComponentHolder holder = PatchedComponentHolder.of(backpack);
+            ComponentHolder holder = ComponentHolder.of(backpack);
             ItemStorageTraits.runIfPresent(backpack, trait ->
                         trait.serverPickBlock(holder, index, (ServerPlayer) sender)
             );

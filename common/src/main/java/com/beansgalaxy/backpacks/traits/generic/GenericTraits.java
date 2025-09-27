@@ -5,7 +5,7 @@ import com.beansgalaxy.backpacks.traits.IClientTraits;
 import com.beansgalaxy.backpacks.traits.IEntityTraits;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.util.ModSound;
-import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -38,43 +38,43 @@ public abstract class GenericTraits {
 
       abstract public TraitComponentKind<? extends GenericTraits> kind();
 
-      public abstract Fraction fullness(PatchedComponentHolder holder);
+      public abstract Fraction fullness(ComponentHolder holder);
 
       public Fraction fullness(ItemStack stack) {
-            return fullness(PatchedComponentHolder.of(stack));
+            return fullness(ComponentHolder.of(stack));
       }
 
       public boolean isFull(ItemStack stack) {
-            return isFull(PatchedComponentHolder.of(stack));
+            return isFull(ComponentHolder.of(stack));
       }
 
-      public boolean isFull(PatchedComponentHolder holder) {
+      public boolean isFull(ComponentHolder holder) {
             Fraction fullness = fullness(holder);
             int i = fullness.compareTo(Fraction.ONE);
             return i >= 0;
       }
 
       public boolean isEmpty(ItemStack stack) {
-            return isEmpty(PatchedComponentHolder.of(stack));
+            return isEmpty(ComponentHolder.of(stack));
       }
 
-      public abstract boolean isEmpty(PatchedComponentHolder holder);
+      public abstract boolean isEmpty(ComponentHolder holder);
 
-      public abstract void stackedOnMe(PatchedComponentHolder backpack, ItemStack other, Slot slot, ClickAction click, Player player, SlotAccess access, CallbackInfoReturnable<Boolean> cir);
+      public abstract void stackedOnMe(ComponentHolder backpack, ItemStack other, Slot slot, ClickAction click, Player player, SlotAccess access, CallbackInfoReturnable<Boolean> cir);
 
-      public abstract void stackedOnOther(PatchedComponentHolder backpack, ItemStack other, Slot slot, ClickAction click, Player player, CallbackInfoReturnable<Boolean> cir);
+      public abstract void stackedOnOther(ComponentHolder backpack, ItemStack other, Slot slot, ClickAction click, Player player, CallbackInfoReturnable<Boolean> cir);
 
-      public void use(Level level, Player player, InteractionHand hand, PatchedComponentHolder holder, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
+      public void use(Level level, Player player, InteractionHand hand, ComponentHolder holder, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
 
       }
 
-      public abstract MutableTraits mutable(PatchedComponentHolder holder);
+      public abstract MutableTraits mutable(ComponentHolder holder);
 
-      public boolean isStackable(PatchedComponentHolder holder) {
+      public boolean isStackable(ComponentHolder holder) {
             return false;
       }
 
-      public int getAnalogOutput(PatchedComponentHolder holder) {
+      public int getAnalogOutput(ComponentHolder holder) {
             return 0;
       }
 
@@ -82,7 +82,7 @@ public abstract class GenericTraits {
 
       }
 
-      public void menuClick(PatchedComponentHolder holder, int index, TraitMenuClick.Kind type, SlotAccess access, Player sender) {
+      public void menuClick(ComponentHolder holder, int index, TraitMenuClick.Kind type, SlotAccess access, Player sender) {
 
       }
 }
