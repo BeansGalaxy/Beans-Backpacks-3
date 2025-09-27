@@ -1,5 +1,6 @@
 package com.beansgalaxy.backpacks.traits.generic;
 
+import com.beansgalaxy.backpacks.network.serverbound.TraitMenuClick;
 import com.beansgalaxy.backpacks.traits.IClientTraits;
 import com.beansgalaxy.backpacks.traits.IEntityTraits;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
@@ -78,6 +79,10 @@ public abstract class GenericTraits {
       }
 
       public void onPlayerInteract(LivingEntity owner, Player player, ItemStack backpack, CallbackInfoReturnable<InteractionResult> cir) {
+
+      }
+
+      public void menuClick(PatchedComponentHolder holder, int index, TraitMenuClick.Kind type, SlotAccess access, Player sender) {
 
       }
 }

@@ -1,5 +1,6 @@
 package com.beansgalaxy.backpacks.traits.bundle;
 
+import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
@@ -160,14 +161,34 @@ public class BundleTooltip implements ClientTooltipComponent {
             return carriedEmpty;
       }
 
-      public static void renderItemDecorations(GuiGraphics gui, Font $$0, ItemStack $$1, int x, int y, int z) {
+      public static void renderItemDecorations(GuiGraphics gui, Font font, ItemStack $$1, int x, int y, int z) {
             if (!$$1.isEmpty()) {
                   PoseStack pose = gui.pose();
                   pose.pushPose();
                   pose.translate(0.0F, 0.0F, z + 10);
-                  if ($$1.getCount() != 1) {
-                        String $$5 = String.valueOf($$1.getCount());
-                        gui.drawString($$0, $$5, x + 9 - $$0.width($$5), y + 1, 0xFFFFFFFF, true);
+                  int count = $$1.getCount();
+                  if (count != 1) {
+                        String string = String.valueOf(count);
+                        if (count > 999) {
+                              float k = count / 1000f;
+                              String s = (int) k + "k";
+                              gui.drawString(font, s, x + 9 - font.width(s), y + 1, 0xFFFFFFFF, true);
+                        }
+                        else if (count > 99) {
+                              char[] chars = string.toCharArray();
+
+                              for (int i1 = 0; i1 < chars.length; i1++) {
+                                    char c = chars[i1];
+                                    String s = CommonClass.getTinyNumberFromDigitChar(c);
+                                    chars[i1] = s.toCharArray()[0];
+                              }
+
+                              String s = String.valueOf(chars);
+                              gui.drawString(font, s, x + 10 - font.width(s), y - 1, 0xFFFFFFFF, true);
+                        }
+                        else {
+                              gui.drawString(font, string, x + 9 - font.width(string), y + 1, 0xFFFFFFFF, true);
+                        }
                   }
                   else if ($$1.isBarVisible()) {
                         int barColor = $$1.getBarColor();

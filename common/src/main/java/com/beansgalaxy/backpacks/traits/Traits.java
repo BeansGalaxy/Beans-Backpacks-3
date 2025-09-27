@@ -23,7 +23,9 @@ import com.beansgalaxy.backpacks.traits.quiver.QuiverCodecs;
 import com.beansgalaxy.backpacks.traits.quiver.QuiverTraits;
 import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -78,6 +80,12 @@ public interface Traits {
 
       TraitComponentKind<ChestTraits>
                   CHEST = TraitComponentKind.registerItemStorage(ChestTraits.NAME, ChestCodecs.INSTANCE);
+      Codec<List<ItemStack>> STACKS_CODEC = Codec.list(RecordCodecBuilder.create((in) ->
+                                          in.group(
+                                                      ItemStack.ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
+                                                      Codec.INT.fieldOf("count").forGetter(ItemStack::getCount),
+                                                      DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(ItemStack::getComponentsPatch)
+                                          ).apply(in, ItemStack::new)));
 
       static <T> DataComponentType<T> register(String name, Codec<T> codec, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec) {
             DataComponentType.Builder<T> builder = DataComponentType.builder();

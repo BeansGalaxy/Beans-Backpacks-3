@@ -1,5 +1,6 @@
 package com.beansgalaxy.backpacks.traits.chest;
 
+import com.beansgalaxy.backpacks.screen.TraitMenu;
 import com.beansgalaxy.backpacks.traits.IClientTraits;
 import com.beansgalaxy.backpacks.traits.chest.screen.MenuChestScreen;
 import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
@@ -48,6 +49,11 @@ public class ChestClient implements IClientTraits<ChestTraits> {
                   return RED_BAR;
             else
                   return BAR_COLOR;
+      }
+
+      @Override @Nullable
+      public TraitMenu<ChestTraits> createTooltip(Minecraft minecraft, int leftPos, int topPos, @Nullable Slot slot, PatchedComponentHolder holder, ChestTraits traits) {
+            return null;
       }
 
       @Override

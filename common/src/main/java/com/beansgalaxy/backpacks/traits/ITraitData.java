@@ -22,7 +22,7 @@ import java.util.function.Function;
 
 public abstract class ITraitData<T> {
       public static final TraitDataComponentType<List<ItemStack>>
-                  ITEM_STACKS = register("data_item_list", ItemStack.CODEC.listOf(), ItemStack.LIST_STREAM_CODEC, ItemList::new);
+                  ITEM_STACKS = register("data_item_list", Traits.STACKS_CODEC, ItemStack.LIST_STREAM_CODEC, ItemList::new);
 
       public static final TraitDataComponentType<List<ItemStack>>
                   NON_EDIBLES = register("data_non_edible", ItemStack.CODEC.listOf(), ItemStack.LIST_STREAM_CODEC, NonEdibles::new);

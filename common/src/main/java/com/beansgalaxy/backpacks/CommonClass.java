@@ -24,6 +24,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
@@ -154,4 +155,18 @@ public class CommonClass {
             traits.onPlayerInteract(owner, viewer, backpack, cir);
       }
 
+      public static @NotNull String getTinyNumberFromDigitChar(char c) {
+            return switch (c) {
+                  case '1' -> "₁";
+                  case '2' -> "₂";
+                  case '3' -> "₃";
+                  case '4' -> "₄";
+                  case '5' -> "₅";
+                  case '6' -> "₆";
+                  case '7' -> "₇";
+                  case '8' -> "₈";
+                  case '9' -> "₉";
+                  default -> "₀";
+            };
+      }
 }

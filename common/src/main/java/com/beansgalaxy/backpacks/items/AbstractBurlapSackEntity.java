@@ -2,30 +2,18 @@ package com.beansgalaxy.backpacks.items;
 
 import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.traits.Traits;
-import com.beansgalaxy.backpacks.traits.bundle.BundleCodecs;
-import com.beansgalaxy.backpacks.traits.bundle.BundleTraits;
-import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
-import com.beansgalaxy.backpacks.util.ModSound;
 import com.google.common.collect.Lists;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.codecs.PrimitiveCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.ExtraCodecs;
-import net.minecraft.util.Mth;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang3.math.Fraction;
@@ -42,7 +30,7 @@ public abstract class AbstractBurlapSackEntity extends BlockEntity implements Co
       @Override
       protected void saveAdditional(CompoundTag pTag, HolderLookup.Provider pRegistries) {
             super.saveAdditional(pTag, pRegistries);
-            DataResult<Tag> result = STACKS_CODEC.encodeStart(NbtOps.INSTANCE, stacks);
+            DataResult<Tag> result = Traits.STACKS_CODEC.encodeStart(NbtOps.INSTANCE, stacks);
             result.ifSuccess(tag -> pTag.put("stacks", tag));
 
       }
@@ -50,7 +38,7 @@ public abstract class AbstractBurlapSackEntity extends BlockEntity implements Co
       @Override
       protected void loadAdditional(CompoundTag pTag, HolderLookup.Provider pRegistries) {
             super.loadAdditional(pTag, pRegistries);
-            DataResult<List<ItemStack>> result = STACKS_CODEC.parse(NbtOps.INSTANCE, pTag.get("stacks"));
+            DataResult<List<ItemStack>> result = Traits.STACKS_CODEC.parse(NbtOps.INSTANCE, pTag.get("stacks"));
             result.ifSuccess(stacks -> {
                   this.stacks.clear();
                   this.stacks.addAll(stacks);
@@ -60,13 +48,6 @@ public abstract class AbstractBurlapSackEntity extends BlockEntity implements Co
       public abstract void openMenu(Player player);
 
       private List<ItemStack> stacks = Lists.newArrayList();
-
-      private static Codec<List<ItemStack>> STACKS_CODEC = Codec.list(RecordCodecBuilder.create((in) ->
-                              in.group(
-                                          ItemStack.ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
-                                          Codec.INT.fieldOf("count").forGetter(ItemStack::getCount),
-                                          DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(ItemStack::getComponentsPatch)
-                              ).apply(in, ItemStack::new)));
 
       public List<ItemStack> getItemStacks() {
             return stacks;

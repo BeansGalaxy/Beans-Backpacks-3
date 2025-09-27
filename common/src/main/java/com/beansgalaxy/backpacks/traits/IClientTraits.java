@@ -1,5 +1,6 @@
 package com.beansgalaxy.backpacks.traits;
 
+import com.beansgalaxy.backpacks.screen.TraitMenu;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
@@ -75,4 +76,6 @@ public interface IClientTraits<T extends GenericTraits> {
 
       }
 
+      @Nullable
+      TraitMenu<T> createTooltip(Minecraft minecraft, int leftPos, int topPos, @Nullable Slot slot, PatchedComponentHolder holder, T traits);
 }

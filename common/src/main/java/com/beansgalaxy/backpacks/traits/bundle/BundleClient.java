@@ -3,6 +3,7 @@ package com.beansgalaxy.backpacks.traits.bundle;
 import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.network.serverbound.SyncSelectedSlot;
+import com.beansgalaxy.backpacks.screen.TraitMenu;
 import com.beansgalaxy.backpacks.traits.IClientTraits;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
@@ -22,7 +23,6 @@ import net.minecraft.world.level.Level;
 import org.apache.commons.lang3.math.Fraction;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,6 +77,11 @@ public class BundleClient implements IClientTraits<BundleLikeTraits> {
                   return RED_BAR;
             else
                   return BAR_COLOR;
+      }
+
+      @Override
+      public TraitMenu<BundleLikeTraits> createTooltip(Minecraft minecraft, int leftPos, int topPos, @Nullable Slot slot, PatchedComponentHolder holder, BundleLikeTraits traits) {
+            return new BundleMenu<>(minecraft, leftPos, topPos, slot, holder, traits);
       }
 
       @Override @Nullable

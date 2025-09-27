@@ -1,8 +1,9 @@
 package com.beansgalaxy.backpacks.mixin.client;
 
 import com.beansgalaxy.backpacks.CommonClient;
-import com.beansgalaxy.backpacks.components.ender.EnderTraits;
-import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.access.BackData;
+import com.beansgalaxy.backpacks.access.EquipmentSlotAccess;
+import com.beansgalaxy.backpacks.screen.TraitMenu;
 import com.beansgalaxy.backpacks.util.DraggingContainer;
 import com.beansgalaxy.backpacks.traits.abstract_traits.IDraggingTrait;
 import com.beansgalaxy.backpacks.util.PatchedComponentHolder;
@@ -40,29 +41,71 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
 
       @Shadow protected boolean isQuickCrafting;
 
-      @Shadow @Final protected Set<Slot> quickCraftSlots;
-
       @Shadow protected abstract void slotClicked(Slot slot, int slotId, int mouseButton, ClickType type);
 
       @Shadow private boolean skipNextRelease;
 
       @Shadow @Nullable private Slot lastClickSlot;
 
-      @Shadow protected abstract List<Component> getTooltipFromContainerItem(ItemStack pStack);
+      @Shadow protected int leftPos;
+
+      @Shadow protected int topPos;
 
       protected AbstractScreenMixin(Component pTitle) {
             super(pTitle);
       }
 
-      @Inject(method = "renderTooltip", at = @At("HEAD"), cancellable = true)
-      protected void renderTooltip(GuiGraphics gui, int mouseX, int mouseY, CallbackInfo ci) {
-            if (this.hoveredSlot != null) {
-                  ItemStack itemstack = this.hoveredSlot.getItem();
-                  Traits.get(itemstack).ifPresentOrElse(trait -> {
-                        trait.client().renderTooltip(trait, itemstack, PatchedComponentHolder.of(itemstack), gui, mouseX, mouseY, ci);
-                  }, () -> EnderTraits.get(itemstack).ifPresent(enderTraits -> enderTraits.getTrait().ifPresent(trait ->
-                        trait.client().renderTooltip(trait, itemstack, enderTraits, gui, mouseX, mouseY, ci)
-                  )));
+      @Unique private TraitMenu<?> traitMenu = null;
+
+      @Inject(method = "mouseClicked", cancellable = true, at = @At("HEAD"))
+      private void mouseClicked(double pMouseX, double pMouseY, int pButton, CallbackInfoReturnable<Boolean> cir) {
+            if (traitMenu != null) {
+                  if (traitMenu.isHoveringSlot((int) pMouseX, (int) pMouseY)) {
+                        traitMenu = null;
+                        skipNextRelease = true;
+                        cir.cancel();
+                        return;
+                  }
+                  else {
+                        traitMenu.mouseClicked(pMouseX, pMouseY, pButton, cir);
+                        if (cir.isCancelled()) {
+                              skipNextRelease = true;
+                              return;
+                        }
+                  }
+            }
+
+            if (hoveredSlot != null) {
+                  if (pButton == 1 || (pButton == 0 && hoveredSlot instanceof EquipmentSlotAccess && !hoveredSlot.mayPickup(minecraft.player))) {
+                        TraitMenu<?> menu = TraitMenu.create(minecraft, leftPos, topPos, hoveredSlot);
+                        if (menu != null)
+                              traitMenu = menu;
+                  }
+            }
+      }
+
+      @Inject(method = "init", at = @At("TAIL"))
+      private void init(CallbackInfo ci) {
+            traitMenu = null;
+      }
+
+      @Inject(method = "keyPressed", cancellable = true, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;checkHotbarKeyPressed(II)Z"))
+      private void keyPressed(int pKeyCode, int pScanCode, int pModifiers, CallbackInfoReturnable<Boolean> cir) {
+            if (traitMenu != null) {
+                  traitMenu.keyPressed(pKeyCode, pScanCode, pModifiers, cir);
+            }
+      }
+
+      @Inject(method = "isHovering(IIIIDD)Z", cancellable = true, at = @At("HEAD"))
+      private void isHovering(int pX, int pY, int pWidth, int pHeight, double pMouseX, double pMouseY, CallbackInfoReturnable<Boolean> cir) {
+            if (traitMenu != null && traitMenu.isHovering((int) pMouseX, (int) pMouseY))
+                  cir.setReturnValue(false);
+      }
+
+      @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderLabels(Lnet/minecraft/client/gui/GuiGraphics;II)V"))
+      protected void renderTooltip(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick, CallbackInfo ci) {
+            if (traitMenu != null) {
+                  traitMenu.render((AbstractContainerScreen<?>) (Object) this, pGuiGraphics, pMouseX, pMouseY);
             }
       }
 
@@ -93,47 +136,47 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
             if (backpack.isEmpty())
                   return;
 
-            if (slot != lastClickSlot && slot != drag.backpackDraggedSlot) {
+            if (slot != lastClickSlot && slot != drag.firstSlot) {
                   IDraggingTrait.runIfPresent(backpack, minecraft.level, ((trait, holder) -> {
-                        beans_Backpacks_3$dragTrait(pButton, trait, slot, cir, holder);
+                        beans_Backpacks_3$dragTrait(trait, pButton, slot, cir, holder);
                   }));
             }
       }
 
       @Unique
-      private void beans_Backpacks_3$dragTrait(int pButton, IDraggingTrait traits, Slot slot, CallbackInfoReturnable<Boolean> cir, PatchedComponentHolder holder) {
+      private void beans_Backpacks_3$dragTrait(IDraggingTrait traits, int pButton, Slot slot, CallbackInfoReturnable<Boolean> cir, PatchedComponentHolder holder) {
             isQuickCrafting = false;
             skipNextRelease = true;
-            if (drag.backpackDraggedSlots.isEmpty()) {
-                  drag.backpackDragType = pButton;
+            if (drag.allSlots.isEmpty()) {
+                  drag.isPickup = pButton == 0;
 
-                  if (drag.backpackDraggedSlot != null)
+                  if (drag.firstSlot != null)
                         traits.clickSlot(drag, minecraft.player, holder);
                   else if (lastClickSlot != null) {
-                        drag.backpackDraggedSlot = lastClickSlot;
+                        drag.firstSlot = lastClickSlot;
                         traits.clickSlot(drag, minecraft.player, holder);
                   }
             }
-            else if (drag.backpackDraggedSlot != null)
+            else if (drag.firstSlot != null)
                   traits.clickSlot(drag, minecraft.player, holder);
 
-            drag.backpackDraggedSlot = slot;
+            drag.firstSlot = slot;
             cir.setReturnValue(true);
       }
 
       @Inject(method = "mouseReleased", at = @At("HEAD"))
       public void backpackReleased(double pMouseX, double pMouseY, int pButton, CallbackInfoReturnable<Boolean> cir) {
-            if (!drag.backpackDraggedSlots.isEmpty()) {
-                  if (drag.backpackDraggedSlot != null) {
+            if (!drag.allSlots.isEmpty()) {
+                  if (drag.firstSlot != null) {
                         ItemStack backpack = menu.getCarried();
 
                         IDraggingTrait.runIfPresent(backpack, minecraft.level, (trait, holder) -> {
                               trait.clickSlot(drag, minecraft.player, PatchedComponentHolder.of(backpack));
                         });
 
-                        drag.backpackDraggedSlot = null;
+                        drag.firstSlot = null;
                   }
-                  drag.backpackDraggedSlots.clear();
+                  drag.allSlots.clear();
             }
       }
 
@@ -143,8 +186,7 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
             if (pair != null) {
                   int i = pSlot.x;
                   int j = pSlot.y;
-                  boolean isPickup = drag.backpackDragType != 0;
-                  if (isPickup) {
+                  if (drag.isPickup) {
                         pGuiGraphics.renderFakeItem(pair, i, j);
 
                         if (pSlot.getItem().getCount() == 1) {
@@ -157,13 +199,13 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
                         }
                   }
 
-                  pGuiGraphics.fill(i, j, i + 16, j + 16, isPickup ? 200 : 0,-2130706433);
+                  pGuiGraphics.fill(i, j, i + 16, j + 16, drag.isPickup ? 200 : 0,-2130706433);
             }
       }
 
       @Unique @Nullable
       private ItemStack findMatchingBackpackDraggedPair(Slot pSlot) {
-            for (Map.Entry<Slot, ItemStack> slotPair : drag.backpackDraggedSlots.entrySet()) {
+            for (Map.Entry<Slot, ItemStack> slotPair : drag.allSlots.entrySet()) {
                   if (slotPair.getKey() == pSlot) {
                         return slotPair.getValue();
                   }

@@ -271,25 +271,26 @@ public abstract class ItemStorageTraits extends GenericTraits implements IDraggi
       public abstract void tinyMenuClick(PatchedComponentHolder holder, int index, TinyClickType clickType, SlotAccess carriedAccess, Player player);
 
       public void clickSlot(DraggingContainer drag, Player player, PatchedComponentHolder holder) {
-            Slot slot = drag.backpackDraggedSlot;
+            Slot slot = drag.firstSlot;
 
-            if (drag.backpackDragType == 0) {
-                  ItemStack itemStack = getFirst(holder);
-                  if (itemStack != null && !slot.hasItem()) {
-                        if (AbstractContainerMenu.canItemQuickReplace(slot, itemStack, true) && slot.mayPlace(itemStack)) {
-                              drag.backpackDraggedSlots.put(slot, ItemStack.EMPTY);
-                              drag.slotClicked(slot, slot.index, 1, ClickType.PICKUP);
-                        }
-                  }
-            } else {
+            if (drag.isPickup) {
                   ItemStack stack = slot.getItem();
                   boolean mayPickup = slot.mayPickup(player);
                   boolean hasItem = slot.hasItem();
                   boolean canFit = canItemFit(holder, stack);
                   boolean isFull = isFull(holder);
                   if (mayPickup && hasItem && canFit && !isFull) {
-                        drag.backpackDraggedSlots.put(drag.backpackDraggedSlot, stack.copyWithCount(1));
+                        drag.allSlots.put(drag.firstSlot, stack.copyWithCount(1));
                         drag.slotClicked(slot, slot.index, 1, ClickType.PICKUP);
+                  }
+            }
+            else {
+                  ItemStack itemStack = getFirst(holder);
+                  if (itemStack != null && !slot.hasItem()) {
+                        if (AbstractContainerMenu.canItemQuickReplace(slot, itemStack, true) && slot.mayPlace(itemStack)) {
+                              drag.allSlots.put(slot, ItemStack.EMPTY);
+                              drag.slotClicked(slot, slot.index, 1, ClickType.PICKUP);
+                        }
                   }
             }
       }

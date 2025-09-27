@@ -105,17 +105,42 @@ public class MutableBundleLike<T extends BundleLikeTraits> implements MutableIte
 
             int count = toInsert;
             if (inserted.isStackable()) {
-                  for (ItemStack stored : getItemStacks()) {
+
+                  List<ItemStack> stacks = getItemStacks();
+                  int i = stacks.size();
+                  while (i > 0) {
+                        i--;
+                        ItemStack stored = stacks.get(i);
+
                         if (inserted.isEmpty() || count < 1)
                               return ItemStack.EMPTY;
 
                         if (ItemStack.isSameItemSameComponents(stored, inserted)) {
-                              int insert = Math.min(stored.getMaxStackSize() - stored.getCount(), count);
-                              stored.grow(insert);
-                              inserted.shrink(insert);
-                              count -= insert;
+
+                              ItemStack removed = stacks.remove(i);
+                              int size = stacks.size();
+                              stacks.add(Math.min(slot, size), removed);
+
+                              removed.grow(count);
+                              inserted.shrink(count);
+                              return ItemStack.EMPTY;
                         }
                   }
+
+//                  for (ItemStack stored : getItemStacks()) {
+//                        if (inserted.isEmpty() || count < 1)
+//                              return ItemStack.EMPTY;
+//
+//                        if (ItemStack.isSameItemSameComponents(stored, inserted)) {
+//                              if (stored.getMaxStackSize() == stored.getCount())
+//                                    continue;
+//
+//                              int insert = Math.min(stored.getMaxStackSize() - stored.getCount(), count);
+//                              stored.grow(insert);
+//                              inserted.shrink(insert);
+//                              count -= insert;
+//                        }
+//                  }
             }
 
             if (!inserted.isEmpty()) {
