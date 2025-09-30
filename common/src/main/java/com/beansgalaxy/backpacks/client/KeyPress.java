@@ -73,7 +73,7 @@ public class KeyPress {
 
       public void tick(Minecraft minecraft, LocalPlayer player, DeltaTracker delta) {
             if (coyoteClick != null) {
-                  if (!minecraft.options.keyUse.isDown())
+                  if (coyoteClick.shouldUnload(minecraft, player))
                         unloadCoyoteClick(minecraft, player, coyoteClick);
                   else if (player.isUsingItem())
                         cancelCoyoteClick();
@@ -196,6 +196,19 @@ public class KeyPress {
 
             boolean isFinished() {
                   return progress > 4;
+            }
+
+            public boolean shouldUnload(Minecraft minecraft, LocalPlayer player) {
+                  if (!minecraft.options.keyUse.isDown()) {
+                        return true;
+                  }
+
+                  if (minecraft.hitResult instanceof BlockHitResult hitResult) {
+                        return !hitResult.getBlockPos().equals(blockhitresult.getBlockPos())
+                        || !hitResult.getDirection().equals(blockhitresult.getDirection());
+                  }
+
+                  return true;
             }
       }
 
