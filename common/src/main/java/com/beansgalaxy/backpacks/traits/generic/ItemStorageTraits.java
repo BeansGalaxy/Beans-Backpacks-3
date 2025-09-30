@@ -4,7 +4,6 @@ import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
 import com.beansgalaxy.backpacks.screen.TinyClickType;
-import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.util.DraggingContainer;
@@ -150,10 +149,6 @@ public abstract class ItemStorageTraits extends GenericTraits implements IDraggi
             inventory.setItem(inventory.selected, take);
             mutable.push();
 
-            List<ItemStack> finalStacks = holder.get(ITraitData.ITEM_STACKS);
-            int size = finalStacks == null ? 0 : finalStacks.size();
-            limitSelectedSlot(holder, index, size);
-
             int overflowSlot = -1;
             if (!selectedStack.isEmpty())
             {
@@ -170,13 +165,10 @@ public abstract class ItemStorageTraits extends GenericTraits implements IDraggi
                   sender.connection.send(new ClientboundContainerSetSlotPacket(-2, 0, overflowSlot, inventory.getItem(overflowSlot)));
       }
 
-      public void limitSelectedSlot(ComponentHolder holder, int slot, int size) {
-      }
-
       public boolean overflowFromInventory(EquipmentSlot equipmentSlot, Player player, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
             ItemStack backpack = player.getItemBySlot(equipmentSlot);
             MutableItemStorage mutable = mutable(ComponentHolder.of(backpack));
-            ItemStack itemStack = mutable.addItem(stack, player);
+            ItemStack itemStack = mutable.addItem(stack);
             if (itemStack != null) {
                   mutable.push();
                   cir.setReturnValue(true);
@@ -212,7 +204,7 @@ public abstract class ItemStorageTraits extends GenericTraits implements IDraggi
                         ItemStack backpack = player.getItemBySlot(equipment);
                         MutableItemStorage itemStorage = storageTraits.mutable(ComponentHolder.of(backpack));
                         if (canItemFit(ComponentHolder.of(backpack), hotbar)) {
-                              if (itemStorage.addItem(hotbar, player) != null) {
+                              if (itemStorage.addItem(hotbar) != null) {
                                     sound().atClient(player, ModSound.Type.INSERT);
                                     itemStorage.push();
                               }
@@ -224,7 +216,7 @@ public abstract class ItemStorageTraits extends GenericTraits implements IDraggi
 
             if (clickType.isShift()) {
                   MutableItemStorage mutable = mutable(holder);
-                  if (mutable.addItem(hotbar, player) != null) {
+                  if (mutable.addItem(hotbar) != null) {
                         sound().atClient(player, ModSound.Type.INSERT);
                         mutable.push();
                   }

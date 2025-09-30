@@ -103,38 +103,6 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
             return stacks == null ? null : stacks.getFirst();
       }
 
-      private SlotSelection getSlotSelection(ComponentHolder holder) {
-            SlotSelection slotSelection = holder.get(ITraitData.SLOT_SELECTION);
-            if (slotSelection != null)
-                  return slotSelection;
-
-            SlotSelection selection = new SlotSelection();
-            holder.set(ITraitData.SLOT_SELECTION, selection);
-            return selection;
-      }
-
-      public int getSelectedSlot(ComponentHolder holder, Player player) {
-            return getSlotSelection(holder).getSelectedSlot(player);
-      }
-
-      public int getSelectedSlotSafe(ComponentHolder holder, Player player) {
-            int selectedSlot = getSelectedSlot(holder, player);
-            return selectedSlot == 0 ? selectedSlot : selectedSlot - 1;
-      }
-
-      public void setSelectedSlot(ComponentHolder holder, Player player, int selectedSlot) {
-            getSlotSelection(holder).setSelectedSlot(player, selectedSlot);
-      }
-
-      @Override
-      public void limitSelectedSlot(ComponentHolder holder, int slot, int size) {
-            getSlotSelection(holder).limit(slot, size);
-      }
-
-      public void growSelectedSlot(ComponentHolder holder, int slot) {
-            getSlotSelection(holder).grow(slot);
-      }
-
       @Override
       public void stackedOnMe(ComponentHolder backpack, ItemStack other, Slot slot, ClickAction click, Player player, SlotAccess access, CallbackInfoReturnable<Boolean> cir) {
       }
@@ -156,11 +124,9 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
 
                   slot.set(stack);
                   sound.atClient(player, ModSound.Type.REMOVE);
-                  int size = mutable.stacks.get().size();
-                  limitSelectedSlot(backpack, 0, size);
             }
             else if (slot.mayPickup(player)) {
-                  if (mutable.addItem(other, player) != null)
+                  if (mutable.addItem(other, 0) != null)
                         sound.atClient(player, ModSound.Type.INSERT);
             }
             else return;
@@ -186,7 +152,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                   }
 
                   Inventory inventory = player.getInventory();
-                  int selectedSlot = getSelectedSlotSafe(holder, player);
+                  int selectedSlot = mutable.getSelectedSlot(player);
                   if (ClickType.PICKUP_ALL.equals(actionType)) {
                         ItemStack carried = player.containerMenu.getCarried();
                         List<ItemStack> stacks = mutable.getItemStacks();
@@ -217,7 +183,6 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                         boolean cancelled = ci.isCancelled();
                         if (cancelled) {
                               sound().atClient(player, ModSound.Type.REMOVE);
-                              limitSelectedSlot(holder, 0, stacks.size());
                               mutable.push();
                         }
                         return;
@@ -230,8 +195,6 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                   }
                   if (stackableSlot != -1 && inventory.add(-1, stack)) {
                         sound().atClient(player, ModSound.Type.REMOVE);
-                        int size = mutable.getItemStacks().size();
-                        limitSelectedSlot(holder, 0, size);
                         mutable.push();
                         ci.cancel();
                   }
@@ -262,7 +225,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                                     int count = Math.min(stack.getMaxStackSize(), toAdd);
                                     ItemStack removed = stack.copyWithCount(count);
                                     stack.shrink(count);
-                                    if (mutable.addItem(removed, player) != null) {
+                                    if (mutable.addItem(removed, 0) != null) {
                                           ci.cancel();
                                     }
                               }
@@ -280,7 +243,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                         ItemStack slotItem = slot.getItem().copy();
                         int toAdd = mutable.getMaxAmountToAdd(slotItem);
                         ItemStack removed = slot.remove(toAdd);
-                        if (mutable.addItem(removed, player) != null) {
+                        if (mutable.addItem(removed, 0) != null) {
                               sound().atClient(player, ModSound.Type.INSERT);
                               mutable.push();
                               ci.cancel();
@@ -295,7 +258,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                   return;
 
             MutableBundleLike<?> mutable = mutable(backpack);
-            int selectedSlot = getSelectedSlotSafe(backpack, player);
+            int selectedSlot = mutable.getSelectedSlot(player);
 
             ItemStack removed;
             if (menuKeyDown)
@@ -308,8 +271,6 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
             else return;
 
             player.drop(removed, true);
-            limitSelectedSlot(backpack, selectedSlot, mutable.getItemStacks().size());
-
             sound().atClient(player, ModSound.Type.REMOVE);
             mutable.push();
             ci.cancel();
@@ -341,7 +302,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                   while (iterator.hasNext() && !stack.isEmpty()) {
                         ItemStack itemStack = iterator.next();
                         if (ItemStack.isSameItemSameComponents(itemStack, stack)) {
-                              ItemStack returnStack = mutable.addItem(stack, player);
+                              ItemStack returnStack = mutable.addItem(stack);
                               if (returnStack != null) {
                                     cir.setReturnValue(true);
                               }
@@ -393,7 +354,10 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
             sound().atClient(player, ModSound.Type.REMOVE);
             ci.cancel();
 
-            limitSelectedSlot(ComponentHolder.of(backpack), slot, size);
+            SlotSelection selection = backpack.get(ITraitData.SLOT_SELECTION);
+            if (selection != null) {
+                  selection.limit(slot, size);
+            }
       }
 
       @Override
@@ -436,7 +400,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                               return;
                         }
 
-                        mutable.addItem(hotbarStack, index, player);
+                        mutable.addItem(hotbarStack, index);
                   }
 
                   sound().at(player, ModSound.Type.REMOVE);
@@ -505,7 +469,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                         ItemStack backpack = player.getItemBySlot(slot);
                         MutableItemStorage itemStorage = storageTraits.mutable(ComponentHolder.of(backpack));
                         if (canItemFit(holder, stack)) {
-                              if (itemStorage.addItem(stack, player) != null) {
+                              if (itemStorage.addItem(stack) != null) {
                                     mutable.push();
                                     sound().atClient(player, ModSound.Type.INSERT);
                                     itemStorage.push();
@@ -528,12 +492,12 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
 
             if (index == -1) {
                   if (clickType.isRight()) {
-                        if (mutable.addItem(carried.copyWithCount(1), player) != null) {
+                        if (mutable.addItem(carried.copyWithCount(1)) != null) {
                               carried.shrink(1);
                               mutable.push();
                               sound().at(player, ModSound.Type.INSERT);
                         }
-                  } else if (mutable.addItem(carried, player) != null) {
+                  } else if (mutable.addItem(carried) != null) {
                         mutable.push();
                         sound().at(player, ModSound.Type.INSERT);
                   }
@@ -543,12 +507,12 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
             int size = stacks.size();
             if (index >= size) {
                   if (clickType.isRight()) {
-                        if (mutable.addItem(carried.copyWithCount(1), size, player) != null) {
+                        if (mutable.addItem(carried.copyWithCount(1), size) != null) {
                               carried.shrink(1);
                               mutable.push();
                               sound().atClient(player, ModSound.Type.INSERT);
                         }
-                  } else if (mutable.addItem(carried, size, player) != null) {
+                  } else if (mutable.addItem(carried, size) != null) {
                         mutable.push();
                         sound().atClient(player, ModSound.Type.INSERT);
                   }
@@ -575,7 +539,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                         }
                         sound().atClient(player, ModSound.Type.INSERT);
                   }
-                  else if (mutable.addItem(carried, index, player) != null) {
+                  else if (mutable.addItem(carried, index) != null) {
                         sound().atClient(player, ModSound.Type.INSERT);
                   }
             }
@@ -589,7 +553,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                   ItemStack removed = mutable.removeItem(index);
                   carriedAccess.set(removed);
                   sound().atClient(player, ModSound.Type.REMOVE);
-            } else if (mutable.addItem(carried, index + 1, player) != null) {
+            } else if (mutable.addItem(carried, index + 1) != null) {
                   sound().atClient(player, ModSound.Type.INSERT);
             }
 
@@ -602,7 +566,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                   Slot slot = menu.getSlot(slotId);
                   ItemStack hotbar = slot.getItem();
                   MutableBundleLike<?> mutable = mutable(holder);
-                  if (mutable.addItem(hotbar, mutable.getItemStacks().size(), player) != null) {
+                  if (mutable.addItem(hotbar, mutable.getItemStacks().size()) != null) {
                         sound().atClient(player, ModSound.Type.INSERT);
                         mutable.push();
                   }
@@ -703,7 +667,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                         ItemStack backpack = player.getItemBySlot(slot);
                         MutableItemStorage itemStorage = storageTraits.mutable(ComponentHolder.of(backpack));
                         if (canItemFit(holder, stack)) {
-                              if (itemStorage.addItem(stack, player) != null) {
+                              if (itemStorage.addItem(stack) != null) {
                                     mutable.push();
                                     sound().atClient(player, ModSound.Type.INSERT);
                                     itemStorage.push();
@@ -727,12 +691,12 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
             int size = stacks.size();
             if (index >= size) {
                   if (clickType.isRight()) {
-                        if (mutable.addItem(carried.copyWithCount(1), size, player) != null) {
+                        if (mutable.addItem(carried.copyWithCount(1), size) != null) {
                               carried.shrink(1);
                               mutable.push();
                               sound().atClient(player, ModSound.Type.INSERT);
                         }
-                  } else if (mutable.addItem(carried, size, player) != null) {
+                  } else if (mutable.addItem(carried, size) != null) {
                         mutable.push();
                         sound().atClient(player, ModSound.Type.INSERT);
                   }
@@ -759,12 +723,12 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                         sound().atClient(player, ModSound.Type.INSERT);
                   }
                   else if (clickType.isRight()) {
-                        if (mutable.addItem(carried.copyWithCount(1), index, player) != null) {
+                        if (mutable.addItem(carried.copyWithCount(1), index) != null) {
                               carried.shrink(1);
                               sound().atClient(player, ModSound.Type.INSERT);
                         }
                   }
-                  else if (mutable.addItem(carried, index, player) != null) {
+                  else if (mutable.addItem(carried, index) != null) {
                         sound().atClient(player, ModSound.Type.INSERT);
                   }
             }
@@ -778,7 +742,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                   ItemStack removed = mutable.removeItem(index);
                   carriedAccess.set(removed);
                   sound().atClient(player, ModSound.Type.REMOVE);
-            } else if (mutable.addItem(carried, index + 1, player) != null) {
+            } else if (mutable.addItem(carried, index + 1) != null) {
                   sound().atClient(player, ModSound.Type.INSERT);
             }
 

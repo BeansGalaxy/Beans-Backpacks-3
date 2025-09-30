@@ -36,7 +36,7 @@ public class ChestMutable implements MutableItemStorage {
       }
 
       @Override
-      public ItemStack addItem(ItemStack inserted, Player player) {
+      public ItemStack addItem(ItemStack inserted) {
             if (!traits.canItemFit(holder, inserted) || inserted.isEmpty())
                   return null;
 

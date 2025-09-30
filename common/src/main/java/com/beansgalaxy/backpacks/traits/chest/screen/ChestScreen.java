@@ -1,5 +1,6 @@
 package com.beansgalaxy.backpacks.traits.chest.screen;
 
+import com.beansgalaxy.backpacks.CommonClient;
 import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.network.serverbound.TinyHotbarClick;
 import com.beansgalaxy.backpacks.network.serverbound.TinyMenuClick;
@@ -7,7 +8,6 @@ import com.beansgalaxy.backpacks.network.serverbound.TinyMenuInteract;
 import com.beansgalaxy.backpacks.screen.BackpackScreen;
 import com.beansgalaxy.backpacks.screen.TinyClickType;
 import com.beansgalaxy.backpacks.traits.ITraitData;
-import com.beansgalaxy.backpacks.traits.bundle.BundleTooltip;
 import com.beansgalaxy.backpacks.traits.chest.ChestTraits;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
 import net.minecraft.client.Minecraft;
@@ -112,8 +112,8 @@ public class ChestScreen extends BackpackScreen {
 
                   if (!stack.isEmpty()) {
                         Minecraft minecraft = Minecraft.getInstance();
-                        BundleTooltip.renderItem(minecraft, gui, stack, x, y, 200, false);
-                        BundleTooltip.renderItemDecorations(gui, font, stack, x, y, 200);
+                        CommonClient.renderItem(minecraft, gui, stack, x, y, 200, false);
+                        CommonClient.renderItemDecorations(gui, font, stack, x, y, 200);
 
                         if (hovered && getCarried().isEmpty()) {
                               List<Component> tooltipFromItem = Screen.getTooltipFromItem(minecraft, stack);

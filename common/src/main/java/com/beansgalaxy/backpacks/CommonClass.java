@@ -157,16 +157,16 @@ public class CommonClass {
 
       public static @NotNull String getTinyNumberFromDigitChar(char c) {
             return switch (c) {
-                  case '1' -> "₁";
-                  case '2' -> "₂";
-                  case '3' -> "₃";
-                  case '4' -> "₄";
-                  case '5' -> "₅";
-                  case '6' -> "₆";
-                  case '7' -> "₇";
-                  case '8' -> "₈";
-                  case '9' -> "₉";
-                  default -> "₀";
+                  case '1' -> "\u2081" ;
+                  case '2' -> "\u2082";
+                  case '3' -> "\u2083";
+                  case '4' -> "\u2084";
+                  case '5' -> "\u2085";
+                  case '6' -> "\u2086";
+                  case '7' -> "\u2087";
+                  case '8' -> "\u2088";
+                  case '9' -> "\u2089";
+                  default -> "\u2080";
             };
       }
 }

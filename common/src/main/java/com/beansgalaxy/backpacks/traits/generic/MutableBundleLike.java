@@ -7,13 +7,12 @@ import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.math.Fraction;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public class MutableBundleLike<T extends BundleLikeTraits> implements MutableItemStorage {
       public final ITraitData<List<ItemStack>> stacks;
-      private final ComponentHolder holder;
+      protected final ComponentHolder holder;
       protected final T traits;
 
       public MutableBundleLike(T traits, ComponentHolder holder) {
@@ -54,15 +53,12 @@ public class MutableBundleLike<T extends BundleLikeTraits> implements MutableIte
                   if (stack.getCount() > maxCount) {
                         stack.shrink(maxCount);
                         returned = stack.copyWithCount(maxCount);
-                  } else
+                  } else {
                         returned = stacks.remove(slot);
+                        limitSelectedSlot(slot);
+                  }
             }
             return returned;
-      }
-
-      @Override
-      public ItemStack addItem(ItemStack other, Player player) {
-            return addItem(other, 0, player);
       }
 
       @Override
@@ -86,7 +82,7 @@ public class MutableBundleLike<T extends BundleLikeTraits> implements MutableIte
                         else moved = removeItem(selectedSlot);
                   }
 
-                  to.addItem(moved, player);
+                  to.addItem(moved);
                   this.push();
                   to.push();
 
@@ -94,7 +90,8 @@ public class MutableBundleLike<T extends BundleLikeTraits> implements MutableIte
             }
       }
 
-      public ItemStack addItem(ItemStack inserted, int slot, @Nullable Player player) {
+      @Override
+      public ItemStack addItem(ItemStack inserted) {
             if (!traits.canItemFit(holder, inserted))
                   return null;
 
@@ -104,50 +101,70 @@ public class MutableBundleLike<T extends BundleLikeTraits> implements MutableIte
                   return null;
 
             int count = toInsert;
-            if (inserted.isStackable()) {
+            List<ItemStack> stacks = getItemStacks();
+            int i = stacks.size();
+            while (i > 0) {
+                  i--;
 
-                  List<ItemStack> stacks = getItemStacks();
-                  int i = stacks.size();
-                  while (i > 0) {
-                        i--;
-                        ItemStack stored = stacks.get(i);
+                  ItemStack stored = stacks.get(i);
+                  if (inserted.isEmpty() || count < 1)
+                        return ItemStack.EMPTY;
 
-                        if (inserted.isEmpty() || count < 1)
-                              return ItemStack.EMPTY;
+                  if (ItemStack.isSameItemSameComponents(stored, inserted)) {
+                        if (stored.getMaxStackSize() == stored.getCount())
+                              continue;
 
-                        if (ItemStack.isSameItemSameComponents(stored, inserted)) {
-
-                              ItemStack removed = stacks.remove(i);
-                              int size = stacks.size();
-                              stacks.add(Math.min(slot, size), removed);
-
-                              removed.grow(count);
-                              inserted.shrink(count);
-                              return ItemStack.EMPTY;
-                        }
+                        int insert = Math.min(stored.getMaxStackSize() - stored.getCount(), count);
+                        stored.grow(insert);
+                        inserted.shrink(insert);
+                        count -= insert;
                   }
+            }
 
-//                  for (ItemStack stored : getItemStacks()) {
-//                        if (inserted.isEmpty() || count < 1)
-//                              return ItemStack.EMPTY;
-//
-//                        if (ItemStack.isSameItemSameComponents(stored, inserted)) {
-//                              if (stored.getMaxStackSize() == stored.getCount())
-//                                    continue;
-//
-//                              int insert = Math.min(stored.getMaxStackSize() - stored.getCount(), count);
-//                              stored.grow(insert);
-//                              inserted.shrink(insert);
-//                              count -= insert;
-//                        }
-//                  }
+            if (!inserted.isEmpty()) {
+                  ItemStack split = inserted.split(count);
+                  getItemStacks().addFirst(split);
+                  growSelectedSlot(0);
+            }
+
+            return inserted;
+      }
+
+      public ItemStack addItem(ItemStack inserted, int slot) {
+            if (!traits.canItemFit(holder, inserted))
+                  return null;
+
+            int spaceLeft = this.getMaxAmountToAdd(inserted);
+            int toInsert = Math.min(inserted.getCount(), spaceLeft);
+            if (toInsert == 0)
+                  return null;
+
+            int count = toInsert;
+            List<ItemStack> stacks = getItemStacks();
+            int i = stacks.size();
+            while (i > 0) {
+                  i--;
+
+                  ItemStack stored = stacks.get(i);
+                  if (inserted.isEmpty() || count < 1)
+                        return ItemStack.EMPTY;
+
+                  if (ItemStack.isSameItemSameComponents(stored, inserted)) {
+                        ItemStack removed = stacks.remove(i);
+                        int size = stacks.size();
+                        stacks.add(Math.min(slot, size), removed);
+
+                        removed.grow(count);
+                        inserted.shrink(count);
+                        return ItemStack.EMPTY;
+                  }
             }
 
             if (!inserted.isEmpty()) {
                   int selectedSlot = Math.min(slot, getItemStacks().size());
                   ItemStack split = inserted.split(count);
                   getItemStacks().add(selectedSlot, split);
-                  traits.growSelectedSlot(holder, selectedSlot);
+                  growSelectedSlot(selectedSlot);
             }
 
             return inserted;
@@ -166,15 +183,11 @@ public class MutableBundleLike<T extends BundleLikeTraits> implements MutableIte
       }
 
       public int getSelectedSlot(Player player) {
-            return traits.getSelectedSlot(holder, player);
+            return 0;
       }
 
-      public int getSelectedSlotSafe(Player player) {
-            return traits.getSelectedSlotSafe(holder, player);
-      }
+      public void growSelectedSlot(int slot) {
 
-      public void limitSelectedSlot(int safe, int size) {
-            traits.limitSelectedSlot(holder, safe, size);
       }
 
       @Override

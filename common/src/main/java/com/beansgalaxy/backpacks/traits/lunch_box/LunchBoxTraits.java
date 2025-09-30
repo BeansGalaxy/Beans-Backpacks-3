@@ -1,9 +1,11 @@
 package com.beansgalaxy.backpacks.traits.lunch_box;
 
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
+import com.beansgalaxy.backpacks.network.serverbound.SyncSelectedSlot;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.util.ModSound;
@@ -23,7 +25,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class LunchBoxTraits extends BundleLikeTraits {
+public class LunchBoxTraits extends BundleLikeTraits implements ISlotSelectorTrait {
       public static final String NAME = "lunch";
 
       public LunchBoxTraits(ModSound sound, int size) {
@@ -38,15 +40,6 @@ public class LunchBoxTraits extends BundleLikeTraits {
       @Override
       public LunchBoxEntity entity() {
             return LunchBoxEntity.INSTANCE;
-      }
-
-      @Override
-      public boolean isEmpty(ComponentHolder holder) {
-            if (!super.isEmpty(holder))
-                  return false;
-
-            List<ItemStack> stacks = holder.get(ITraitData.NON_EDIBLES);
-            return stacks == null || stacks.isEmpty();
       }
 
       @Override
@@ -94,29 +87,55 @@ public class LunchBoxTraits extends BundleLikeTraits {
 
       public static void firstIsPresent(ItemStack lunchBox, LivingEntity entity, Consumer<ItemStack> ifPresent) {
             ifPresent(lunchBox, traits -> {
-                  List<ItemStack> stacks = lunchBox.get(ITraitData.ITEM_STACKS);
-                  if (stacks == null || stacks.isEmpty())
+                  LunchBoxMutable mutable = traits.mutable(ComponentHolder.of(lunchBox));
+                  if (mutable.isEmpty())
                         return;
 
                   int selectedSlotSafe = entity instanceof Player player
-                              ? traits.getSelectedSlotSafe(ComponentHolder.of(lunchBox), player)
+                              ? mutable.getSelectedSlot(player)
                               : 0;
 
-                  ifPresent.accept(stacks.get(selectedSlotSafe));
+                  ifPresent.accept(mutable.getItemStacks().get(selectedSlotSafe));
             });
       }
 
       public void finishUsingItem(ComponentHolder holder, ItemStack backpack, Level level, LivingEntity entity, CallbackInfoReturnable<ItemStack> cir) {
             LunchBoxMutable mutable = mutable(holder);
             int selectedSlot = entity instanceof Player player
-                        ? getSelectedSlotSafe(holder, player)
+                        ? mutable.getSelectedSlot(player)
                         : 0;
 
-            ItemStack stack = mutable.getItemStacks().get(selectedSlot).split(1);
-            ItemStack consumedStack = stack.finishUsingItem(level, entity);
-            ItemStack itemStack = mutable.addItem(consumedStack, null);
-            if (itemStack == null)
-                  mutable.addNonEdible(consumedStack);
+            List<ItemStack> itemStacks = mutable.getItemStacks();
+            ItemStack stack = itemStacks.get(selectedSlot);
+            ItemStack copy = stack.copyWithCount(1);
+            stack.shrink(1);
+            if (stack.isEmpty())
+                  itemStacks.remove(selectedSlot);
+
+            ItemStack consumedStack = copy.finishUsingItem(level, entity);
+            if (!consumedStack.isEmpty()) {
+                  for (int i = 0; i < itemStacks.size(); i++) {
+                        ItemStack nonEdible = itemStacks.get(i);
+                        if (nonEdible.isEmpty()) {
+                              itemStacks.remove(i);
+                              continue;
+                        }
+
+                        if (ItemStack.isSameItemSameComponents(nonEdible, consumedStack)) {
+                              ItemStack removed = itemStacks.remove(i);
+                              consumedStack.grow(removed.getCount());
+                              mutable.limitSelectedSlot(i);
+                        }
+                  }
+
+                  if (!consumedStack.isEmpty()) {
+                        itemStacks.addFirst(consumedStack);
+                        if (entity instanceof Player player)
+                              mutable.setSelectedSlot(player, mutable.getSelectedSlot(player));
+
+                        mutable.growSelectedSlot(0);
+                  }
+            }
 
             mutable.push();
             cir.setReturnValue(backpack);
@@ -124,18 +143,18 @@ public class LunchBoxTraits extends BundleLikeTraits {
 
       @Override
       public void use(Level level, Player player, InteractionHand hand, ComponentHolder holder, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
-            List<ItemStack> stacks = holder.get(ITraitData.ITEM_STACKS);
-            if (stacks == null || stacks.isEmpty())
+            LunchBoxMutable mutable = mutable(holder);
+            if (mutable.isEmpty())
                   return;
 
-            int selectedSlotSafe = getSelectedSlotSafe(holder, player);
-            ItemStack first = stacks.get(selectedSlotSafe);
+            int selected = mutable.getSelectedSlot(player);
+            ItemStack first = mutable.getItemStacks().get(selected);
             FoodProperties $$4 = first.get(DataComponents.FOOD);
             if ($$4 != null) {
                   if (player.canEat($$4.canAlwaysEat())) {
                         player.startUsingItem(hand);
                         ItemStack backpack = player.getItemInHand(hand);
-                        cir.setReturnValue(InteractionResultHolder.success(backpack));
+                        cir.setReturnValue(InteractionResultHolder.consume(backpack));
                   }
             }
       }

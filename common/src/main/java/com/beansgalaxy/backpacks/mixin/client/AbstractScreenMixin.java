@@ -2,10 +2,14 @@ package com.beansgalaxy.backpacks.mixin.client;
 
 import com.beansgalaxy.backpacks.CommonClient;
 import com.beansgalaxy.backpacks.access.EquipmentSlotAccess;
+import com.beansgalaxy.backpacks.items.ModItems;
 import com.beansgalaxy.backpacks.screen.TraitMenu;
 import com.beansgalaxy.backpacks.util.DraggingContainer;
 import com.beansgalaxy.backpacks.traits.abstract_traits.IDraggingTrait;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -49,6 +53,8 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
       @Shadow protected int leftPos;
 
       @Shadow protected int topPos;
+
+      @Shadow protected abstract boolean isHovering(Slot slot, double mouseX, double mouseY);
 
       protected AbstractScreenMixin(Component pTitle) {
             super(pTitle);
@@ -116,7 +122,7 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
                   ClientLevel level = minecraft.level;
 
                   int scrolled = Mth.floor(pScrollY + 0.5);
-                  if (CommonClient.scrollTraits(stack, level, containerId, scrolled, hoveredSlot))
+                  if (CommonClient.scrollTraits(minecraft.player, stack, level, containerId, scrolled, hoveredSlot))
                         return true;
             }
             return super.mouseScrolled(pMouseX, pMouseY, pScrollX, pScrollY);
@@ -177,6 +183,38 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
                   }
                   drag.allSlots.clear();
             }
+      }
+
+      @WrapOperation(method = "renderSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;renderItem(Lnet/minecraft/world/item/ItemStack;III)V"))
+      private void renderHoveredSlotItem(GuiGraphics instance, ItemStack stack, int x, int y, int seed, Operation<Void> original, @Local(argsOnly = true, ordinal = 0) Slot slot) {
+            int mouseX = (int) (
+                        this.minecraft.mouseHandler.xpos() * (double)this.minecraft.getWindow().getGuiScaledWidth() / (double)this.minecraft.getWindow().getScreenWidth()
+            );
+            int mouseY = (int) (
+                        this.minecraft.mouseHandler.ypos() * (double)this.minecraft.getWindow().getGuiScaledHeight() / (double)this.minecraft.getWindow().getScreenHeight()
+            );
+
+            if (isHovering(slot, mouseX, mouseY)) {
+                  if (stack.is(ModItems.LUNCH_BOX.get())) {
+                        CommonClient.renderHoveredItem(minecraft, instance, stack, x, y, seed, original, "lunch_box_open");
+                        return;
+                  }
+                  if (stack.is(ModItems.NETHERITE_LUNCH_BOX.get())) {
+                        CommonClient.renderHoveredItem(minecraft, instance, stack, x, y, seed, original, "netherite_lunch_box_open");
+                        return;
+                  }
+                  if (stack.is(ModItems.ALCHEMIST_BAG.get())) {
+                        CommonClient.renderHoveredItem(minecraft, instance, stack, x, y, seed, original, "alchemy_bag_open");
+                        return;
+                  }
+            }
+
+            original.call(instance, stack, x, y, seed);
+      }
+
+      @Inject(method = "renderSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;renderItem(Lnet/minecraft/world/item/ItemStack;III)V"))
+      private void renderHoveredSlotItem(GuiGraphics pGuiGraphics, Slot pSlot, CallbackInfo ci) {
+
       }
 
       @Inject(method = "renderSlot", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;popPose()V"))

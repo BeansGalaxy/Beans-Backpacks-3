@@ -1,9 +1,9 @@
 package com.beansgalaxy.backpacks.traits.chest.screen;
 
+import com.beansgalaxy.backpacks.CommonClient;
 import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.screen.TinyTraitScreen;
 import com.beansgalaxy.backpacks.traits.ITraitData;
-import com.beansgalaxy.backpacks.traits.bundle.BundleTooltip;
 import com.beansgalaxy.backpacks.traits.chest.ChestTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.blaze3d.platform.Window;
@@ -112,8 +112,8 @@ public abstract class TinyChestScreen extends TinyTraitScreen {
 
                   if (!stack.isEmpty()) {
                         Minecraft minecraft = Minecraft.getInstance();
-                        BundleTooltip.renderItem(minecraft, gui, stack, x, y, 50, false);
-                        BundleTooltip.renderItemDecorations(gui, font, stack, x, y, 50);
+                        CommonClient.renderItem(minecraft, gui, stack, x, y, 50, false);
+                        CommonClient.renderItemDecorations(gui, font, stack, x, y, 50);
 
                         if (hovered && getCarried().isEmpty()) {
                               List<Component> tooltipFromItem = Screen.getTooltipFromItem(minecraft, stack);

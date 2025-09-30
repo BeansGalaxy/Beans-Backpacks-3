@@ -4,6 +4,8 @@ import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.abstract_traits.IProjectileTrait;
+import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
+import com.beansgalaxy.backpacks.traits.abstract_traits.MutableSlotSelector;
 import com.beansgalaxy.backpacks.traits.bundle.BundleEntity;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
@@ -24,7 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
-public class QuiverTraits extends BundleLikeTraits implements IProjectileTrait {
+public class QuiverTraits extends BundleLikeTraits implements IProjectileTrait, ISlotSelectorTrait {
       public static final String NAME = "quiver";
       public static final BundleEntity ENTITY = new BundleEntity();
 
@@ -74,7 +76,7 @@ public class QuiverTraits extends BundleLikeTraits implements IProjectileTrait {
             int i = Fraction.getFraction(size(), 1).compareTo(fraction);
             if (i > 0) {
                   MutableBundleLike<QuiverTraits> mutable = this.mutable(ComponentHolder.of(backpack));
-                  if (mutable.addItem(stack, player) != null) {
+                  if (mutable.addItem(stack) != null) {
                         cir.setReturnValue(true);
                         sound().toClient(player, ModSound.Type.INSERT, 1, 1);
                         mutable.push();
@@ -110,8 +112,13 @@ public class QuiverTraits extends BundleLikeTraits implements IProjectileTrait {
       }
 
       @Override
-      public MutableBundleLike<QuiverTraits> mutable(ComponentHolder holder) {
-            return new MutableBundleLike<>(this, holder);
+      public MutableSlotSelector<QuiverTraits> mutable(ComponentHolder holder) {
+            return new MutableSlotSelector<>(this, holder);
+      }
+
+      @Override
+      public int getSelectedSlot(ComponentHolder holder, Player instance) {
+            return ISlotSelectorTrait.super.getSelectedSlot(holder, instance);
       }
 
       @Override

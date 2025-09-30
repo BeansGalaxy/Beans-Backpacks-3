@@ -9,7 +9,6 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ItemRenderer;
@@ -31,14 +30,9 @@ public interface IClientTraits<T extends GenericTraits> {
       int BLUE_BAR = Mth.color(0.4F, 0.4F, 1.0F);
       int RED_BAR = Mth.color(0.9F, 0.2F, 0.3F);
 
-      void renderTooltip(T trait, ItemStack itemStack, ComponentHolder holder, GuiGraphics gui, int mouseX, int mouseY, CallbackInfo ci);
-
       void appendTooltipLines(T traits, List<Component> lines);
 
       void appendEquipmentLines(T traits, Consumer<Component> pTooltipAdder);
-
-      @Nullable
-      ClientTooltipComponent getTooltipComponent(T traits, ItemStack itemStack, ComponentHolder holder, Component title);
 
       default boolean mouseScrolled(T traits, ComponentHolder holder, Level level, Slot hoveredSlot, int containerId, int scrolled) {
             return false;

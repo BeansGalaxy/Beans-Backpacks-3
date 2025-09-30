@@ -1,7 +1,7 @@
 package com.beansgalaxy.backpacks.screen;
 
+import com.beansgalaxy.backpacks.CommonClient;
 import com.beansgalaxy.backpacks.access.BackData;
-import com.beansgalaxy.backpacks.traits.bundle.BundleTooltip;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import net.minecraft.client.KeyMapping;
@@ -21,7 +21,6 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
-import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -73,8 +72,8 @@ public abstract class TinyTraitScreen extends Screen {
       @Override
       public void render(GuiGraphics gui, int pMouseX, int pMouseY, float pPartialTick) {
             ItemStack carried = getCarried();
-            BundleTooltip.renderItem(minecraft, gui, carried, pMouseX, pMouseY, 300, false);
-            BundleTooltip.renderItemDecorations(gui, font, carried, pMouseX, pMouseY, 300);
+            CommonClient.renderItem(minecraft, gui, carried, pMouseX, pMouseY, 300, false);
+            CommonClient.renderItemDecorations(gui, font, carried, pMouseX, pMouseY, 300);
             super.render(gui, pMouseX, pMouseY, pPartialTick);
       }
 

@@ -1,5 +1,6 @@
 package com.beansgalaxy.backpacks.traits.bundle;
 
+import com.beansgalaxy.backpacks.CommonClient;
 import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.network.serverbound.TraitMenuClick;
 import com.beansgalaxy.backpacks.screen.TraitMenu;
@@ -147,8 +148,8 @@ public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
                               break;
 
                         ItemStack stack = stacks.get(i);
-                        BundleTooltip.renderItem(minecraft, gui, stack, x1 + 8, y1 + 8, 15, false);
-                        BundleTooltip.renderItemDecorations(gui, minecraft.font, stack, x1 + 8, y1 + 8, 15);
+                        CommonClient.renderItem(minecraft, gui, stack, x1 + 8, y1 + 8, 15, false);
+                        CommonClient.renderItemDecorations(gui, minecraft.font, stack, x1 + 8, y1 + 8, 15);
                   }
             }
 

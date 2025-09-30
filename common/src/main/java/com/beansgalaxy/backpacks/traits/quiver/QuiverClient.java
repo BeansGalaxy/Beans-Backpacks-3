@@ -1,9 +1,9 @@
 package com.beansgalaxy.backpacks.traits.quiver;
 
+import com.beansgalaxy.backpacks.CommonClient;
 import com.beansgalaxy.backpacks.components.SlotSelection;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.bundle.BundleClient;
-import com.beansgalaxy.backpacks.traits.bundle.BundleTooltip;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.client.Minecraft;
@@ -30,12 +30,12 @@ public class QuiverClient extends BundleClient {
 
                   int i;
                   if (slotSelection != null) {
-                        i = slotSelection.getSelectedSlotSafe(minecraft.player);
+                        i = slotSelection.getSelectedSlot(minecraft.player);
                   }
                   else i = 0;
 
                   ItemStack arrow = stacks.get(i);
-                  BundleTooltip.renderItem(minecraft, gui, arrow, x + 8, y + 8, 200, false);
+                  CommonClient.renderItem(minecraft, gui, arrow, x + 8, y + 8, 200, false);
             }
             super.renderItemDecorations(trait, holder, gui, font, stack, x, y);
       }

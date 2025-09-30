@@ -34,7 +34,7 @@ public class AlchemyClient extends BundleClient {
 
                   int i;
                   if (slotSelection != null) {
-                        i = slotSelection.getSelectedSlotSafe(minecraft.player);
+                        i = slotSelection.getSelectedSlot(minecraft.player);
                   } else i = 0;
 
                   ItemStack food = stacks.get(i);

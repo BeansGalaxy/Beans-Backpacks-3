@@ -2,6 +2,7 @@ package com.beansgalaxy.backpacks.traits.alchemy;
 
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.util.ModSound;
@@ -34,9 +35,10 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.List;
 import java.util.Optional;
 
-public class AlchemyTraits extends BundleLikeTraits {
+public class AlchemyTraits extends BundleLikeTraits implements ISlotSelectorTrait {
       public static final String NAME = "alchemy";
 
       public AlchemyTraits(ModSound sound, int size) {
@@ -76,7 +78,7 @@ public class AlchemyTraits extends BundleLikeTraits {
                   return;
 
             AlchemyMutable mutable = mutable(holder);
-            int selectedSlot = getSelectedSlotSafe(holder, player);
+            int selectedSlot = mutable.getSelectedSlot(player);
             ItemStack selected = mutable.getItemStacks().get(selectedSlot);
             Item item = selected.getItem();
 
@@ -85,57 +87,82 @@ public class AlchemyTraits extends BundleLikeTraits {
                         return;
 
                   FoodProperties foodproperties = selected.get(DataComponents.FOOD);
-                  if (foodproperties == null) {
-                        player.drop(selected, true);
-                        mutable.push();
-                        ItemStack backpack = player.getItemInHand(hand);
-                        cir.setReturnValue(InteractionResultHolder.sidedSuccess(backpack, level.isClientSide));
+                  if (foodproperties == null)
                         return;
-                  }
 
-                  player.eat(level, selected, foodproperties);
-                  player.playSound(SoundEvents.GLASS_BREAK);
-                  if (player instanceof ServerPlayer serverplayer) {
-                        CriteriaTriggers.CONSUME_ITEM.trigger(serverplayer, selected);
-                        serverplayer.awardStat(Stats.ITEM_USED.get(item));
-                        player.removeEffect(MobEffects.POISON);
-                  }
-
-                  BlockState blockstate = Blocks.HONEY_BLOCK.defaultBlockState();
-                  BlockParticleOption particleOption = new BlockParticleOption(ParticleTypes.BLOCK, blockstate);
-                  double eyeY = player.getBoundingBox().maxY;
-                  double lowY = (player.getY() + eyeY + eyeY) * 0.334;
-                  double rad = Math.PI / 180;
-                  double yRot = -player.getYHeadRot() * rad;
-                  double xRot = -player.getXRot() * rad;
-                  double x = player.getX() + Math.sin(yRot) * 0.4 * Math.cos(xRot);
-                  double z = player.getZ() + Math.cos(yRot) * 0.4 * Math.cos(xRot);
-                  double yO = Math.sin(xRot) * 0.3;
-
-                  for (int j = 0; j < 5; j++) {
-                        double random = level.random.nextDouble();
-                        double y = Mth.lerp(random * random, lowY, eyeY) + yO;
-                        double xySpeed = (random - 0.5);
-
-                        level.addParticle(particleOption, x, y, z, xySpeed, -random * 0.2, xySpeed);
-                  }
+                  useHoneyBottle(level, player, selected, foodproperties, item);
             }
             else if (Items.MILK_BUCKET.equals(item))
-                  useMilkBucketItem(level, player, item, selected);
-            else
-                  usePotionLikeItem(level, player, selected, item);
+                  useMilkBucketItem(mutable, level, player, item, selected);
+            else {
+                  PotionContents potioncontents = selected.get(DataComponents.POTION_CONTENTS);
+                  if (potioncontents != null)
+                        usePotionLikeItem(potioncontents, level, player, selected, item);
+                  else return;
+            }
 
-            int size = mutable.getItemStacks().size();
-            limitSelectedSlot(holder, selectedSlot, size);
+            if (selected.isEmpty())
+                  mutable.limitSelectedSlot(selectedSlot);
+
             mutable.push();
             ItemStack backpack = player.getItemInHand(hand);
             cir.setReturnValue(InteractionResultHolder.sidedSuccess(backpack, level.isClientSide));
       }
 
-      private static void useMilkBucketItem(Level level, Player player, Item item, ItemStack selected) {
-            item.finishUsingItem(selected, level, player);
-            player.addItem(Items.BUCKET.getDefaultInstance());
-            player.playSound(SoundEvents.PLAYER_SPLASH_HIGH_SPEED);
+      private static void useHoneyBottle(Level level, Player player, ItemStack selected, FoodProperties foodproperties, Item item) {
+            player.eat(level, selected, foodproperties);
+            player.playSound(SoundEvents.GLASS_BREAK);
+            if (player instanceof ServerPlayer serverplayer) {
+                  CriteriaTriggers.CONSUME_ITEM.trigger(serverplayer, selected);
+                  serverplayer.awardStat(Stats.ITEM_USED.get(item));
+                  player.removeEffect(MobEffects.POISON);
+            }
+
+            BlockState blockstate = Blocks.HONEY_BLOCK.defaultBlockState();
+            BlockParticleOption particleOption = new BlockParticleOption(ParticleTypes.BLOCK, blockstate);
+            double eyeY = player.getBoundingBox().maxY;
+            double lowY = (player.getY() + eyeY + eyeY) * 0.334;
+            double rad = Math.PI / 180;
+            double yRot = -player.getYHeadRot() * rad;
+            double xRot = -player.getXRot() * rad;
+            double x = player.getX() + Math.sin(yRot) * 0.5* Math.cos(xRot);
+            double z = player.getZ() + Math.cos(yRot) * 0.5 * Math.cos(xRot);
+            double yO = Math.sin(xRot) * 0.3 - 0.2;
+
+            for (int j = 0; j < 5; j++) {
+                  double random = level.random.nextDouble();
+                  double y = Mth.lerp(random * random, lowY, eyeY) + yO;
+                  double xySpeed = (random - 0.5);
+
+                  level.addParticle(particleOption, x, y, z, xySpeed, -random * 0.4, xySpeed);
+            }
+      }
+
+      private static void useMilkBucketItem(AlchemyMutable mutable, Level level, Player player, Item item, ItemStack selected) {
+            ItemStack consumedStack = item.finishUsingItem(selected.copyWithCount(1), level, player);
+            selected.shrink(1);
+
+            List<ItemStack> itemStacks = mutable.getItemStacks();
+
+            if (!consumedStack.isEmpty()) {
+                  for (int i = 0; i < itemStacks.size(); i++) {
+                        ItemStack nonEdible = itemStacks.get(i);
+                        if (ItemStack.isSameItemSameComponents(nonEdible, consumedStack)) {
+                              ItemStack removed = itemStacks.remove(i);
+                              consumedStack.grow(removed.getCount());
+                              mutable.limitSelectedSlot(i);
+                        }
+                  }
+
+                  if (!consumedStack.isEmpty()) {
+                        itemStacks.addFirst(consumedStack);
+                        mutable.setSelectedSlot(player, mutable.getSelectedSlot(player));
+
+                        mutable.growSelectedSlot(0);
+                  }
+            }
+
+            player.playSound(SoundEvents.PLAYER_SPLASH);
             for (int j = 0; j < 4; j++) {
                   double random = level.random.nextDouble();
                   double y = Mth.lerp(Math.sqrt(random), player.getY(), player.getEyeY());
@@ -168,60 +195,57 @@ public class AlchemyTraits extends BundleLikeTraits {
             }
       }
 
-      private static void usePotionLikeItem(Level level, Player player, ItemStack selected, Item item) {
-            PotionContents potioncontents = selected.get(DataComponents.POTION_CONTENTS);
-            if (potioncontents != null) {
-                  Optional<Holder<Potion>> potion = potioncontents.potion();
-                  Boolean waterLike = potion.map(holder ->
-                              Potions.AWKWARD.equals(holder) ||
-                                          Potions.MUNDANE.equals(holder) ||
-                                          Potions.THICK.equals(holder) ||
-                                          Potions.WATER.equals(holder)
-                  ).orElse(false);
+      private static void usePotionLikeItem(PotionContents potioncontents, Level level, Player player, ItemStack selected, Item item) {
+            Optional<Holder<Potion>> potion = potioncontents.potion();
+            Boolean waterLike = potion.map(holder ->
+                        Potions.AWKWARD.equals(holder) ||
+                                    Potions.MUNDANE.equals(holder) ||
+                                    Potions.THICK.equals(holder) ||
+                                    Potions.WATER.equals(holder)
+            ).orElse(false);
 
-                  if (waterLike) {
-                        player.extinguishFire();
-                        player.playSound(SoundEvents.PLAYER_SPLASH);
+            if (waterLike) {
+                  player.extinguishFire();
+                  player.playSound(SoundEvents.PLAYER_SPLASH);
 
-                        for (int j = 0; j < 4; j++) {
-                              double random = level.random.nextDouble();
-                              double y = Mth.lerp(Math.sqrt(random), player.getY(), player.getEyeY());
-                              double centered = random - 0.5;
-                              double xySpeed = centered * .1;
-                              double centered1 = level.random.nextDouble() - 0.5;
-                              double centered2 = level.random.nextDouble() - 0.5;
-                              level.addParticle(ParticleTypes.FALLING_WATER, player.getX() + centered1, y, player.getZ() + centered2, xySpeed, -random * 0.2, xySpeed);
-                        }
-
-                        ColorParticleOption particleOption = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, FastColor.ARGB32.color(100, -13083194));
-                        for (int j = 0; j < 10; j++) {
-                              double random = level.random.nextDouble();
-                              double y = Mth.lerp(Math.sqrt(random), player.getY(), player.getEyeY());
-                              double xySpeed = (random - 0.5) * .1;
-                              level.addParticle(particleOption, player.getX(), y, player.getZ(), xySpeed, -random * 0.2, xySpeed);
-                              level.addParticle(ParticleTypes.SPLASH, player.getX(), y, player.getZ(), xySpeed, -random * 0.2, xySpeed);
-                        }
-
-                        ColorParticleOption alphaOption = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, FastColor.ARGB32.color(200, -13083194));
-                        for (int j = 0; j < 8; j++) {
-                              double random = level.random.nextDouble();
-                              double y = Mth.lerp(random * random, player.getY(), player.getEyeY());
-                              double centered = random - 0.5;
-                              double xySpeed = centered * 10;
-                              level.addParticle(alphaOption, player.getX(), y, player.getZ(), xySpeed, -random * 0.2, xySpeed);
-                              level.addParticle(ParticleTypes.SPLASH, player.getX(), y, player.getZ(), xySpeed, -random * 0.2, xySpeed);
-                        }
-
+                  for (int j = 0; j < 4; j++) {
+                        double random = level.random.nextDouble();
+                        double y = Mth.lerp(Math.sqrt(random), player.getY(), player.getEyeY());
+                        double centered = random - 0.5;
+                        double xySpeed = centered * .1;
+                        double centered1 = level.random.nextDouble() - 0.5;
+                        double centered2 = level.random.nextDouble() - 0.5;
+                        level.addParticle(ParticleTypes.FALLING_WATER, player.getX() + centered1, y, player.getZ() + centered2, xySpeed, -random * 0.2, xySpeed);
                   }
-                  else potioncontents.forEachEffect(effect -> {
-                        for (int j = 0; j < 20; j++) {
-                              double random = level.random.nextDouble();
-                              double y = Mth.lerp(random * random, player.getY(), player.getEyeY());
-                              double xySpeed = (random - 0.5);
-                              level.addParticle(effect.getParticleOptions(), player.getX(), y, player.getZ(), xySpeed, -random * 0.2, xySpeed);
-                        }
-                  });
+
+                  ColorParticleOption particleOption = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, FastColor.ARGB32.color(100, -13083194));
+                  for (int j = 0; j < 10; j++) {
+                        double random = level.random.nextDouble();
+                        double y = Mth.lerp(Math.sqrt(random), player.getY(), player.getEyeY());
+                        double xySpeed = (random - 0.5) * .1;
+                        level.addParticle(particleOption, player.getX(), y, player.getZ(), xySpeed, -random * 0.2, xySpeed);
+                        level.addParticle(ParticleTypes.SPLASH, player.getX(), y, player.getZ(), xySpeed, -random * 0.2, xySpeed);
+                  }
+
+                  ColorParticleOption alphaOption = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, FastColor.ARGB32.color(200, -13083194));
+                  for (int j = 0; j < 8; j++) {
+                        double random = level.random.nextDouble();
+                        double y = Mth.lerp(random * random, player.getY(), player.getEyeY());
+                        double centered = random - 0.5;
+                        double xySpeed = centered * 10;
+                        level.addParticle(alphaOption, player.getX(), y, player.getZ(), xySpeed, -random * 0.2, xySpeed);
+                        level.addParticle(ParticleTypes.SPLASH, player.getX(), y, player.getZ(), xySpeed, -random * 0.2, xySpeed);
+                  }
+
             }
+            else potioncontents.forEachEffect(effect -> {
+                  for (int j = 0; j < 20; j++) {
+                        double random = level.random.nextDouble();
+                        double y = Mth.lerp(random * random, player.getY(), player.getEyeY());
+                        double xySpeed = (random - 0.5);
+                        level.addParticle(effect.getParticleOptions(), player.getX(), y, player.getZ(), xySpeed, -random * 0.2, xySpeed);
+                  }
+            });
 
             item.finishUsingItem(selected, level, player);
             player.playSound(SoundEvents.GLASS_BREAK);

@@ -3,6 +3,7 @@ package com.beansgalaxy.backpacks.mixin.common;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.abstract_traits.IProjectileTrait;
+import com.beansgalaxy.backpacks.traits.abstract_traits.MutableSlotSelector;
 import com.beansgalaxy.backpacks.traits.generic.MutableBundleLike;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.component.DataComponents;
@@ -43,7 +44,7 @@ public abstract class CrossbowMixin extends ProjectileWeaponItem {
                         if (stacks.isEmpty())
                               return false;
 
-                        int selectedSlotSafe = mutable.getSelectedSlotSafe(player);
+                        int selectedSlotSafe = mutable.getSelectedSlot(player);
                         ItemStack stack = stacks.get(selectedSlotSafe);
                         if (!predicate.test(stack))
                               return false;
@@ -54,11 +55,9 @@ public abstract class CrossbowMixin extends ProjectileWeaponItem {
 
                         pCrossbowStack.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.of(list));
 
+                        mutable.limitSelectedSlot(selectedSlotSafe);
                         mutable.push();
                         cir.setReturnValue(true);
-                        List<ItemStack> finalStacks = holder.get(ITraitData.ITEM_STACKS);
-                        int size = finalStacks == null ? 0 : finalStacks.size();
-                        mutable.limitSelectedSlot(selectedSlotSafe, size);
 
                         if (holder instanceof EnderTraits enderTraits)
                               enderTraits.broadcastChanges();

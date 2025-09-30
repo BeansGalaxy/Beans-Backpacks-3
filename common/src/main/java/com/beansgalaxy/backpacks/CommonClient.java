@@ -8,19 +8,26 @@ import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.container.UtilitySlot;
 import com.beansgalaxy.backpacks.data.EnderStorage;
 import com.beansgalaxy.backpacks.container.BackSlot;
+import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
-import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
 import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.beansgalaxy.backpacks.util.SmoothRandomFloat;
 import com.beansgalaxy.backpacks.util.Tint;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.ChatFormatting;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportedException;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.item.ItemColor;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
@@ -29,6 +36,9 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.item.ClampedItemPropertyFunction;
 import net.minecraft.client.renderer.item.CompassItemPropertyFunction;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
@@ -43,6 +53,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.CompassItem;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.DyedItemColor;
@@ -436,12 +447,11 @@ public class CommonClient {
             }).orElse(false);
       }
 
-      public static boolean scrollTraits(ItemStack stack, ClientLevel level, int containerId, int scrolled, Slot hoveredSlot) {
-            Optional<ItemStorageTraits> optionalStorage = ItemStorageTraits.get(stack);
-            if (optionalStorage.isPresent()) {
-                  ItemStorageTraits traits = optionalStorage.get();
+      public static boolean scrollTraits(Player player, ItemStack stack, Level level, int containerId, int scrolled, Slot hoveredSlot) {
+            ISlotSelectorTrait trait = ISlotSelectorTrait.get(stack);
+            if (trait != null) {
                   ComponentHolder holder = ComponentHolder.of(stack);
-                  return traits.client().mouseScrolled(traits, holder, level, hoveredSlot, containerId, scrolled);
+                  return trait.mouseScrolled(player, holder, level, hoveredSlot, containerId, scrolled);
             }
 
             Optional<EnderTraits> optionalEnder = EnderTraits.get(stack);
@@ -450,12 +460,113 @@ public class CommonClient {
                   Optional<GenericTraits> optional = enderTraits.getTrait();
                   if (optional.isPresent()) {
                         GenericTraits traits = optional.get();
-                        if (traits instanceof ItemStorageTraits storageTraits) {
-                              return traits.client().mouseScrolled(storageTraits, enderTraits, level, hoveredSlot, containerId, scrolled);
+                        if (traits instanceof ISlotSelectorTrait storageTraits) {
+                              return storageTraits.mouseScrolled(player, enderTraits, level, hoveredSlot, containerId, scrolled);
                         }
                   }
             }
             return false;
       }
 
+      public static void renderItemDecorations(GuiGraphics gui, Font font, ItemStack $$1, int x, int y, int z) {
+            if (!$$1.isEmpty()) {
+                  PoseStack pose = gui.pose();
+                  pose.pushPose();
+                  pose.translate(0.0F, 0.0F, z + 10);
+                  int count = $$1.getCount();
+                  if (count != 1) {
+                        String string = String.valueOf(count);
+                        if (count > 999) {
+                              float k = count / 1000f;
+                              String s = (int) k + "k";
+                              gui.drawString(font, s, x + 9 - font.width(s), y + 1, 0xFFFFFFFF, true);
+                        }
+                        else if (count > 99) {
+                              char[] chars = string.toCharArray();
+
+                              for (int i1 = 0; i1 < chars.length; i1++) {
+                                    char c = chars[i1];
+                                    String s = CommonClass.getTinyNumberFromDigitChar(c);
+                                    chars[i1] = s.toCharArray()[0];
+                              }
+
+                              String s = String.valueOf(chars);
+                              gui.drawString(font, s, x + 10 - font.width(s), y - 1, 0xFFFFFFFF, true);
+                        }
+                        else {
+                              gui.drawString(font, string, x + 9 - font.width(string), y + 1, 0xFFFFFFFF, true);
+                        }
+                  }
+                  else if ($$1.isBarVisible()) {
+                        int barColor = $$1.getBarColor();
+                        int barX = x - 6;
+                        int barY = y + 5;
+                        gui.fill(barX, barY, barX + 13, barY + 2, 0xFF000000);
+                        gui.fill(barX, barY, barX + $$1.getBarWidth(), barY + 1, barColor | -16777216);
+                  }
+                  pose.popPose();
+            }
+      }
+
+      public static void renderItem(Minecraft minecraft, GuiGraphics gui, ItemStack stack, int x, int y, int z, boolean drawShadows) {
+            PoseStack pose = gui.pose();
+            pose.pushPose();
+            BakedModel model = minecraft.getItemRenderer().getModel(stack, minecraft.level, minecraft.player, 0);
+            pose.translate(x, y, z);
+
+            renderModel(minecraft, gui, stack, drawShadows, pose, model);
+
+            pose.popPose();
+      }
+
+      public static void renderModel(Minecraft minecraft, GuiGraphics gui, ItemStack stack, boolean drawShadows, PoseStack pose, BakedModel model) {
+            try {
+                  pose.mulPose((new Matrix4f()).scaling(1.0F, -1.0F, 1.0F));
+                  pose.scale(16.0F, 16.0F, 16.0F);
+                  boolean $$8 = !model.usesBlockLight();
+                  if ($$8) {
+                        Lighting.setupForFlatItems();
+                  }
+
+                  minecraft.getItemRenderer().render(stack, ItemDisplayContext.GUI, false, pose, gui.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY, model);
+                  if (drawShadows && !model.isGui3d()) {
+                        pose.translate(1/16f, -1/16f, -1/16f);
+                        minecraft.getItemRenderer().render(stack, ItemDisplayContext.GUI, false, pose, gui.bufferSource(), 0, OverlayTexture.NO_OVERLAY, model);
+                  }
+
+                  gui.flush();
+                  if ($$8) {
+                        Lighting.setupFor3DItems();
+                  }
+            } catch (Throwable var12) {
+                  CrashReport $$10 = CrashReport.forThrowable(var12, "Rendering item");
+                  CrashReportCategory $$11 = $$10.addCategory("Item being rendered");
+                  $$11.setDetail("Item Type", () -> String.valueOf(stack.getItem()));
+                  $$11.setDetail("Item Components", () -> String.valueOf(stack.getComponents()));
+                  $$11.setDetail("Item Foil", () -> String.valueOf(stack.hasFoil()));
+                  throw new ReportedException($$10);
+            }
+      }
+
+      public static void renderHoveredItem(Minecraft minecraft, GuiGraphics instance, ItemStack stack, int x, int y, int seed, Operation<Void> original, String modelName) {
+            ISlotSelectorTrait trait = ISlotSelectorTrait.get(stack);
+            if (trait != null) {
+                  ItemStack food = trait.getHoverItem(ComponentHolder.of(stack), minecraft.player);
+                  if (food != null) {
+                        original.call(instance, food, x, y, seed);
+                  }
+                  else {
+                        ModelResourceLocation location = Services.PLATFORM.getModelVariant(
+                                    ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "backpack/" + modelName)
+                        );
+
+                        BakedModel model = minecraft.getItemRenderer().getItemModelShaper().getModelManager().getModel(location);
+                        PoseStack pose = instance.pose();
+                        pose.pushPose();
+                        pose.translate(x + 8, y + 8, 0);
+                        renderModel(minecraft, instance, stack, false, pose, model);
+                        pose.popPose();
+                  }
+            }
+      }
 }

@@ -5,7 +5,6 @@ import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -25,16 +24,13 @@ public abstract class ITraitData<T> {
                   ITEM_STACKS = register("data_item_list", Traits.STACKS_CODEC, ItemStack.LIST_STREAM_CODEC, ItemList::new);
 
       public static final TraitDataComponentType<List<ItemStack>>
-                  NON_EDIBLES = register("data_non_edible", ItemStack.CODEC.listOf(), ItemStack.LIST_STREAM_CODEC, NonEdibles::new);
+                  NON_EDIBLES = register("data_non_edible", ItemStack.CODEC.listOf(), ItemStack.LIST_STREAM_CODEC,  NonEdibles::new);
 
       public static final DataComponentType<ItemContainerContents>
                   CHEST = Traits.register("data_chest", ItemContainerContents.CODEC, ItemContainerContents.STREAM_CODEC);
 
       public static final TraitDataComponentType<ItemStack>
                   SOLO_STACK = register("data_solo_item", ItemStack.OPTIONAL_CODEC, ItemStack.OPTIONAL_STREAM_CODEC, SoloItem::new);
-
-      public static final DataComponentType<Long>
-                  LONG = Traits.register("data_long", Codec.LONG.validate(aLong -> aLong >= 0 ? DataResult.success(aLong) : DataResult.error(() -> "data_long cannot must be non-negative: " + aLong)), ByteBufCodecs.VAR_LONG);
 
       public static final TraitDataComponentType<Integer>
                   AMOUNT = register("data_amount", ExtraCodecs.NON_NEGATIVE_INT, ByteBufCodecs.INT, Amount::new);
@@ -87,8 +83,6 @@ public abstract class ITraitData<T> {
 
       public abstract DataComponentType<T> type();
 
-      public abstract ComponentHolder holder();
-
       public abstract boolean isEmpty(T data);
 
       public boolean isEmpty() {
@@ -101,6 +95,16 @@ public abstract class ITraitData<T> {
 
       protected T value = null;
       boolean isDirty = false;
+
+      protected final ComponentHolder holder;
+
+      protected ITraitData(ComponentHolder holder) {
+            this.holder = holder;
+      }
+
+      public ComponentHolder holder() {
+            return holder;
+      }
 
       public abstract T get();
 
@@ -133,21 +137,40 @@ public abstract class ITraitData<T> {
 
 // ===================================================================================================================== TRAIT DATA
 
-      static class SoloItem extends ITraitData<ItemStack> {
-            private final ComponentHolder holder;
+      static class SlotSelector extends ITraitData<SlotSelection> {
+            SlotSelector(ComponentHolder holder) {
+                  super(holder);
+            }
 
+            @Override
+            public DataComponentType<SlotSelection> type() {
+                  return SLOT_SELECTION;
+            }
+
+            @Override
+            public boolean isEmpty(SlotSelection data) {
+                  return false;
+            }
+
+            @Override
+            public SlotSelection get() {
+                  if (value == null) {
+                        markDirty();
+                        SlotSelection t = holder().get(type());
+                        value = Objects.requireNonNullElse(t, new SlotSelection());
+                  }
+                  return value;
+            }
+      }
+
+      static class SoloItem extends ITraitData<ItemStack> {
             public SoloItem(ComponentHolder holder) {
-                  this.holder = holder;
+                  super(holder);
             }
 
             @Override
             public DataComponentType<ItemStack> type() {
                   return SOLO_STACK;
-            }
-
-            @Override
-            public ComponentHolder holder() {
-                  return holder;
             }
 
             @Override
@@ -167,20 +190,13 @@ public abstract class ITraitData<T> {
       }
 
       static class ItemList extends ITraitData<List<ItemStack>> {
-            private final ComponentHolder holder;
-
             public ItemList(ComponentHolder holder) {
-                  this.holder = holder;
+                  super(holder);
             }
 
             @Override
             public DataComponentType<List<ItemStack>> type() {
                   return ITEM_STACKS;
-            }
-
-            @Override
-            public ComponentHolder holder() {
-                  return holder;
             }
 
             public List<ItemStack> get() {
@@ -204,11 +220,13 @@ public abstract class ITraitData<T> {
                   if (stacks == null)
                         return;
 
-                  if (stacks.isEmpty()) {
+                  value = stacks;
+
+                  if (value.isEmpty()) {
                         holder.remove(type());
                   }
                   else if (isDirty) {
-                        holder.set(type(), stacks);
+                        holder.set(type(), value);
                   }
             }
 
@@ -230,20 +248,13 @@ public abstract class ITraitData<T> {
       }
 
       static class Amount extends ITraitData<Integer> {
-            private final ComponentHolder holder;
-
             public Amount(ComponentHolder holder) {
-                  this.holder = holder;
+                  super(holder);
             }
 
             @Override
             public DataComponentType<Integer> type() {
                   return AMOUNT;
-            }
-
-            @Override
-            public ComponentHolder holder() {
-                  return holder;
             }
 
             @Override

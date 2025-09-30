@@ -73,5 +73,5 @@ public interface IProjectileTrait {
 
       MutableBundleLike<?> mutable(ComponentHolder holder);
 
-      int getSelectedSlotSafe(ComponentHolder holder, Player instance);
+      int getSelectedSlot(ComponentHolder holder, Player instance);
 }

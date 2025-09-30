@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "beansbackpacks:item/lunch_box/netherite_eating"
+    "layer0": "beansbackpacks:item/lunch_box/iron_open"
   }
 }

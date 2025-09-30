@@ -1,5 +1,6 @@
 package com.beansgalaxy.backpacks.traits.bundle;
 
+import com.beansgalaxy.backpacks.CommonClient;
 import com.beansgalaxy.backpacks.network.serverbound.TinyHotbarClick;
 import com.beansgalaxy.backpacks.network.serverbound.TinyMenuClick;
 import com.beansgalaxy.backpacks.network.serverbound.TinyMenuInteract;
@@ -11,19 +12,12 @@ import com.beansgalaxy.backpacks.util.SplitText;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
-import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.util.FormattedCharSink;
-import net.minecraft.util.StringDecomposer;
-import net.minecraft.util.StringUtil;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -33,7 +27,6 @@ import org.apache.commons.lang3.math.Fraction;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class BundleScreen extends BackpackScreen {
@@ -195,8 +188,8 @@ public class BundleScreen extends BackpackScreen {
 
                   if (!stack.isEmpty()) {
                         Minecraft minecraft = Minecraft.getInstance();
-                        BundleTooltip.renderItem(minecraft, gui, stack, x, y, 50, false);
-                        BundleTooltip.renderItemDecorations(gui, font, stack, x, y, 50);
+                        CommonClient.renderItem(minecraft, gui, stack, x, y, 50, false);
+                        CommonClient.renderItemDecorations(gui, font, stack, x, y, 50);
 
                         if (hovered)
                               gui.fill(x - 8, y - 8, x + 8, y + 8, 100, 0x80FFFFFF);

@@ -191,7 +191,6 @@ public class KeyPress {
 
 
             void indexProgress() {
-                  System.out.println(progress);
                   progress += 1;
             }
 

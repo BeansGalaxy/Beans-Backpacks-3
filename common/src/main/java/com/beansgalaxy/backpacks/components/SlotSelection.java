@@ -7,7 +7,6 @@ import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
-import java.util.function.IntUnaryOperator;
 
 public class SlotSelection {
       private static int SLOT_SELECTION_COUNT = 0;
@@ -19,28 +18,12 @@ public class SlotSelection {
             SLOT_SELECTION_COUNT++;
       }
 
-      public void addAll(SlotSelection slotSelection) {
-            slots.putAll(slotSelection.slots);
-      }
-
       public int getSelectedSlot(Player player) {
             return slots.get(player.getId());
       }
 
-      public int getSelectedSlotSafe(Player player) {
-            int i = getSelectedSlot(player);
-            return i == 0 ? 0 : i - 1;
-      }
-
       public void setSelectedSlot(Player player, int selectedSlot) {
             slots.put(player.getId(), selectedSlot);
-      }
-
-      public int modSelectedSlot(Player player, @NotNull IntUnaryOperator operation) {
-            int selectedSlot = slots.get(player.getId());
-            int i = operation.applyAsInt(selectedSlot);
-            slots.put(player.getId(), i);
-            return i;
       }
 
       @NotNull
@@ -76,38 +59,14 @@ public class SlotSelection {
             }
       };
 
-      public void clamp(int slot) {
-            if (slot == 0) {
-                  slots.clear();
-                  return;
-            }
-
-            for (int key : slots.keySet()) {
-                  int selectedSlot = slots.get(key);
-                  if (selectedSlot <= slot)
-                              continue;
-
-                  slots.put(key, slot);
-            }
-
-      }
-
       public void limit(int slot, int size) {
-            if (size == 0) {
-                  slots.clear();
-                  return;
-            }
-
             for (int key : slots.keySet()) {
                   int selectedSlot = slots.get(key);
-                  int i;
                   if (selectedSlot == 0)
-                        i = 0;
-                  else {
-                        int safeSlot = selectedSlot - 1;
-                        i = safeSlot < slot ? selectedSlot : safeSlot;
-                  }
+                        continue;
 
+                  int safeSlot = selectedSlot - 1;
+                  int i = safeSlot < slot ? selectedSlot : safeSlot;
                   slots.put(key, i);
             }
       }
@@ -135,5 +94,17 @@ public class SlotSelection {
       @Override
       public int hashCode() {
             return Objects.hashCode(id);
+      }
+
+      public void clear() {
+            slots.clear();
+      }
+
+      public void ceil(int max) {
+            for (int key : slots.keySet()) {
+                  int i = slots.get(key);
+                  if (i > max)
+                        slots.put(key, max);
+            }
       }
 }

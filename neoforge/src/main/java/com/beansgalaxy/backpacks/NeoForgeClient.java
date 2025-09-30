@@ -66,14 +66,6 @@ public class NeoForgeClient {
             }
 
             @SubscribeEvent
-            public static void registerTooltips(final RegisterClientTooltipComponentFactoriesEvent event) {
-                  event.register(TraitTooltip.class, tooltip -> {
-                        GenericTraits traits = tooltip.traits();
-                        return traits.client().getTooltipComponent(tooltip.traits(), tooltip.itemStack(), tooltip.holder(), tooltip.title());
-                  });
-            }
-
-            @SubscribeEvent
             public static void registerLayerDefinitions(final EntityRenderersEvent.RegisterLayerDefinitions event) {
                   event.registerLayerDefinition(RenderBackpack.BACKPACK_MODEL, BackpackModel::getTexturedModelData);
                   event.registerLayerDefinition(RenderBackpack.PACK_CAPE_MODEL, BackpackCapeModel::createBodyLayer);

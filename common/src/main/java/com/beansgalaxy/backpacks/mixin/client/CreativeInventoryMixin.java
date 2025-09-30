@@ -1,9 +1,12 @@
 package com.beansgalaxy.backpacks.mixin.client;
 
+import com.beansgalaxy.backpacks.CommonClient;
 import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.container.*;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
+import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
@@ -27,6 +30,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.Optional;
 
 @Mixin(value = CreativeModeInventoryScreen.class)
 public abstract class CreativeInventoryMixin extends EffectRenderingInventoryScreen<CreativeModeInventoryScreen.ItemPickerMenu> {
@@ -114,16 +119,8 @@ public abstract class CreativeInventoryMixin extends EffectRenderingInventoryScr
                   ItemStack stack = hoveredSlot.getItem();
                   int containerId = menu.containerId;
                   ClientLevel level = minecraft.level;
-                  if (
-                        ItemStorageTraits.testIfPresent(stack, traits ->
-                                    traits.client().mouseScrolled(traits, ComponentHolder.of(stack), level, hoveredSlot, containerId, Mth.floor(pScrollY + 0.5)))
-                        ||
-                        EnderTraits.get(stack).flatMap(enderTraits -> enderTraits.getTrait().map(traits -> {
-                              if (traits instanceof ItemStorageTraits storageTraits)
-                                    return traits.client().mouseScrolled(storageTraits, enderTraits, level, hoveredSlot, containerId, Mth.floor(pScrollY + 0.5));
-                              return false;
-                        })).orElse(false)
-                  ) {
+
+                  if (CommonClient.scrollTraits(minecraft.player, stack, level, containerId, Mth.floor(pScrollY + 0.5), hoveredSlot)) {
                         cir.setReturnValue(true);
                   }
             }

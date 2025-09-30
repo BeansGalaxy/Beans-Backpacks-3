@@ -198,7 +198,7 @@ public class ChestTraits extends ItemStorageTraits {
                               int count = Math.min(stack.getMaxStackSize(), toAdd);
                               ItemStack removed = stack.copyWithCount(count);
                               stack.shrink(count);
-                              if (mutable.addItem(removed, player) != null) {
+                              if (mutable.addItem(removed) != null) {
                                     ci.cancel();
                               }
                         }
@@ -216,7 +216,7 @@ public class ChestTraits extends ItemStorageTraits {
                   ItemStack slotItem = slot.getItem().copy();
                   int toAdd = mutable.getMaxAmountToAdd(slotItem);
                   ItemStack removed = slot.remove(toAdd);
-                  if (mutable.addItem(removed, player) != null) {
+                  if (mutable.addItem(removed) != null) {
                         sound().atClient(player, ModSound.Type.INSERT);
                         mutable.push();
                         ci.cancel();
@@ -273,7 +273,7 @@ public class ChestTraits extends ItemStorageTraits {
                   while (iterator.hasNext() && !stack.isEmpty()) {
                         ItemStack itemStack = iterator.next();
                         if (ItemStack.isSameItemSameComponents(itemStack, stack)) {
-                              ItemStack returnStack = mutable.addItem(stack, player);
+                              ItemStack returnStack = mutable.addItem(stack);
                               if (returnStack != null) {
                                     cir.setReturnValue(true);
                               }
@@ -438,7 +438,7 @@ public class ChestTraits extends ItemStorageTraits {
                         ItemStack backpack = player.getItemBySlot(slot);
                         MutableItemStorage itemStorage = storageTraits.mutable(ComponentHolder.of(backpack));
                         if (canItemFit(holder, stack)) {
-                              if (itemStorage.addItem(stack, player) != null) {
+                              if (itemStorage.addItem(stack) != null) {
                                     itemStorage.push();
                                     ci.cancel();
                               }

@@ -17,6 +17,7 @@ import com.beansgalaxy.backpacks.traits.chest.ChestCodecs;
 import com.beansgalaxy.backpacks.traits.chest.ChestTraits;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
+import com.beansgalaxy.backpacks.traits.generic.MutableBundleLike;
 import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxCodecs;
 import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxTraits;
 import com.beansgalaxy.backpacks.traits.quiver.QuiverCodecs;
@@ -211,15 +212,15 @@ public interface Traits {
 
       @Nullable
       static ItemStack getFoodStuffsSelection(ItemStack lunchBox, Player player) {
-            List<ItemStack> stacks = lunchBox.get(ITraitData.ITEM_STACKS);
-            if (stacks == null || stacks.isEmpty())
-                  return null;
-
             BundleLikeTraits traits = getFoodStuffsTrait(lunchBox);
             if (traits == null)
                   return null;
 
-            int selectedSlot = traits.getSelectedSlotSafe(ComponentHolder.of(lunchBox), player);
-            return stacks.get(selectedSlot);
+            MutableBundleLike<?> mutable = traits.mutable(ComponentHolder.of(lunchBox));
+            if (mutable.isEmpty())
+                  return null;
+
+            int selectedSlotSafe = mutable.getSelectedSlot(player);
+            return mutable.getItemStacks().get(selectedSlotSafe);
       }
 }

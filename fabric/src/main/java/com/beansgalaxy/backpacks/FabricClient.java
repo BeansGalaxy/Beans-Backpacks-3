@@ -7,7 +7,6 @@ import com.beansgalaxy.backpacks.client.renderer.RenderBackpack;
 import com.beansgalaxy.backpacks.client.renderer.EntityRender;
 import com.beansgalaxy.backpacks.events.AppendLoadedModels;
 import com.beansgalaxy.backpacks.events.NetworkPackages;
-import com.beansgalaxy.backpacks.events.TooltipImageEvent;
 import com.beansgalaxy.backpacks.items.ModItems;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -24,7 +23,6 @@ public class FabricClient implements ClientModInitializer {
             NetworkPackages.registerClient();
             PreparableModelLoadingPlugin.register(AppendLoadedModels.LOADER, new AppendLoadedModels());
 
-            TooltipComponentCallback.EVENT.register(new TooltipImageEvent());
             ColorProviderRegistry.ITEM.register(CommonClient.LEATHER_BACKPACK_ITEM_COLOR, ModItems.LEATHER_BACKPACK.get());
             ColorProviderRegistry.ITEM.register(CommonClient.BUNDLE_ITEM_COLOR, ModItems.BUNDLE.get());
             ItemProperties.registerGeneric(ResourceLocation.withDefaultNamespace("no_gui"), CommonClient.NO_GUI_PREDICATE);

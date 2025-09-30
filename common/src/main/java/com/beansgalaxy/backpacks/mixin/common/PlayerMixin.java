@@ -71,6 +71,8 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
 
       @Shadow public abstract void displayClientMessage(Component pChatComponent, boolean pActionBar);
 
+      @Shadow public abstract void remove(RemovalReason reason);
+
       @Unique public final Player instance = (Player) (Object) this;
 
       @Unique private static final EntityDataAccessor<Boolean> IS_OPEN = SynchedEntityData.defineId(Player.class, EntityDataSerializers.BOOLEAN);
@@ -165,7 +167,7 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
                   if (stacks == null || stacks.isEmpty())
                         return false;
 
-                  int selectedSlot = proTrait.getSelectedSlotSafe(holder, instance);
+                  int selectedSlot = proTrait.getSelectedSlot(holder, instance);
                   ItemStack stack = stacks.get(selectedSlot);
                   if (predicate.test(stack)) {
                         cir.setReturnValue(stack);
@@ -233,12 +235,13 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
             tag.putInt(name, selectedSlot);
       }
 
+      @Unique
       private static int getMaxSelection(ItemStack item) {
             List<ItemStack> stacks = item.get(ITraitData.ITEM_STACKS);
-            if (stacks != null)
-                  return stacks.size();
+            if (stacks == null || stacks.isEmpty())
+                  return 0;
 
-            return 0;
+            return stacks.size() - 1;
       }
 
 

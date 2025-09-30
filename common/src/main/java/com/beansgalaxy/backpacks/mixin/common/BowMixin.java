@@ -3,6 +3,7 @@ package com.beansgalaxy.backpacks.mixin.common;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.abstract_traits.IProjectileTrait;
+import com.beansgalaxy.backpacks.traits.abstract_traits.MutableSlotSelector;
 import com.beansgalaxy.backpacks.traits.generic.MutableBundleLike;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
@@ -48,7 +49,7 @@ public abstract class BowMixin extends ProjectileWeaponItem {
                   if (stacks.isEmpty())
                         return false;
 
-                  int slotSafe = mutable.getSelectedSlotSafe(player);
+                  int slotSafe = mutable.getSelectedSlot(player);
                   ItemStack stack = stacks.get(slotSafe);
                   if (predicate.test(stack)) {
                         int i = this.getUseDuration(bowStack, player) - pTimeLeft;
@@ -63,12 +64,9 @@ public abstract class BowMixin extends ProjectileWeaponItem {
 
                               level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ARROW_SHOOT, SoundSource.PLAYERS, 1.0F, 1.0F / (level.getRandom().nextFloat() * 0.4F + 1.2F) + f * 0.5F);
                               player.awardStat(Stats.ITEM_USED.get(this));
-                              mutable.push();
 
-                              int selectedSlotSafe = mutable.getSelectedSlotSafe(player);
-                              List<ItemStack> finalStacks = holder.get(ITraitData.ITEM_STACKS);
-                              int size = finalStacks == null ? 0 : finalStacks.size();
-                              mutable.limitSelectedSlot(selectedSlotSafe, size);
+                              mutable.limitSelectedSlot(slotSafe);
+                              mutable.push();
                               ci.cancel();
 
                               if (holder instanceof EnderTraits enderTraits)

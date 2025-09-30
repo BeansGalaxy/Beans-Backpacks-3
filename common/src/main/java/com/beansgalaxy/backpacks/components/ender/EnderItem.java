@@ -1,6 +1,7 @@
 package com.beansgalaxy.backpacks.components.ender;
 
 import com.beansgalaxy.backpacks.CommonClient;
+import com.beansgalaxy.backpacks.components.SlotSelection;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
@@ -100,9 +101,14 @@ public class EnderItem extends Item {
                         if (stacks == null || stacks.isEmpty())
                               return;
 
-                        int selectedSlotSafe = entity instanceof Player player
-                                    ? lunchBoxTraits.getSelectedSlotSafe(enderTraits, player)
-                                    : 0;
+                        int selectedSlotSafe;
+                        if (entity instanceof Player player) {
+                              SlotSelection selection = enderTraits.get(ITraitData.SLOT_SELECTION);
+                              selectedSlotSafe = selection != null
+                                                 ? selection.getSelectedSlot(player)
+                                                 : 0;
+                        }
+                        else selectedSlotSafe = 0;
 
                         ItemStack first = stacks.get(selectedSlotSafe);
                         cir.setReturnValue(first.getUseDuration(entity));

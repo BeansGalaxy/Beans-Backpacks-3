@@ -1,8 +1,10 @@
 package com.beansgalaxy.backpacks.network.serverbound;
 
 import com.beansgalaxy.backpacks.Constants;
+import com.beansgalaxy.backpacks.components.SlotSelection;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.network.Network2S;
+import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
@@ -62,7 +64,6 @@ public class SyncSelectedSlot implements Packet2S {
                   return;
 
             Optional<BundleLikeTraits> optional = BundleLikeTraits.get(ComponentHolder.of(stack));
-            BundleLikeTraits traits;
             ComponentHolder holder;
             if (optional.isEmpty()) {
                   EnderTraits enderTraits = stack.get(Traits.ENDER);
@@ -71,17 +72,20 @@ public class SyncSelectedSlot implements Packet2S {
 
                   GenericTraits generic = enderTraits.getTrait(sender.level());
                   if (generic instanceof BundleLikeTraits) {
-                        traits = (BundleLikeTraits) generic;
                         holder = enderTraits;
                   }
                   else return;
             }
             else {
-                  traits = optional.get();
                   holder = ComponentHolder.of(stack);
             }
 
-            traits.setSelectedSlot(holder, sender, selectedSlot);
+            SlotSelection selection = holder.get(ITraitData.SLOT_SELECTION);
+            if (selection == null) {
+                  selection = new SlotSelection();
+            }
+
+            selection.setSelectedSlot(sender, selectedSlot);
       }
 
       public static Type<SyncSelectedSlot> ID = new Type<>(ResourceLocation.parse(Constants.MOD_ID + ":sync_selected_slot_s"));
