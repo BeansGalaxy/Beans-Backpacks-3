@@ -189,7 +189,6 @@ public class KeyPress {
                   this.blockhitresult = blockhitresult;
             }
 
-
             void indexProgress() {
                   progress += 1;
             }
