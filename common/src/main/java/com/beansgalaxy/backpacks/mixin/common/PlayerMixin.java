@@ -5,13 +5,13 @@ import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.access.PlayerAccessor;
 import com.beansgalaxy.backpacks.access.ViewableAccessor;
-import com.beansgalaxy.backpacks.components.PlaceableComponent;
 import com.beansgalaxy.backpacks.components.SlotSelection;
 import com.beansgalaxy.backpacks.data.ServerSave;
 import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.abstract_traits.IProjectileTrait;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.beansgalaxy.backpacks.util.ModSound;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
@@ -72,6 +72,8 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
       @Shadow public abstract void displayClientMessage(Component pChatComponent, boolean pActionBar);
 
       @Shadow public abstract void remove(RemovalReason reason);
+
+      @Shadow public abstract void travel(Vec3 travelVector);
 
       @Unique public final Player instance = (Player) (Object) this;
 
@@ -335,9 +337,12 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
       private void backpackDropEquipment(CallbackInfo ci) {
             if (!ServerSave.CONFIG.keep_back_on_death.get()) {
                   ItemStack backpack = instance.getItemBySlot(EquipmentSlot.BODY);
-                  PlaceableComponent.get(backpack).ifPresent(placeable -> {
-                        BackpackEntity.create(backpack, placeable, Traits.get(backpack), instance.level(), instance.position().add(0, 1, 0), instance.yBodyRot + 180, Direction.UP, instance);
-                  });
+                  BackpackTraits traits = BackpackTraits.get(backpack);
+                  if (traits == null) {
+                        return;
+                  }
+
+                  BackpackEntity.create(backpack, traits, instance.level(), instance.position().add(0, 1, 0), instance.yBodyRot + 180, Direction.UP, instance);
             }
       }
 

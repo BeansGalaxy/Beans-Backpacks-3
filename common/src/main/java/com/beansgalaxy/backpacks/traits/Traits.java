@@ -2,22 +2,21 @@ package com.beansgalaxy.backpacks.traits;
 
 import com.beansgalaxy.backpacks.access.EquipmentSlotAccess;
 import com.beansgalaxy.backpacks.components.DisplayComponent;
-import com.beansgalaxy.backpacks.components.PlaceableComponent;
 import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.components.ender.EmptyEnderItem;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
-import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
 import com.beansgalaxy.backpacks.platform.Services;
+import com.beansgalaxy.backpacks.traits.abstract_traits.IDraggingTrait;
 import com.beansgalaxy.backpacks.traits.alchemy.AlchemyCodecs;
 import com.beansgalaxy.backpacks.traits.alchemy.AlchemyTraits;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackCodecs;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.traits.bundle.BundleCodecs;
 import com.beansgalaxy.backpacks.traits.bundle.BundleTraits;
 import com.beansgalaxy.backpacks.traits.chest.ChestCodecs;
 import com.beansgalaxy.backpacks.traits.chest.ChestTraits;
-import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
-import com.beansgalaxy.backpacks.traits.generic.MutableBundleLike;
 import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxCodecs;
 import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxTraits;
 import com.beansgalaxy.backpacks.traits.quiver.QuiverCodecs;
@@ -45,11 +44,6 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public interface Traits {
-      DataComponentType<PlaceableComponent>
-                  PLACEABLE = register(PlaceableComponent.NAME, PlaceableComponent.CODEC, PlaceableComponent.STREAM_CODEC);
-
-      DataComponentType<EquipableComponent>
-                  EQUIPABLE = register(EquipableComponent.NAME, EquipableComponent.CODEC, EquipableComponent.STREAM_CODEC);
 
       DataComponentType<DisplayComponent>
                   DISPLAY = register(DisplayComponent.NAME, DisplayComponent.CODEC, DisplayComponent.STREAM_CODEC);
@@ -80,6 +74,10 @@ public interface Traits {
 
       TraitComponentKind<ChestTraits>
                   CHEST = TraitComponentKind.registerItemStorage(ChestTraits.NAME, ChestCodecs.INSTANCE);
+
+      TraitComponentKind<BackpackTraits>
+                  BACKPACK = TraitComponentKind.registerBundleLike(BackpackTraits.NAME, BackpackCodecs.INSTANCE);
+
       Codec<List<ItemStack>> STACKS_CODEC = Codec.list(RecordCodecBuilder.create((in) ->
                                           in.group(
                                                       ItemStack.ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
@@ -184,43 +182,47 @@ public interface Traits {
 
       }
 
-      static BundleLikeTraits getFoodStuffsTrait(ItemStack stack) {
-            LunchBoxTraits lunch = stack.get(LUNCH_BOX);
-            if (lunch != null)
-                  return lunch;
+      @Nullable
+      static <T extends GenericTraits> T get(ComponentHolder backpack, TraitComponentKind<T> kind) {
+            T traits = backpack.get(kind);
+            if (traits != null)
+                  return traits;
 
-            AlchemyTraits alchemy = stack.get(ALCHEMY);
-            if (alchemy != null)
-                  return alchemy;
-
-            ReferenceTrait reference = stack.get(REFERENCE);
-            if (reference == null)
-                  return null;
-
-            Optional<GenericTraits> optional = reference.getTrait();
-            if (optional.isEmpty())
-                  return null;
-
-            if (optional.get() instanceof LunchBoxTraits lunchRef)
-                  return lunchRef;
-
-            if (optional.get() instanceof AlchemyTraits alchemyRef)
-                  return alchemyRef;
+            ReferenceTrait referenceTrait = backpack.get(Traits.REFERENCE);
+            if (referenceTrait != null) {
+                  Optional<GenericTraits> reference = referenceTrait.getTrait();
+                  if (reference.isPresent()) {
+                        GenericTraits genericTraits = reference.get();
+                        if (kind.equals(genericTraits.kind()))
+                              return (T) genericTraits;
+                  }
+            }
 
             return null;
       }
 
       @Nullable
-      static ItemStack getFoodStuffsSelection(ItemStack lunchBox, Player player) {
-            BundleLikeTraits traits = getFoodStuffsTrait(lunchBox);
-            if (traits == null)
+      static <T extends GenericTraits> T get(ComponentHolder backpack, TraitComponentKind<T>[] kinds) {
+            for (TraitComponentKind<T> kind : kinds) {
+                  T traits = backpack.get(kind);
+                  if (traits != null)
+                        return traits;
+            }
+
+            ReferenceTrait referenceTrait = backpack.get(Traits.REFERENCE);
+            if (referenceTrait == null)
                   return null;
 
-            MutableBundleLike<?> mutable = traits.mutable(ComponentHolder.of(lunchBox));
-            if (mutable.isEmpty())
+            Optional<GenericTraits> reference = referenceTrait.getTrait();
+            if (reference.isEmpty())
                   return null;
 
-            int selectedSlotSafe = mutable.getSelectedSlot(player);
-            return mutable.getItemStacks().get(selectedSlotSafe);
+            GenericTraits genericTraits = reference.get();
+            for (TraitComponentKind<T> kind : kinds) {
+                  if (kind.equals(genericTraits.kind()))
+                        return (T) genericTraits;
+            }
+
+            return null;
       }
 }

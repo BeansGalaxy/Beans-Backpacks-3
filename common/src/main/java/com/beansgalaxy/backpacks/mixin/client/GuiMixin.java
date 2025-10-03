@@ -2,6 +2,7 @@ package com.beansgalaxy.backpacks.mixin.client;
 
 import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.client.KeyPress;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalBooleanRef;
@@ -33,12 +34,6 @@ public class GuiMixin {
       @Inject(method = "renderItemHotbar", locals = LocalCapture.CAPTURE_FAILHARD, at = @At(value = "INVOKE",
                   target = "Lnet/minecraft/world/entity/player/Player;getOffhandItem()Lnet/minecraft/world/item/ItemStack;"))
       public void render(GuiGraphics drawContext, DeltaTracker tickCounter, CallbackInfo callbackInfo, Player player) {
-            if (minecraft.hitResult instanceof EntityHitResult hitResult && hitResult.getEntity() instanceof BackpackEntity backpack) {
-                  backpack.getTraits().ifPresent(trait -> {
-                        trait.client().renderEntityOverlay(minecraft, backpack, trait, drawContext, tickCounter);
-                  });
-            }
-
             CommonClient.renderCompassClockHUD(minecraft, drawContext, player);
       }
 

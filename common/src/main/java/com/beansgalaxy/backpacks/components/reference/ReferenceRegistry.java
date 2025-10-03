@@ -1,9 +1,6 @@
 package com.beansgalaxy.backpacks.components.reference;
 
 import com.beansgalaxy.backpacks.components.DisplayComponent;
-import com.beansgalaxy.backpacks.components.PlaceableComponent;
-import com.beansgalaxy.backpacks.components.UtilityComponent;
-import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.mojang.serialization.Codec;
@@ -13,12 +10,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.BitSet;
 import java.util.HashMap;
 
-public record ReferenceRegistry(GenericTraits traits, ItemAttributeModifiers modifiers,
-                                PlaceableComponent placeable, EquipableComponent equipable,
-                                byte utilities, DisplayComponent display
+public record ReferenceRegistry(GenericTraits traits,
+                                ItemAttributeModifiers modifiers,
+                                byte utilities,
+                                DisplayComponent display
 ) {
       public static final HashMap<ResourceLocation, ReferenceRegistry> REFERENCES = new HashMap<>();
 
@@ -31,7 +28,7 @@ public record ReferenceRegistry(GenericTraits traits, ItemAttributeModifiers mod
       }
 
       public static ReferenceRegistry createEmptyReference() {
-            return new ReferenceRegistry(NonTrait.INSTANCE, ItemAttributeModifiers.EMPTY, null, null, (byte) 0, null);
+            return new ReferenceRegistry(NonTrait.INSTANCE, ItemAttributeModifiers.EMPTY, (byte) 0, null);
       }
 
       @Nullable
@@ -56,16 +53,6 @@ public record ReferenceRegistry(GenericTraits traits, ItemAttributeModifiers mod
 
                   ItemAttributeModifiers.STREAM_CODEC.encode(buf, reference.modifiers);
 
-                  boolean isPlaceable = reference.placeable != null;
-                  buf.writeBoolean(isPlaceable);
-                  if (isPlaceable)
-                        PlaceableComponent.STREAM_CODEC.encode(buf, reference.placeable);
-
-                  boolean isEquipment = reference.equipable != null;
-                  buf.writeBoolean(isEquipment);
-                  if (isEquipment)
-                        EquipableComponent.STREAM_CODEC.encode(buf, reference.equipable);
-
                   boolean hasDisplay = reference.display != null;
                   buf.writeBoolean(hasDisplay);
                   if (hasDisplay)
@@ -85,18 +72,20 @@ public record ReferenceRegistry(GenericTraits traits, ItemAttributeModifiers mod
 
                   ItemAttributeModifiers modifiers = ItemAttributeModifiers.STREAM_CODEC.decode(buf);
 
-                  boolean isPlaceable = buf.readBoolean();
-                  PlaceableComponent placeableComponent = isPlaceable ? PlaceableComponent.STREAM_CODEC.decode(buf) : null;
-
-                  boolean isEquipable = buf.readBoolean();
-                  EquipableComponent equipableComponent = isEquipable ? EquipableComponent.STREAM_CODEC.decode(buf) : null;
 
                   boolean hasDisplay = buf.readBoolean();
                   DisplayComponent displayComponent = hasDisplay ? DisplayComponent.STREAM_CODEC.decode(buf) : null;
 
                   byte utilities = buf.readByte();
 
-                  return new ReferenceRegistry(fields, modifiers, placeableComponent, equipableComponent, utilities, displayComponent);
+                  return new ReferenceRegistry(fields, modifiers, utilities, displayComponent);
             }
       };
+
+      public record Temp(ResourceLocation parent,
+                         GenericTraits traits,
+                         ItemAttributeModifiers modifiers,
+                         byte utilities,
+                         DisplayComponent display
+      ) {}
 }

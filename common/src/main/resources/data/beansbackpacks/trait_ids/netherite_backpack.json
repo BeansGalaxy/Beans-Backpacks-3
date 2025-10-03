@@ -1,14 +1,7 @@
 {
-  "bundle": {
-    "size": 16
-  },
-  "equipable": {
-    "slots": "body",
-    "backpack_texture": "beansbackpacks:netherite",
-    "sound_event": ["beansbackpacks:metal_equip", "beansbackpacks:metal_place"]
-  },
-  "placeable": {
-    "backpack_texture": "beansbackpacks:netherite"
+  "backpack": {
+    "size": 16,
+    "texture": "beansbackpacks:netherite"
   },
   "utilities": 2
 }

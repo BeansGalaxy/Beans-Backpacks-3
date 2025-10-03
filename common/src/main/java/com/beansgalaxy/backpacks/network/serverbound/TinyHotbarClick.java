@@ -4,7 +4,9 @@ import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.access.ViewableAccessor;
 import com.beansgalaxy.backpacks.network.Network2S;
 import com.beansgalaxy.backpacks.screen.TinyClickType;
+import com.beansgalaxy.backpacks.traits.IEntityTraits;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
@@ -58,10 +60,8 @@ public class TinyHotbarClick implements Packet2S {
       public void handle(Player sender) {
             Entity entity = sender.level().getEntity(entityId);
             if (entity instanceof BackpackEntity backpack) {
-                  Optional<GenericTraits> optional = backpack.getTraits();
-                  if (optional.isPresent() && optional.get() instanceof ItemStorageTraits storageTraits) {
-                        storageTraits.tinyHotbarClick(backpack, index, clickType, sender.inventoryMenu, sender);
-                  }
+                  IEntityTraits<?> traits = backpack.getTraits();
+                  traits.tinyHotbarClick(backpack, index, clickType, sender.inventoryMenu, sender);
             }
             else {
                   LivingEntity owner;

@@ -1,11 +1,11 @@
 package com.beansgalaxy.backpacks.traits.generic;
 
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
-import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
 import com.beansgalaxy.backpacks.screen.TinyClickType;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.util.DraggingContainer;
 import com.beansgalaxy.backpacks.traits.abstract_traits.IDraggingTrait;
 import com.beansgalaxy.backpacks.util.ModSound;
@@ -34,9 +34,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
-public abstract class ItemStorageTraits extends GenericTraits implements IDraggingTrait {
+public abstract class ItemStorageTraits extends GenericTraits {
 
       public ItemStorageTraits(ModSound sound) {
             super(sound);
@@ -75,26 +74,24 @@ public abstract class ItemStorageTraits extends GenericTraits implements IDraggi
       }
 
       public static void runIfEquipped(Player player, BiPredicate<ItemStorageTraits, EquipmentSlot> runnable) {
-            for (EquipmentSlot slot : EquipmentSlot.values()) {
+            EquipmentSlot[] values = EquipmentSlot.values();
+            int size = values.length;
+            for (int i = size - 1; i >= 0; i--) {
+                  EquipmentSlot slot = values[i];
                   ItemStack stack = player.getItemBySlot(slot);
                   if (stack.isEmpty())
                         continue;
 
-                  Optional<ItemStorageTraits> traits = get(stack);
-                  if (traits.isEmpty())
+                  BackpackTraits traits = BackpackTraits.get(stack);
+                  if (traits == null)
                         continue;
 
-                  if (!EquipableComponent.testIfPresent(stack, equip ->
-                              equip.traitRemovable() || equip.slots().test(slot)))
+                  if (!traits.slots().test(slot))
                         continue;
 
-                  if (runnable.test(traits.get(), slot))
+                  if (runnable.test(traits, slot))
                         return;
             }
-      }
-
-      public static boolean testIfPresent(ItemStack stack, Predicate<ItemStorageTraits> predicate) {
-            return !stack.isEmpty() && get(stack).map(predicate::test).orElse(false);
       }
 
       protected static boolean tryMoveItems(MutableItemStorage to, ItemStack from, Player player) {
@@ -262,28 +259,4 @@ public abstract class ItemStorageTraits extends GenericTraits implements IDraggi
 
       public abstract void tinyMenuClick(ComponentHolder holder, int index, TinyClickType clickType, SlotAccess carriedAccess, Player player);
 
-      public void clickSlot(DraggingContainer drag, Player player, ComponentHolder holder) {
-            Slot slot = drag.firstSlot;
-
-            if (drag.isPickup) {
-                  ItemStack stack = slot.getItem();
-                  boolean mayPickup = slot.mayPickup(player);
-                  boolean hasItem = slot.hasItem();
-                  boolean canFit = canItemFit(holder, stack);
-                  boolean isFull = isFull(holder);
-                  if (mayPickup && hasItem && canFit && !isFull) {
-                        drag.allSlots.put(drag.firstSlot, stack.copyWithCount(1));
-                        drag.slotClicked(slot, slot.index, 1, ClickType.PICKUP);
-                  }
-            }
-            else {
-                  ItemStack itemStack = getFirst(holder);
-                  if (itemStack != null && !slot.hasItem()) {
-                        if (AbstractContainerMenu.canItemQuickReplace(slot, itemStack, true) && slot.mayPlace(itemStack)) {
-                              drag.allSlots.put(slot, ItemStack.EMPTY);
-                              drag.slotClicked(slot, slot.index, 1, ClickType.PICKUP);
-                        }
-                  }
-            }
-      }
 }

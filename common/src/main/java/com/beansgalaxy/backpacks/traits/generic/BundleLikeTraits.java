@@ -1,7 +1,6 @@
 package com.beansgalaxy.backpacks.traits.generic;
 
 import com.beansgalaxy.backpacks.components.SlotSelection;
-import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
 import com.beansgalaxy.backpacks.network.serverbound.PickBlock;
 import com.beansgalaxy.backpacks.network.serverbound.TraitMenuClick;
@@ -110,9 +109,6 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
       @Override
       public void stackedOnOther(ComponentHolder backpack, ItemStack other, Slot slot, ClickAction click, Player player, CallbackInfoReturnable<Boolean> cir) {
             if (!ClickAction.SECONDARY.equals(click))
-                  return;
-
-            if (EquipableComponent.testIfPresent(backpack, equipable -> !equipable.traitRemovable()))
                   return;
 
             MutableBundleLike<?> mutable = mutable(backpack);
@@ -263,11 +259,6 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
             ItemStack removed;
             if (menuKeyDown)
                   removed = mutable.removeItem(selectedSlot);
-            else if (EquipableComponent.get(backpack).isPresent())
-            {
-                  ItemStack itemStack = mutable.getItemStacks().get(selectedSlot);
-                  removed = itemStack.getCount() == 1 ? mutable.removeItem(selectedSlot) : itemStack.split(1);
-            }
             else return;
 
             player.drop(removed, true);

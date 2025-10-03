@@ -1,8 +1,9 @@
 package com.beansgalaxy.backpacks.mixin.common;
 
 import com.beansgalaxy.backpacks.data.HopperTraitContainer;
+import com.beansgalaxy.backpacks.traits.IEntityTraits;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
-import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import net.minecraft.core.Direction;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
@@ -15,7 +16,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.IntStream;
 
 @Mixin(HopperBlockEntity.class)
@@ -32,12 +32,8 @@ public class HopperEntityMixin {
                     i = 0;
 
                 BackpackEntity backpack = (BackpackEntity) backpacks.get(i);
-                Optional<GenericTraits> optional = backpack.getTraits();
-                if (optional.isEmpty())
-                    continue;
-
-                GenericTraits traits = optional.get();
-                Container container = traits.entity().createHopperContainer(backpack, traits);
+                IEntityTraits<?> traits = backpack.getTraits();
+                Container container = traits.createHopperContainer(backpack);
                 if (container == null)
                     continue;
 

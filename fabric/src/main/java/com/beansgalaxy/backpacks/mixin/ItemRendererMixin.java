@@ -4,6 +4,7 @@ import com.beansgalaxy.backpacks.CommonClient;
 import com.beansgalaxy.backpacks.components.DisplayComponent;
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -53,7 +54,7 @@ public abstract class ItemRendererMixin {
       ) {
             if (displayContext.firstPerson()) {
                   LocalPlayer player = minecraft.player;
-                  ItemStack food = Traits.getFoodStuffsSelection(itemStack, player);
+                  ItemStack food = ISlotSelectorTrait.getFoodStuffsSelection(itemStack, player);
                   if (food != null) {
                         BakedModel foodModel = getModel(food, minecraft.level, player, player.getId());
                         model.set(foodModel);

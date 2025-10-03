@@ -1,15 +1,7 @@
 {
-  "bundle": {
+  "backpack": {
     "size": 5,
-    "sound": "soft"
-  },
-  "equipable": {
-    "slots": "body",
-    "backpack_texture": "beansbackpacks:leather",
-    "sound_event": ["beansbackpacks:leather_equip", "beansbackpacks:leather_place"]
-  },
-  "placeable": {
-    "backpack_texture": "beansbackpacks:leather"
+    "texture": "beansbackpacks:leather"
   },
   "utilities": 1
 }

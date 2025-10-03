@@ -1,6 +1,5 @@
 package com.beansgalaxy.backpacks.mixin.common;
 
-import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxTraits;
@@ -32,8 +31,6 @@ public class ItemMixin {
             Traits.runIfPresent(backpack, traits -> {
                   traits.use(level, player, hand, ComponentHolder.of(backpack), cir);
             });
-            if (!cir.isCancelled())
-                  EquipableComponent.use(player, hand, backpack, cir);
       }
 
       @Inject(method = "overrideOtherStackedOnMe", at = @At("HEAD"), cancellable = true)

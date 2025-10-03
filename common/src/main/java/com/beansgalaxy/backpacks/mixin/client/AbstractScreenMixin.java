@@ -81,7 +81,7 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
             }
 
             if (hoveredSlot != null) {
-                  if (pButton == 1 || (pButton == 0 && hoveredSlot instanceof EquipmentSlotAccess && !hoveredSlot.mayPickup(minecraft.player))) {
+                  if (pButton == 1 || (pButton == 0 && hoveredSlot instanceof EquipmentSlotAccess && (!hoveredSlot.mayPickup(minecraft.player) || !hoveredSlot.mayPlace(menu.getCarried())))) {
                         TraitMenu<?> menu = TraitMenu.create(minecraft, leftPos, topPos, hoveredSlot);
                         if (menu != null)
                               traitMenu = menu;

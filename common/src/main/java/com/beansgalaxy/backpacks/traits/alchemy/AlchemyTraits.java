@@ -2,6 +2,7 @@ package com.beansgalaxy.backpacks.traits.alchemy;
 
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.abstract_traits.IDraggingTrait;
 import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
@@ -38,7 +39,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 import java.util.Optional;
 
-public class AlchemyTraits extends BundleLikeTraits implements ISlotSelectorTrait {
+public class AlchemyTraits extends BundleLikeTraits implements ISlotSelectorTrait, IDraggingTrait {
       public static final String NAME = "alchemy";
 
       public AlchemyTraits(ModSound sound, int size) {
@@ -53,11 +54,6 @@ public class AlchemyTraits extends BundleLikeTraits implements ISlotSelectorTrai
       @Override
       public AlchemyClient client() {
             return AlchemyClient.INSTANCE;
-      }
-
-      @Override
-      public AlchemyEntity entity() {
-            return AlchemyEntity.INSTANCE;
       }
 
       @Override

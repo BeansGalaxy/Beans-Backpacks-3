@@ -6,7 +6,11 @@ import com.beansgalaxy.backpacks.network.serverbound.SyncSelectedSlot;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.alchemy.AlchemyTraits;
+import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
+import com.beansgalaxy.backpacks.traits.generic.MutableBundleLike;
+import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
@@ -40,6 +44,46 @@ public interface ISlotSelectorTrait {
                   return trait;
 
             return null;
+      }
+
+      static BundleLikeTraits getFoodStuffsTrait(ItemStack stack) {
+            LunchBoxTraits lunch = stack.get(Traits.LUNCH_BOX);
+            if (lunch != null)
+                  return lunch;
+
+            AlchemyTraits alchemy = stack.get(Traits.ALCHEMY);
+            if (alchemy != null)
+                  return alchemy;
+
+            ReferenceTrait reference = stack.get(Traits.REFERENCE);
+            if (reference == null)
+                  return null;
+
+            Optional<GenericTraits> optional = reference.getTrait();
+            if (optional.isEmpty())
+                  return null;
+
+            if (optional.get() instanceof LunchBoxTraits lunchRef)
+                  return lunchRef;
+
+            if (optional.get() instanceof AlchemyTraits alchemyRef)
+                  return alchemyRef;
+
+            return null;
+      }
+
+      @Nullable
+      static ItemStack getFoodStuffsSelection(ItemStack lunchBox, Player player) {
+            BundleLikeTraits traits = getFoodStuffsTrait(lunchBox);
+            if (traits == null)
+                  return null;
+
+            MutableBundleLike<?> mutable = traits.mutable(ComponentHolder.of(lunchBox));
+            if (mutable.isEmpty())
+                  return null;
+
+            int selectedSlotSafe = mutable.getSelectedSlot(player);
+            return mutable.getItemStacks().get(selectedSlotSafe);
       }
 
       default boolean mouseScrolled(Player player, ComponentHolder holder, Level level, Slot hoveredSlot, int containerId, int scrolled) {

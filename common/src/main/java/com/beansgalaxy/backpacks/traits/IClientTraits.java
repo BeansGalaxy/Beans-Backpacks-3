@@ -1,11 +1,9 @@
 package com.beansgalaxy.backpacks.traits;
 
 import com.beansgalaxy.backpacks.screen.TraitMenu;
-import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -18,11 +16,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 public interface IClientTraits<T extends GenericTraits> {
@@ -30,17 +26,7 @@ public interface IClientTraits<T extends GenericTraits> {
       int BLUE_BAR = Mth.color(0.4F, 0.4F, 1.0F);
       int RED_BAR = Mth.color(0.9F, 0.2F, 0.3F);
 
-      void appendTooltipLines(T traits, List<Component> lines);
-
-      void appendEquipmentLines(T traits, Consumer<Component> pTooltipAdder);
-
-      default boolean mouseScrolled(T traits, ComponentHolder holder, Level level, Slot hoveredSlot, int containerId, int scrolled) {
-            return false;
-      }
-
-      default void renderEntityOverlay(Minecraft minecraft, BackpackEntity backpack, T trait, GuiGraphics gui, DeltaTracker tick) {
-
-      }
+      void appendTooltipLines(T traits, Consumer<Component> lines);
 
       default boolean isBarVisible(T trait, ComponentHolder holder) {
             return !trait.isEmpty(holder);
@@ -71,5 +57,5 @@ public interface IClientTraits<T extends GenericTraits> {
       }
 
       @Nullable
-      TraitMenu<T> createTooltip(Minecraft minecraft, int leftPos, int topPos, @Nullable Slot slot, ComponentHolder holder, T traits);
+      TraitMenu<T> createTooltip(Minecraft minecraft, int leftPos, int topPos, Slot slot, ComponentHolder holder, T traits);
 }

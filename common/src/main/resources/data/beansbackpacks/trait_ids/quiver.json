@@ -2,12 +2,5 @@
   "quiver": {
     "size": 8,
     "sound": "soft"
-  },
-  "equipable": {
-    "slots": "body",
-    "trait_removable": true,
-    "equipment_model": {
-      "back": "beansbackpacks:backpack/quiver"
-    }
   }
 }

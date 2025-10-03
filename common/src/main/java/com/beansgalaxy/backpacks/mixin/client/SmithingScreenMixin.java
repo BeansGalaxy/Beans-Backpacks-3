@@ -1,6 +1,6 @@
 package com.beansgalaxy.backpacks.mixin.client;
 
-import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.SmithingScreen;
 import net.minecraft.util.Mth;
@@ -15,8 +15,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Optional;
-
 @Mixin(SmithingScreen.class)
 public class SmithingScreenMixin {
       @Shadow @Nullable private ArmorStand armorStandPreview;
@@ -24,17 +22,18 @@ public class SmithingScreenMixin {
       @Inject(method = "updateArmorStandPreview", cancellable = true, at = @At(value = "INVOKE",
                   target = "Lnet/minecraft/world/item/ItemStack;getItem()Lnet/minecraft/world/item/Item;"))
       private void backpackUpdateArmorStandPreview(ItemStack pStack, CallbackInfo ci) {
-            Optional<EquipableComponent> optional = EquipableComponent.get(pStack);
-            if (optional.isEmpty())
+            BackpackTraits traits = BackpackTraits.get(pStack);
+            if (traits == null)
                   return;
 
-            EquipableComponent equipable = optional.get();
-            for (EquipmentSlot slot : equipable.values()) {
+            for (EquipmentSlot slot : traits.slots().getValues()) {
                   this.armorStandPreview.setItemSlot(slot, pStack);
                   ci.cancel();
                   return;
             }
       }
+
+      // TODO: ARMOR STANDS QUICKLY FLIP AROUND WHEN OPENING SMITHING TABLE; START VALUES AT THE RIGHT ANGLE SO IT DOESN'T :mindblown :sunglass :eggplant :drips :drips :drips
 
       @Unique float beans_Backpacks_3$progress = 0f;
       @Unique float beans_Backpacks_3$yRotO = 0f;

@@ -125,6 +125,8 @@ public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
 
       private void renderItems(GuiGraphics gui, int mouseX, int mouseY) {
             List<ItemStack> stacks = holder.get(ITraitData.ITEM_STACKS);
+            if (stacks != null && stacks.size() != size)
+                  updateSize();
 
             hoveredSlot = null;
 
@@ -157,9 +159,6 @@ public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
                   gui.fill(hoveredSlot.x1, hoveredSlot.y1, hoveredSlot.x2, hoveredSlot.y2, 30, 0x60FFFFFF);
             }
       }
-
-      public static final ResourceLocation TEXTURE =
-                  ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/exit_trait_menu.png");
 
       record tSlot(int index, int x1, int x2, int y1, int y2) {
 

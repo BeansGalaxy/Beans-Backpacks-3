@@ -149,7 +149,7 @@ public class EnderItem extends Item {
                   Component displayName = enderTraits.getDisplayName();
 
                   lines.add(Component.translatable("ender.beansbackpacks.bound_player", displayName).withStyle(ChatFormatting.GOLD));
-                  trait.client().appendTooltipLines(trait, lines);
+                  trait.client().appendTooltipLines(trait, lines::add);
                   if (flag.isAdvanced())
                         lines.add(Component.translatable(
                                     "tooltip.beansbackpacks.advanced.reference",

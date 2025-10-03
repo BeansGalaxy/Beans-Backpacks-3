@@ -3,11 +3,11 @@ package com.beansgalaxy.backpacks.client;
 import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.access.PlayerAccessor;
-import com.beansgalaxy.backpacks.components.PlaceableComponent;
 import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.network.serverbound.BackpackUseOn;
 import com.beansgalaxy.backpacks.network.serverbound.InstantKeyPress;
 import com.beansgalaxy.backpacks.network.serverbound.SyncHotkey;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.traits.chest.screen.MenuChestScreen;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -32,7 +32,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.Optional;
 import java.util.OptionalInt;
 
 public class KeyPress {
@@ -124,11 +123,11 @@ public class KeyPress {
             if (coyoteClick != null) {
                   if (coyoteClick.isFinished()) {
                         EquipmentSlot slot = coyoteClick.slot;
-                        PlaceableComponent placeable = coyoteClick.placeable;
+                        BackpackTraits traits = coyoteClick.traits;
                         coyoteClick = null;
 
                         ItemStack backpack = player.getItemBySlot(slot);
-                        if (BackpackUseOn.placeBackpack(player, hitResult, backpack, placeable)) {
+                        if (BackpackUseOn.placeBackpack(player, hitResult, backpack, traits)) {
                               BackpackUseOn.send(hitResult, slot);
                               return OptionalInt.of(8);
                         }
@@ -154,12 +153,12 @@ public class KeyPress {
             for (EquipmentSlot slot : slots) {
                   ItemStack backpack = player.getItemBySlot(slot);
 
-                  Optional<PlaceableComponent> component = PlaceableComponent.get(backpack);
-                  if (component.isEmpty())
+                  BackpackTraits traits = BackpackTraits.get(backpack);
+                  if (traits == null) {
                         continue;
+                  }
 
-                  PlaceableComponent placeable = component.get();
-                  coyoteClick = new CoyoteClick(slot, placeable, hitResult);
+                  coyoteClick = new CoyoteClick(slot, traits, hitResult);
                   return OptionalInt.of(0);
             }
 
@@ -179,13 +178,13 @@ public class KeyPress {
 
       private static class CoyoteClick {
             final EquipmentSlot slot;
-            final PlaceableComponent placeable;
+            final BackpackTraits traits;
             final BlockHitResult blockhitresult;
             int progress = 1;
 
-            private CoyoteClick(EquipmentSlot slot, PlaceableComponent placeable, BlockHitResult blockhitresult) {
+            private CoyoteClick(EquipmentSlot slot, BackpackTraits backpack, BlockHitResult blockhitresult) {
                   this.slot = slot;
-                  this.placeable = placeable;
+                  this.traits = backpack;
                   this.blockhitresult = blockhitresult;
             }
 
@@ -276,11 +275,11 @@ public class KeyPress {
 
       private static boolean tryPlace(Player player, BlockHitResult hitResult, EquipmentSlot slot) {
             ItemStack backpack = player.getItemBySlot(slot);
-            Optional<PlaceableComponent> component = PlaceableComponent.get(backpack);
-            if (component.isEmpty())
+            BackpackTraits traits = BackpackTraits.get(backpack);
+            if (traits == null)
                   return false;
 
-            if (BackpackUseOn.placeBackpack(player, hitResult, backpack, component.get())) {
+            if (BackpackUseOn.placeBackpack(player, hitResult, backpack, traits)) {
                   BackpackUseOn.send(hitResult, slot);
                   return true;
             }

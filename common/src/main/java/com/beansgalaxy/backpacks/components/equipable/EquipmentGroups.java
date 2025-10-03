@@ -1,14 +1,19 @@
 package com.beansgalaxy.backpacks.components.equipable;
 
+import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
+import org.apache.commons.compress.utils.Lists;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
 
@@ -30,6 +35,7 @@ public enum EquipmentGroups implements StringRepresentable {
       private final String name;
       private final Predicate<EquipmentSlot> predicate;
       private final Predicate<EquipmentSlotGroup> groupPredicate;
+      private final List<EquipmentSlot> values;
 
       EquipmentGroups(int id, String name, EquipmentSlot equipmentSlot, EquipmentSlotGroup slotGroup) {
             this(id, name, equipmentSlot::equals, slotGroup);
@@ -40,6 +46,17 @@ public enum EquipmentGroups implements StringRepresentable {
             this.name = name;
             this.predicate = predicate;
             this.groupPredicate = slotGroup::equals;
+
+            EquipmentSlot[] values = EquipmentSlot.values();
+            ImmutableList.Builder<EquipmentSlot> list = ImmutableList.builder();
+
+            for (int i = values.length - 1; i >= 0; i--) {
+                  EquipmentSlot value = values[i];
+                  if (predicate.test(value))
+                        list.add(value);
+            }
+
+            this.values = list.build();
       }
 
       @Override
@@ -57,5 +74,9 @@ public enum EquipmentGroups implements StringRepresentable {
 
       public int getId() {
             return id;
+      }
+
+      public List<EquipmentSlot> getValues() {
+            return values;
       }
 }

@@ -1,10 +1,9 @@
 package com.beansgalaxy.backpacks.traits.lunch_box;
 
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
-import com.beansgalaxy.backpacks.network.serverbound.SyncSelectedSlot;
-import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.abstract_traits.IDraggingTrait;
 import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
@@ -25,7 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class LunchBoxTraits extends BundleLikeTraits implements ISlotSelectorTrait {
+public class LunchBoxTraits extends BundleLikeTraits implements ISlotSelectorTrait, IDraggingTrait {
       public static final String NAME = "lunch";
 
       public LunchBoxTraits(ModSound sound, int size) {
@@ -35,11 +34,6 @@ public class LunchBoxTraits extends BundleLikeTraits implements ISlotSelectorTra
       @Override
       public LunchBoxClient client() {
             return LunchBoxClient.INSTANCE;
-      }
-
-      @Override
-      public LunchBoxEntity entity() {
-            return LunchBoxEntity.INSTANCE;
       }
 
       @Override

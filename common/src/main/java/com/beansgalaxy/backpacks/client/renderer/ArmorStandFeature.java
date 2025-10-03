@@ -1,7 +1,7 @@
 package com.beansgalaxy.backpacks.client.renderer;
 
-import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.components.equipable.EquipmentModel;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
@@ -48,36 +48,31 @@ public class ArmorStandFeature extends RenderLayer<ArmorStand, ArmorStandArmorMo
 
       @Override
       public void render(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, ArmorStand armorStand, float limbAngle, float limbDistance, float tick, float animationProgress, float playerHeadYaw, float playerHeadPitch) {
-            EquipableComponent.runIfPresent(armorStand, (equipable, slot) -> {
-                  if (!equipable.slots().test(slot))
+            BackpackTraits.runIfPresent(armorStand, (traits, slot) -> {
+                  ItemStack itemStack = armorStand.getItemBySlot(slot);
+                  ResourceLocation texture = traits.getTexture();
+
+                  if (texture == null)
                         return;
 
-                  ItemStack itemStack = armorStand.getItemBySlot(slot);
-                  ResourceLocation texture = equipable.backpackTexture();
-                  EquipmentModel model = equipable.customModel();
+                  pose.pushPose();
+                  this.getParentModel().body.translateAndRotate(pose);
 
-                  if (texture != null) {
-                        pose.pushPose();
-                        this.getParentModel().body.translateAndRotate(pose);
+                  pose.translate(0.0F, (armorStand.isCrouching() ? 1 / 16f : 0), -1/32f);
+                  if (!armorStand.getItemBySlot(EquipmentSlot.CHEST).isEmpty())
+                        pose.translate(0.0F, -1 / 16f, 3 / 32f);
 
-                        pose.translate(0.0F, (armorStand.isCrouching() ? 1 / 16f : 0), -1/32f);
-                        if (!armorStand.getItemBySlot(EquipmentSlot.CHEST).isEmpty())
-                              pose.translate(0.0F, -1 / 16f, 3 / 32f);
+                  ViewableBackpack viewable = ViewableBackpack.get(armorStand);
+                  if (viewable.lastDelta > tick)
+                        viewable.updateOpen();
 
-                        ViewableBackpack viewable = ViewableBackpack.get(armorStand);
-                        if (viewable.lastDelta > tick)
-                              viewable.updateOpen();
+                  float headPitch = Mth.lerp(tick, viewable.lastPitch, viewable.headPitch) * 0.25f;
+                  model().setOpenAngle(headPitch);
+                  viewable.lastDelta = tick;
 
-                        float headPitch = Mth.lerp(tick, viewable.lastPitch, viewable.headPitch) * 0.25f;
-                        model().setOpenAngle(headPitch);
-                        viewable.lastDelta = tick;
-
-                        pose.translate(0, 13 / 16f, 0);
-                        renderTexture(pose, pBufferSource, pCombinedLight, texture, itemStack, viewable);
-                        pose.popPose();
-                  }
-                  else if (model != null)
-                        renderModel(pose, pBufferSource, pCombinedLight, armorStand, model, itemStack);
+                  pose.translate(0, 13 / 16f, 0);
+                  renderTexture(pose, pBufferSource, pCombinedLight, texture, itemStack, viewable);
+                  pose.popPose();
             });
       }
 

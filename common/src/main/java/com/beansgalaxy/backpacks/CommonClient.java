@@ -4,7 +4,6 @@ import com.beansgalaxy.backpacks.access.MinecraftAccessor;
 import com.beansgalaxy.backpacks.client.KeyPress;
 import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
-import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.container.UtilitySlot;
 import com.beansgalaxy.backpacks.data.EnderStorage;
 import com.beansgalaxy.backpacks.container.BackSlot;
@@ -12,6 +11,7 @@ import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
@@ -441,10 +441,12 @@ public class CommonClient {
 
       public static Boolean cancelCapeRender(Player player) {
             ItemStack backpack = player.getItemBySlot(EquipmentSlot.BODY);
-            return EquipableComponent.get(backpack).map(equipable -> {
-                  ResourceLocation texture = equipable.backpackTexture();
-                  return texture != null;
-            }).orElse(false);
+            BackpackTraits traits = BackpackTraits.get(backpack);
+            if (traits == null) {
+                  return false;
+            }
+
+            return true;
       }
 
       public static boolean scrollTraits(Player player, ItemStack stack, Level level, int containerId, int scrolled, Slot hoveredSlot) {

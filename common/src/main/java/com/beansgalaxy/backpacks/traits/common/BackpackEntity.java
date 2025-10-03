@@ -3,12 +3,11 @@ package com.beansgalaxy.backpacks.traits.common;
 import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.access.BackData;
-import com.beansgalaxy.backpacks.components.PlaceableComponent;
-import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
+import com.beansgalaxy.backpacks.components.equipable.EquipmentGroups;
 import com.beansgalaxy.backpacks.components.reference.NonTrait;
-import com.beansgalaxy.backpacks.traits.Traits;
-import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
-import com.beansgalaxy.backpacks.traits.generic.MutableTraits;
+import com.beansgalaxy.backpacks.traits.IEntityTraits;
+import com.beansgalaxy.backpacks.traits.TraitComponentKind;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.items.ModItems;
 import com.beansgalaxy.backpacks.util.ModSound;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
@@ -22,17 +21,15 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializer;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -59,24 +56,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
 
 public class BackpackEntity extends Entity implements ComponentHolder {
       public static final EntityDataAccessor<Boolean> IS_OPEN = SynchedEntityData.defineId(BackpackEntity.class, EntityDataSerializers.BOOLEAN);
       public static final EntityDataAccessor<ItemStack> ITEM_STACK = SynchedEntityData.defineId(BackpackEntity.class, EntityDataSerializers.ITEM_STACK);
       public static final EntityDataAccessor<Direction> DIRECTION = SynchedEntityData.defineId(BackpackEntity.class, EntityDataSerializers.DIRECTION);
-      public static final EntityDataAccessor<PlaceableComponent> PLACEABLE = SynchedEntityData.defineId(BackpackEntity.class, new EntityDataSerializer<>() {
-
-            @Override
-            public StreamCodec<? super RegistryFriendlyByteBuf, PlaceableComponent> codec() {
-                  return PlaceableComponent.STREAM_CODEC;
-            }
-
-            @Override
-            public PlaceableComponent copy(PlaceableComponent placeableComponent) {
-                  return new PlaceableComponent(placeableComponent.customModel(), placeableComponent.backpackTexture(), placeableComponent.sound());
-            }
-      });
 
       public final ViewableBackpack viewable = new ViewableBackpack() {
             @Override public void setOpen(boolean isOpen) {
@@ -88,7 +73,7 @@ public class BackpackEntity extends Entity implements ComponentHolder {
             }
 
             @Override public void playSound(ModSound.Type type) {
-                  getTraits().ifPresent(traits -> traits.sound().at(BackpackEntity.this, type));
+                  getTraits().sound().at(BackpackEntity.this, type);
             }
 
             @Override public @NotNull Entity entity() {
@@ -117,9 +102,8 @@ public class BackpackEntity extends Entity implements ComponentHolder {
       public int breakAmount = 0;
 
       public InteractionResult useTraitInteraction(Player player, InteractionHand hand) {
-            return getTraits().map(traits ->
-                        traits.entity().interact(BackpackEntity.this, traits, player, hand)
-            ).orElse(InteractionResult.PASS);
+            IEntityTraits<?> traits = getTraits();
+            return traits.interact(BackpackEntity.this, player, hand);
       }
 
       public BackpackEntity(EntityType<?> $$0, Level $$1) {
@@ -127,26 +111,20 @@ public class BackpackEntity extends Entity implements ComponentHolder {
             blocksBuilding = true;
       }
 
-      public Optional<GenericTraits> getTraits() {
+      public IEntityTraits<?> getTraits() {
             ItemStack stack = entityData.get(ITEM_STACK);
-            return Traits.get(stack);
-      }
 
-      public Optional<EquipableComponent> getEquipable() {
-            ItemStack stack = entityData.get(ITEM_STACK);
-            return EquipableComponent.get(stack);
-      }
+            BackpackTraits traits = BackpackTraits.get(stack);
+            return Objects.requireNonNullElse(traits, NonTrait.INSTANCE);
 
-      public PlaceableComponent getPlaceable() {
-            return entityData.get(PLACEABLE);
       }
 
       @Nullable
       public static BackpackEntity create(
                   UseOnContext ctx,
                   ItemStack backpackStack,
-                  PlaceableComponent placeable,
-                  Optional<GenericTraits> traits)
+                  BackpackTraits traits
+                  )
       {
             Level level = ctx.getLevel();
             BlockPos blockPos = ctx.getClickedPos();
@@ -231,22 +209,16 @@ public class BackpackEntity extends Entity implements ComponentHolder {
                   }
             }
 
-            return create(backpackStack, placeable, traits, level, pos, yRot, clickedFace, player);
+            return create(backpackStack, traits, level, pos, yRot, clickedFace, player);
       }
 
-      public static @NotNull BackpackEntity create(ItemStack backpackStack, PlaceableComponent placeable, Optional<GenericTraits> traits, Level level, Vec3 pos, float yRot, Direction direction, Player player) {
+      public static @NotNull BackpackEntity create(ItemStack backpackStack, BackpackTraits traits, Level level, Vec3 pos, float yRot, Direction direction, Player player) {
             BackpackEntity backpackEntity = new BackpackEntity(CommonClass.BACKPACK_ENTITY.get(), level);
             backpackEntity.setPos(pos);
             backpackEntity.setYRot(yRot);
             backpackEntity.setDirection(direction);
 
-            backpackEntity.entityData.set(PLACEABLE, placeable);
-
-            MutableTraits mute = traits.map(trait ->
-                        trait.mutable(backpackEntity)
-            ).orElse(NonTrait.INSTANCE);
-
-            mute.onPlace(backpackEntity, player, backpackStack);
+            traits.onPlace(backpackEntity, player, backpackStack);
             backpackEntity.entityData.set(ITEM_STACK, backpackStack.copyWithCount(1));
 
             if (level instanceof ServerLevel) {
@@ -315,9 +287,6 @@ public class BackpackEntity extends Entity implements ComponentHolder {
             updateGravity();
             wobble();
             this.move(MoverType.SELF, this.getDeltaMovement());
-            getTraits().ifPresent(traits -> {
-                  traits.entity().entityTick(this, traits);
-            });
       }
 
       @Override
@@ -390,8 +359,6 @@ public class BackpackEntity extends Entity implements ComponentHolder {
       @Override
       protected void defineSynchedData(SynchedEntityData.Builder builder) {
             builder.define(ITEM_STACK, ModItems.IRON_BACKPACK.get().getDefaultInstance());
-//            builder.define(TRAIT, NonTrait.INSTANCE);
-            builder.define(PLACEABLE, new PlaceableComponent(null, null, ModSound.HARD));
             builder.define(DIRECTION, Direction.UP);
             builder.define(IS_OPEN, false);
       }
@@ -409,10 +376,6 @@ public class BackpackEntity extends Entity implements ComponentHolder {
 
             Direction direction = Direction.CODEC.parse(serializationContext, tag.get("direction")).getOrThrow();
             setDirection(direction);
-
-            PlaceableComponent.get(stack).ifPresent(placeable ->
-                  entityData.set(PLACEABLE, placeable)
-            );
       }
 
       @Override
@@ -527,10 +490,9 @@ public class BackpackEntity extends Entity implements ComponentHolder {
             }
             if (damageSource.is(DamageTypes.PLAYER_ATTACK) && damageSource.getDirectEntity() instanceof Player player) {
                   if (player.isCreative()) {
-                        getTraits().ifPresent(traits -> {
-                              if (!traits.isEmpty(this))
-                                    this.spawnAtLocation(toStack());
-                        });
+                        IEntityTraits<?> traits = getTraits();
+                        if (!traits.isEmpty(this))
+                              this.spawnAtLocation(toStack());
 
                         killAndUpdate(false);
                   }
@@ -539,18 +501,8 @@ public class BackpackEntity extends Entity implements ComponentHolder {
                               breakAndDropContents();
                         else {
                               boolean silent = this.isSilent();
-                              getTraits().ifPresentOrElse(traits -> {
-                                    traits.entity().onDamage(this, traits, silent, getPlaceable().sound());
-                              }, () -> {
-                                    wobble(10);
-                                    breakAmount += 10;
-                                    hop(0.1);
-                                    if (!silent) {
-                                          float pitch = random.nextFloat() * 0.3f;
-                                          ModSound sound = getPlaceable().sound();
-                                          sound.at(this, ModSound.Type.HIT, 1f, pitch + 0.9f);
-                                    }
-                              });
+                              IEntityTraits<?> traits = getTraits();
+                              traits.onDamage(this, silent, traits.sound());
                         }
                   }
                   return true;
@@ -591,13 +543,11 @@ public class BackpackEntity extends Entity implements ComponentHolder {
 
       protected void breakAndDropContents() {
             boolean dropItems = level().getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS);
-            getTraits().ifPresent(traits -> {
-                  traits.entity().onBreak(this, traits, dropItems);
-            });
+            IEntityTraits<?> traits = getTraits();
+            traits.onBreak(this, dropItems);
 
-            ModSound modSound = getPlaceable().sound();
             if (!this.isSilent())
-                  modSound.at(this, ModSound.Type.BREAK);
+                  traits.sound().at(this, ModSound.Type.BREAK);
 
             killAndUpdate(dropItems);
       }
@@ -627,32 +577,16 @@ public class BackpackEntity extends Entity implements ComponentHolder {
       }
 
       public InteractionResult tryEquip(Player player) {
-            Optional<EquipableComponent> optional = EquipableComponent.get(this);
-            if (optional.isEmpty()) {
-                  this.getTraits().ifPresent(traits ->
-                              traits.entity().onPickup(this, traits, player));
-
-                  tryInsertInventory(player);
-                  getPlaceable().sound().at(this, ModSound.Type.EQUIP);
-                  this.killAndUpdate(false);
-                  return InteractionResult.SUCCESS;
-            }
-
-            EquipableComponent equipable = optional.get();
-            if (!equipable.slots().test(EquipmentSlot.BODY))
+            if (!getTraits().slots().test(EquipmentSlot.BODY))
                   return InteractionResult.PASS;
 
             ItemStack backSlot = player.getItemBySlot(EquipmentSlot.BODY);
             if (!backSlot.isEmpty())
                   return InteractionResult.FAIL;
 
-            this.getTraits().ifPresent(traits ->
-                        traits.entity().onPickup(this, traits, player)
-            );
-
             ItemStack stack = this.toStack();
             player.setItemSlot(EquipmentSlot.BODY, stack);
-            getPlaceable().sound().at(this, ModSound.Type.EQUIP);
+            this.getTraits().sound().at(this, ModSound.Type.EQUIP);
             this.killAndUpdate(false);
             return InteractionResult.SUCCESS;
       }

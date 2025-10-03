@@ -199,15 +199,30 @@
   },
   "pot_insert": {
     "sounds": [
-      "beansbackpacks:pot/insert_0",
-      "beansbackpacks:pot/insert_1",
-      "beansbackpacks:pot/insert_2"
+      {
+        "name": "beansbackpacks:pot/insert_0",
+        "volume": 0.6
+      },
+      {
+        "name": "beansbackpacks:pot/insert_1",
+        "volume": 0.6
+      },
+      {
+        "name": "beansbackpacks:pot/insert_2",
+        "volume": 0.6
+      }
     ]
   },
   "pot_take": {
     "sounds": [
-      "beansbackpacks:pot/take_0",
-      "beansbackpacks:pot/take_1"
+      {
+        "name": "beansbackpacks:pot/take_0",
+        "volume": 0.6
+      },
+      {
+        "name": "beansbackpacks:pot/take_1",
+        "volume": 0.6
+      }
     ]
   },
 

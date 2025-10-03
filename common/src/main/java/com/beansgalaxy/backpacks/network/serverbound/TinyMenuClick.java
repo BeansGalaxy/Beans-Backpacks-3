@@ -4,7 +4,9 @@ import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.access.ViewableAccessor;
 import com.beansgalaxy.backpacks.network.Network2S;
 import com.beansgalaxy.backpacks.screen.TinyClickType;
+import com.beansgalaxy.backpacks.traits.IEntityTraits;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
@@ -60,22 +62,21 @@ public class TinyMenuClick implements Packet2S {
       public void handle(Player sender) {
             Entity entity = sender.level().getEntity(entityId);
             if (entity instanceof BackpackEntity backpack) {
-                  Optional<GenericTraits> optional = backpack.getTraits();
-                  if (optional.isPresent() && optional.get() instanceof ItemStorageTraits bundleLikeTraits) {
-                        InventoryMenu menu = sender.inventoryMenu;
-                        SlotAccess carriedAccess = new SlotAccess() {
-                              public ItemStack get() {
-                                    return menu.getCarried();
-                              }
+                  IEntityTraits<?> traits = backpack.getTraits();
 
-                              public boolean set(ItemStack p_150452_) {
-                                    menu.setCarried(p_150452_);
-                                    return true;
-                              }
-                        };
+                  InventoryMenu menu = sender.inventoryMenu;
+                  SlotAccess carriedAccess = new SlotAccess() {
+                        public ItemStack get() {
+                              return menu.getCarried();
+                        }
 
-                        bundleLikeTraits.tinyMenuClick(backpack, index, clickType, carriedAccess, sender);
-                  }
+                        public boolean set(ItemStack p_150452_) {
+                              menu.setCarried(p_150452_);
+                              return true;
+                        }
+                  };
+
+                  traits.tinyMenuClick(backpack, index, clickType, carriedAccess, sender);
             }
             else {
                   LivingEntity owner;

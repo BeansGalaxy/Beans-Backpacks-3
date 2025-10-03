@@ -25,7 +25,6 @@ public class FabricMain implements ModInitializer {
         CommonClass.init();
         Registries.register();
         NetworkPackages.registerCommon();
-        EntityDataSerializers.registerSerializer(BackpackEntity.PLACEABLE.serializer());
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
             ServerSave.CONFIG.read();
         });

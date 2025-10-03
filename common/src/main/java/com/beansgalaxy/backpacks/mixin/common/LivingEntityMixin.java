@@ -1,14 +1,13 @@
 package com.beansgalaxy.backpacks.mixin.common;
 
 import com.beansgalaxy.backpacks.components.UtilityComponent;
-import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
-import com.beansgalaxy.backpacks.traits.Traits;
-import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxTraits;
+import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
+import com.beansgalaxy.backpacks.util.ModSound;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.advancements.CriteriaTriggers;
-import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.Stats;
@@ -58,7 +57,7 @@ public abstract class LivingEntityMixin extends Entity {
                   target = "Lnet/minecraft/world/item/ItemStack;getUseAnimation()Lnet/minecraft/world/item/UseAnim;"))
       private void backpacks_useLunchBoxEffects(ItemStack ignored, int pAmount, CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) LocalRef<ItemStack> pStack) {
             if (instance instanceof Player player) {
-                  ItemStack selection = Traits.getFoodStuffsSelection(pStack.get(), player);
+                  ItemStack selection = ISlotSelectorTrait.getFoodStuffsSelection(pStack.get(), player);
                   if (selection != null) {
                          pStack.set(selection);
                   }
@@ -82,17 +81,18 @@ public abstract class LivingEntityMixin extends Entity {
       @Inject(method = "onEquipItem", cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD,
                   at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isSilent()Z"))
       private void backpackOnEquip(EquipmentSlot equipmentSlot, ItemStack oldItem, ItemStack newItem, CallbackInfo ci, boolean flag, Equipable equipment) {
-            Optional<EquipableComponent> optional = EquipableComponent.get(newItem);
-            if (optional.isEmpty()) {
+            BackpackTraits nTraits = BackpackTraits.get(newItem);
+            if (nTraits == null) {
                   if (equipment != null)
                         return;
 
-                  EquipableComponent.get(oldItem).ifPresent(equipable -> {
+                  BackpackTraits oTraits = BackpackTraits.get(oldItem);
+                  if (oTraits != null) {
                         if (this.doesEmitEquipEvent(equipmentSlot)) {
                               this.gameEvent(GameEvent.UNEQUIP);
                               ci.cancel();
                         }
-                  });
+                  }
                   return;
             }
 
@@ -100,19 +100,15 @@ public abstract class LivingEntityMixin extends Entity {
             if (this.doesEmitEquipEvent(equipmentSlot))
                   this.gameEvent(GameEvent.EQUIP);
 
-            EquipableComponent equipable = optional.get();
-            if (!isSilent() && equipable.slots().test(equipmentSlot)) {
-
-                  Optional<Holder<SoundEvent>> equipSound;
+            if (!isSilent() && nTraits.slots().test(equipmentSlot)) {
+                  SoundEvent sound;
                   if (instance instanceof Player player) {
                         if (player.isCreative()) return;
-                        equipSound = equipable.getEquipSound();
+                        sound = nTraits.sound().get(ModSound.Type.EQUIP);
                   }
-                  else equipSound = equipable.getUnEquipOrFallback();
+                  else sound = nTraits.sound().get(ModSound.Type.PLACE);
 
-                  equipSound.ifPresent(sound -> {
-                        level().playSeededSound(null, getX(), getY(), getZ(), sound, getSoundSource(), 1F, 1F, random.nextLong());
-                  });
+                  level().playSeededSound(null, getX(), getY(), getZ(), sound, getSoundSource(), 1F, 1F, random.nextLong());
             }
       }
 

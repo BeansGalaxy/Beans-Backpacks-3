@@ -1,13 +1,12 @@
 package com.beansgalaxy.backpacks.traits.chest;
 
 import com.beansgalaxy.backpacks.access.BackData;
-import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
-import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
 import com.beansgalaxy.backpacks.network.serverbound.PickBlock;
 import com.beansgalaxy.backpacks.screen.TinyClickType;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.abstract_traits.IDraggingTrait;
 import com.beansgalaxy.backpacks.traits.chest.screen.ChestScreen;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
@@ -45,7 +44,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class ChestTraits extends ItemStorageTraits {
+public class ChestTraits extends ItemStorageTraits implements IDraggingTrait {
       public static final String NAME = "chest";
       public final int rows;
       public final int columns;
@@ -57,19 +56,7 @@ public class ChestTraits extends ItemStorageTraits {
       }
 
       public static Optional<ChestTraits> get(ComponentHolder backpack) {
-            ChestTraits chestTraits = backpack.get(Traits.CHEST);
-            if (chestTraits != null)
-                  return Optional.of(chestTraits);
-
-            ReferenceTrait referenceTrait = backpack.get(Traits.REFERENCE);
-            if (referenceTrait != null) {
-                  Optional<GenericTraits> reference = referenceTrait.getTrait();
-                  if (reference.isPresent() && reference.get() instanceof ChestTraits traits) {
-                        return Optional.of(traits);
-                  }
-            }
-
-            return Optional.empty();
+            return Optional.ofNullable(Traits.get(backpack, Traits.CHEST));
       }
 
       @Override
@@ -80,11 +67,6 @@ public class ChestTraits extends ItemStorageTraits {
       @Override
       public ChestClient client() {
             return ChestClient.INSTANCE;
-      }
-
-      @Override
-      public ChestEntity entity() {
-            return ChestEntity.INSTANCE;
       }
 
       public int size() {
@@ -234,11 +216,6 @@ public class ChestTraits extends ItemStorageTraits {
             ItemStack removed;
             if (menuKeyDown)
                   removed = mutable.removeItem(0);
-            else if (EquipableComponent.get(backpack).isPresent())
-            {
-                  ItemStack itemStack = mutable.getItemStacks().getFirst();
-                  removed = itemStack.getCount() == 1 ? mutable.removeItem(0) : itemStack.split(1);
-            }
             else return;
 
             player.drop(removed, true);

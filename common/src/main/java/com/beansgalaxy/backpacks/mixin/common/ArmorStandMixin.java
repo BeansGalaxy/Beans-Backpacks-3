@@ -3,8 +3,8 @@ package com.beansgalaxy.backpacks.mixin.common;
 import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.access.ViewableAccessor;
-import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.util.ModSound;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
@@ -77,14 +77,12 @@ public abstract class ArmorStandMixin extends LivingEntity implements ViewableAc
       @Inject(method = "interactAt", cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD, at = @At(value = "INVOKE",
                   target = "Lnet/minecraft/world/entity/decoration/ArmorStand;getEquipmentSlotForItem(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/entity/EquipmentSlot;"))
       private void backpackInteractAt(Player pPlayer, Vec3 pVec, InteractionHand pHand, CallbackInfoReturnable<InteractionResult> cir, ItemStack itemstack) {
-            Optional<EquipableComponent> optional = EquipableComponent.get(itemstack);
-            if (optional.isEmpty())
+            BackpackTraits traits = BackpackTraits.get(itemstack);
+            if (traits == null)
                   return;
 
-            EquipableComponent equipable = optional.get();
-
             EquipmentSlot equipmentSlot = null;
-            for (EquipmentSlot slot : equipable.values()) {
+            for (EquipmentSlot slot : traits.slots().getValues()) {
                   if (EquipmentSlot.BODY.equals(slot))
                         continue;
 
@@ -96,7 +94,7 @@ public abstract class ArmorStandMixin extends LivingEntity implements ViewableAc
 
             if (equipmentSlot == null) {
                   EquipmentSlot clickedSlot = getClickedSlot(pVec);
-                  if (equipable.slots().test(clickedSlot) && swapItem(pPlayer, clickedSlot, itemstack, pHand))
+                  if (traits.slots().test(clickedSlot) && swapItem(pPlayer, clickedSlot, itemstack, pHand))
                         cir.setReturnValue(InteractionResult.SUCCESS);
                   return;
             }

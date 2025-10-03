@@ -1,7 +1,7 @@
 package com.beansgalaxy.backpacks.client.renderer;
 
-import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.components.equipable.EquipmentModel;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -19,8 +19,6 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.item.ItemStack;
-
-import java.util.Optional;
 
 public class AllayFeature extends RenderLayer<Allay, AllayModel> implements RenderBackpack {
       private final BackpackModel<Allay> backpackModel;
@@ -52,41 +50,34 @@ public class AllayFeature extends RenderLayer<Allay, AllayModel> implements Rend
       @Override
       public void render(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, Allay allay, float limbAngle, float limbDistance, float tick, float animationProgress, float playerHeadYaw, float playerHeadPitch) {
             ItemStack itemStack = allay.getItemBySlot(EquipmentSlot.BODY);
-            Optional<EquipableComponent> optional = EquipableComponent.get(itemStack);
-            if (optional.isEmpty())
+            BackpackTraits traits = BackpackTraits.get(itemStack);
+            if (traits == null)
                   return;
 
-            EquipableComponent equipable = optional.get();
-            ResourceLocation texture = equipable.backpackTexture();
-            EquipmentModel model = equipable.customModel();
-
+            ResourceLocation texture = traits.getTexture();
             pose.last().pose().translate(0, 0, 0);
 
             float pAgeInTicks = allay.tickCount + tick;
             float f3 = pAgeInTicks * 9.0F * 0.017453292F;
-
             float bobY = (float)Math.cos(f3) * 0.015F;
 
-            if (texture != null) {
-                  pose.pushPose();
-                  ViewableBackpack viewable = ViewableBackpack.get(allay);
-                  if (viewable.lastDelta > tick)
-                        viewable.updateOpen();
+            pose.pushPose();
+            ViewableBackpack viewable = ViewableBackpack.get(allay);
+            if (viewable.lastDelta > tick)
+                  viewable.updateOpen();
 
-                  float headPitch = Mth.lerp(tick, viewable.lastPitch, viewable.headPitch) * 0.25f;
-                  model().setOpenAngle(headPitch);
-                  viewable.lastDelta = tick;
+            float headPitch = Mth.lerp(tick, viewable.lastPitch, viewable.headPitch) * 0.25f;
+            model().setOpenAngle(headPitch);
+            viewable.lastDelta = tick;
 
-                  pose.translate(0, 25.5f / 16f + bobY, 0.15f + 3/32f);
-                  pose.mulPose(Axis.YP.rotationDegrees(180));
-                  pose.mulPose(Axis.XN.rotationDegrees(16));
-                  float scale = 0.875f;
-                  pose.scale(scale, scale, scale);
-                  renderTexture(pose, pBufferSource, pCombinedLight, texture, itemStack, viewable);
-                  pose.popPose();
-            }
-            else if (model != null)
-                  renderModel(pose, pBufferSource, pCombinedLight, allay, model, itemStack);
+            pose.translate(0, 25.5f / 16f + bobY, 0.15f + 3/32f);
+            pose.mulPose(Axis.YP.rotationDegrees(180));
+            pose.mulPose(Axis.XN.rotationDegrees(16));
+            float scale = 0.875f;
+            pose.scale(scale, scale, scale);
+            renderTexture(pose, pBufferSource, pCombinedLight, texture, itemStack, viewable);
+            pose.popPose();
+
       }
 
       private void renderModel(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, LivingEntity player, EquipmentModel model, ItemStack itemStack) {

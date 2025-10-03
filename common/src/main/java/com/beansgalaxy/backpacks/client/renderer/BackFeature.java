@@ -1,8 +1,8 @@
 package com.beansgalaxy.backpacks.client.renderer;
 
 import com.beansgalaxy.backpacks.CommonClass;
-import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.components.equipable.EquipmentModel;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -62,45 +62,40 @@ public class BackFeature extends RenderLayer<AbstractClientPlayer, PlayerModel<A
             if (CommonClass.CLIENT_CONFIG.disable_equipable_render.get())
                   return;
 
-            EquipableComponent.runIfPresent(player, (equipable, slot) -> {
-                  if (!equipable.slots().test(slot))
+            BackpackTraits.runIfPresent(player, (traits, slot) -> {
+                  ItemStack itemStack = player.getItemBySlot(slot);
+                  ResourceLocation texture = traits.getTexture();
+
+                  if (texture == null)
                         return;
 
-                  ItemStack itemStack = player.getItemBySlot(slot);
-                  ResourceLocation texture = equipable.backpackTexture();
-                  EquipmentModel model = equipable.customModel();
+                  pose.pushPose();
+                  this.getParentModel().body.translateAndRotate(pose);
 
-                  if (texture != null) {
-                        pose.pushPose();
-                        this.getParentModel().body.translateAndRotate(pose);
+                  ViewableBackpack viewable = ViewableBackpack.get(player);
+                  if (viewable.lastDelta > tick)
+                        viewable.updateOpen();
 
-                        ViewableBackpack viewable = ViewableBackpack.get(player);
-                        if (viewable.lastDelta > tick)
-                              viewable.updateOpen();
+                  float headPitch = Mth.lerp(tick, viewable.lastPitch, viewable.headPitch) * 0.25f;
+                  model().setOpenAngle(headPitch);
+                  viewable.lastDelta = tick;
 
-                        float headPitch = Mth.lerp(tick, viewable.lastPitch, viewable.headPitch) * 0.25f;
-                        model().setOpenAngle(headPitch);
-                        viewable.lastDelta = tick;
-
-                        pose.translate(0, 13 / 16f, 0);
-                        ItemStack chestStack = player.getItemBySlot(EquipmentSlot.CHEST);
-                        if (CommonClass.CLIENT_CONFIG.elytra_model_equipment.get().contains(chestStack.getItem())) {
-                              float xRot = getParentModel().body.xRot;
-                              setUpWithWings(player, xRot, pose);
-                        }
-                        else {
-                              pose.translate(0.0F, (player.isCrouching() ? 1 / 16f : 0), 0.0F);
-
-                              if (!chestStack.isEmpty())
-                                    pose.translate(0.0F, -1 / 16f, 1 / 16f);
-                              renderCapeAbove(pose, pBufferSource, pCombinedLight, player, headPitch);
-                        }
-
-                        renderTexture(pose, pBufferSource, pCombinedLight, texture, itemStack, viewable);
-                        pose.popPose();
+                  pose.translate(0, 13 / 16f, 0);
+                  ItemStack chestStack = player.getItemBySlot(EquipmentSlot.CHEST);
+                  if (CommonClass.CLIENT_CONFIG.elytra_model_equipment.get().contains(chestStack.getItem())) {
+                        float xRot = getParentModel().body.xRot;
+                        setUpWithWings(player, xRot, pose);
                   }
-                  else if (model != null)
-                        renderModel(pose, pBufferSource, pCombinedLight, player, slot, model, itemStack);
+                  else {
+                        pose.translate(0.0F, (player.isCrouching() ? 1 / 16f : 0), 0.0F);
+
+                        if (!chestStack.isEmpty())
+                              pose.translate(0.0F, -1 / 16f, 1 / 16f);
+                        renderCapeAbove(pose, pBufferSource, pCombinedLight, player, headPitch);
+                  }
+
+                  renderTexture(pose, pBufferSource, pCombinedLight, texture, itemStack, viewable);
+                  pose.popPose();
             });
       }
 

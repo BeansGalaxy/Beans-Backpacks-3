@@ -1,8 +1,7 @@
 package com.beansgalaxy.backpacks.mixin.common;
 
 import com.beansgalaxy.backpacks.access.EquipmentSlotAccess;
-import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
-import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -31,15 +30,21 @@ public class ArmorSlotMixin extends Slot implements EquipmentSlotAccess {
       @Inject(method = "mayPickup", at = @At("HEAD"), cancellable = true)
       private void disableBackpackPickup(Player player, CallbackInfoReturnable<Boolean> cir) {
             ItemStack stack = getItem();
-            if (EquipableComponent.testIfPresent(stack, EquipableComponent::traitRemovable) || Traits.testIfPresent(stack, traits -> !traits.isEmpty(stack)))
+            BackpackTraits traits = BackpackTraits.get(stack);
+            if (traits == null)
+                  return;
+
+            if (!traits.isEmpty(stack))
                   cir.setReturnValue(false);
       }
 
       @Inject(method = "mayPlace", at = @At("HEAD"), cancellable = true)
       private void enableBackpackEquip(ItemStack pStack, CallbackInfoReturnable<Boolean> cir) {
-            Boolean hasEquipComponent = EquipableComponent.get(pStack).map(equipable ->
-                        equipable.slots().test(slot)).orElse(false);
-            if (hasEquipComponent)
+            BackpackTraits traits = BackpackTraits.get(pStack);
+            if (traits == null)
+                  return;
+
+            if (traits.slots().test(slot))
                   cir.setReturnValue(true);
       }
 }

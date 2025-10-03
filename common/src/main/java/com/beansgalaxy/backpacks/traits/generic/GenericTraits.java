@@ -2,7 +2,6 @@ package com.beansgalaxy.backpacks.traits.generic;
 
 import com.beansgalaxy.backpacks.network.serverbound.TraitMenuClick;
 import com.beansgalaxy.backpacks.traits.IClientTraits;
-import com.beansgalaxy.backpacks.traits.IEntityTraits;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.util.ModSound;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
@@ -33,8 +32,6 @@ public abstract class GenericTraits {
       public abstract String name();
 
       public abstract <T extends GenericTraits> IClientTraits<T> client();
-
-      public abstract <T extends GenericTraits> IEntityTraits<T> entity();
 
       abstract public TraitComponentKind<? extends GenericTraits> kind();
 

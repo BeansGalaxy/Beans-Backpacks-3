@@ -51,7 +51,7 @@ public abstract class TraitMenu<T extends GenericTraits> {
       }
 
       @Nullable
-      public static TraitMenu<?> create(Minecraft minecraft, int leftPos, int topPos, @Nullable Slot slot) {
+      public static TraitMenu<?> create(Minecraft minecraft, int leftPos, int topPos, Slot slot) {
             if (slot == null)
                   return null;
 
@@ -76,6 +76,7 @@ public abstract class TraitMenu<T extends GenericTraits> {
             }
 
             IClientTraits<GenericTraits> client = traits.client();
+
             return client.createTooltip(minecraft, leftPos, topPos, slot, holder, traits);
       }
 

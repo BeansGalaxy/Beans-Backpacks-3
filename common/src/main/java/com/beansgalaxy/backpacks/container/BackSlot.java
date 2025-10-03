@@ -4,9 +4,8 @@ import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.access.EquipmentSlotAccess;
 import com.beansgalaxy.backpacks.components.UtilityComponent;
-import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.traits.ITraitData;
-import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -41,9 +40,11 @@ public class BackSlot extends Slot implements EquipmentSlotAccess {
             if (standardCheck)
                   return true;
 
-            return EquipableComponent.get(stack).map(equipable ->
-                        equipable.slots().test(EquipmentSlot.BODY)
-            ).orElse(false);
+            BackpackTraits traits = BackpackTraits.get(stack);
+            if (traits == null)
+                  return false;
+
+            return traits.slots().test(EquipmentSlot.BODY);
       }
 
       @Override
@@ -56,11 +57,11 @@ public class BackSlot extends Slot implements EquipmentSlotAccess {
             if (utilities != null)
                   return false;
 
-            boolean equipment = EquipableComponent.testIfPresent(stack, EquipableComponent::traitRemovable);
-            if (equipment)
+            BackpackTraits traits = BackpackTraits.get(stack);
+            if (traits == null)
                   return true;
 
-            return !Traits.testIfPresent(stack, traits -> !traits.isEmpty(stack));
+            return traits.isEmpty(stack);
       }
 
       @Override

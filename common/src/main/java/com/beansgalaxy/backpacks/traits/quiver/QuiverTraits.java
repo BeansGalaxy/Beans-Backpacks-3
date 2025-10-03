@@ -3,10 +3,10 @@ package com.beansgalaxy.backpacks.traits.quiver;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.abstract_traits.IDraggingTrait;
 import com.beansgalaxy.backpacks.traits.abstract_traits.IProjectileTrait;
 import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
 import com.beansgalaxy.backpacks.traits.abstract_traits.MutableSlotSelector;
-import com.beansgalaxy.backpacks.traits.bundle.BundleEntity;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.generic.MutableBundleLike;
@@ -26,9 +26,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
-public class QuiverTraits extends BundleLikeTraits implements IProjectileTrait, ISlotSelectorTrait {
+public class QuiverTraits extends BundleLikeTraits implements IProjectileTrait, ISlotSelectorTrait, IDraggingTrait {
       public static final String NAME = "quiver";
-      public static final BundleEntity ENTITY = new BundleEntity();
 
       public QuiverTraits(ModSound sound, int size) {
             super(sound, size);
@@ -44,12 +43,6 @@ public class QuiverTraits extends BundleLikeTraits implements IProjectileTrait, 
             return QuiverClient.INSTANCE;
       }
 
-
-
-      @Override
-      public BundleEntity entity() {
-            return ENTITY;
-      }
 
       @Override
       public boolean isFull(ComponentHolder holder) {

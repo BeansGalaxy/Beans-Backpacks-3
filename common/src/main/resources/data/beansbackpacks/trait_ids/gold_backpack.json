@@ -1,14 +1,6 @@
 {
-  "bundle": {
-    "size": 9
-  },
-  "equipable": {
-    "slots": "body",
-    "backpack_texture": "beansbackpacks:gold",
-    "sound_event": ["beansbackpacks:metal_equip", "beansbackpacks:metal_place"]
-  },
-  "placeable": {
-    "backpack_texture": "beansbackpacks:gold"
-  },
-  "utilities": 1
+  "parent": "beansbackpacks:iron_backpack",
+  "backpack": {
+    "texture": "beansbackpacks:gold"
+  }
 }

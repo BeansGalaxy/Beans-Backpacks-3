@@ -33,8 +33,6 @@ public class Registries {
 
       public static void register(IEventBus eventBus) {
             BLOCK_ENTITIES.register(eventBus);
-            ENTITY_SERIALIZERS.register(eventBus);
-            ENTITY_SERIALIZERS.register("placeable_backpack", BackpackEntity.PLACEABLE::serializer);
             CREATIVE_TAB_REGISTRY.register(eventBus);
             CREATIVE_TAB_REGISTRY.register("backpacks",
                                            () -> ModItems.CREATIVE_TAB.apply(CreativeModeTab.builder()).build());

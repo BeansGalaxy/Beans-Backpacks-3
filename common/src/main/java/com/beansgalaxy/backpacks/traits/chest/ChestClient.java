@@ -16,7 +16,6 @@ import net.minecraft.world.inventory.Slot;
 import org.apache.commons.lang3.math.Fraction;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 public class ChestClient implements IClientTraits<ChestTraits> {
@@ -47,7 +46,7 @@ public class ChestClient implements IClientTraits<ChestTraits> {
       }
 
       @Override
-      public void appendTooltipLines(ChestTraits traits, List<Component> lines) {
+      public void appendTooltipLines(ChestTraits traits, Consumer<Component> lines) {
             MutableComponent line;
             boolean columnIsOne = traits.columns == 1;
             boolean rowIsOne = traits.rows == 1;
@@ -60,24 +59,7 @@ public class ChestClient implements IClientTraits<ChestTraits> {
             else
                   line = Component.translatable("traits.beansbackpacks.inventory.chest.size", traits.columns, traits.rows);
 
-            lines.add(line.withStyle(ChatFormatting.GOLD));
-      }
-
-      @Override
-      public void appendEquipmentLines(ChestTraits traits, Consumer<Component> pTooltipAdder) {
-            MutableComponent line;
-            boolean columnIsOne = traits.columns == 1;
-            boolean rowIsOne = traits.rows == 1;
-            if (columnIsOne && rowIsOne)
-                  line = Component.translatable("traits.beansbackpacks.equipment.chest.solo");
-            else if (columnIsOne)
-                  line = Component.translatable("traits.beansbackpacks.equipment.chest.line", traits.columns);
-            else if (rowIsOne)
-                  line = Component.translatable("traits.beansbackpacks.equipment.chest.line", traits.rows);
-            else
-                  line = Component.translatable("traits.beansbackpacks.equipment.chest.size", traits.columns, traits.rows);
-
-            pTooltipAdder.accept(line.withStyle(ChatFormatting.GOLD));
+            lines.accept(line.withStyle(ChatFormatting.GOLD));
       }
 
       public void openTinyMenu(ChestTraits chestTraits, Slot slot) {

@@ -2,9 +2,9 @@ package com.beansgalaxy.backpacks.mixin.common;
 
 import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
-import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
 import com.beansgalaxy.backpacks.data.ServerSave;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -27,7 +27,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
-import java.util.Optional;
 
 @Mixin(Inventory.class)
 public abstract class InventoryMixin implements BackData {
@@ -65,12 +64,10 @@ public abstract class InventoryMixin implements BackData {
       @Inject(method = "add(Lnet/minecraft/world/item/ItemStack;)Z", at = @At(value = "HEAD"), cancellable = true)
       public void addToBackpackBeforeInventory(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
             if (!stack.isEmpty()) {
-                  Optional<EquipableComponent> optional = EquipableComponent.get(stack);
-                  if (optional.isPresent()) {
-                        EquipableComponent equipable = optional.get();
-
-                        if (Traits.testIfPresent(stack, traits -> !traits.isEmpty(ComponentHolder.of(stack)))) {
-                              for (EquipmentSlot value : equipable.values()) {
+                  BackpackTraits bpackTraits = BackpackTraits.get(stack);
+                  if (bpackTraits != null) {
+                        if (bpackTraits.isEmpty(ComponentHolder.of(stack))) {
+                              for (EquipmentSlot value : bpackTraits.slots().getValues()) {
                                     ItemStack itemBySlot = player.getItemBySlot(value);
                                     if (!itemBySlot.isEmpty())
                                           continue;
@@ -81,12 +78,14 @@ public abstract class InventoryMixin implements BackData {
                                     return;
                               }
 
-                              if (!equipable.traitRemovable() && !player.isCreative()) {
+                              if (!player.isCreative()) {
                                     cir.setReturnValue(false);
                                     return;
                               }
                         }
                   }
+
+
 
                   ItemStorageTraits.runIfEquipped(player, (traits, equipmentSlot) -> {
                         ItemStack backpack = player.getItemBySlot(equipmentSlot);

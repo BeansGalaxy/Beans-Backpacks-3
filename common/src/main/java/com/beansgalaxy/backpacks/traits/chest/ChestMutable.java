@@ -133,11 +133,6 @@ public class ChestMutable implements MutableItemStorage {
             getItemStacks().set(index, stack);
       }
 
-      @Override
-      public InteractionResult interact(BackpackEntity backpack, Player player, InteractionHand hand) {
-            return MutableItemStorage.super.interact(backpack, player, hand);
-      }
-
       public int size() {
             return traits.size();
       }

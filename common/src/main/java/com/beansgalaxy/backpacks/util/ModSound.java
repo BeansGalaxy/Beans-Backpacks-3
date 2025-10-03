@@ -277,7 +277,7 @@ public enum ModSound implements StringRepresentable {
             return ModSound.HARD;
       }, Enum::ordinal);
 
-      public static final MapCodec<ModSound> MAP_CODEC = ModSound.CODEC.fieldOf("sound").orElse(ModSound.HARD);
+      public static final MapCodec<ModSound> MAP_CODEC = ModSound.CODEC.fieldOf("sound").orElse(ModSound.SOFT);
 
       public static StreamCodec<? super ByteBuf, ModSound> STREAM_CODEC = ByteBufCodecs.BYTE.map(in -> {
             for (ModSound value : ModSound.values()) {

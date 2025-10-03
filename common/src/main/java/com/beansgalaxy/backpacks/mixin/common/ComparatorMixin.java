@@ -1,5 +1,7 @@
 package com.beansgalaxy.backpacks.mixin.common;
 
+import com.beansgalaxy.backpacks.traits.IEntityTraits;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import net.minecraft.core.BlockPos;
@@ -27,11 +29,7 @@ public class ComparatorMixin {
             List<BackpackEntity> backpacks = getBackpack(level, direction, blockPos);
             int signal = j;
             for (BackpackEntity backpack : backpacks) {
-                  Optional<GenericTraits> optional = backpack.getTraits();
-                  if (optional.isEmpty())
-                        continue;
-
-                  GenericTraits traits = optional.get();
+                  IEntityTraits<?> traits = backpack.getTraits();
                   int analog = traits.getAnalogOutput(backpack);
                   if (analog > signal) {
                         signal = analog;

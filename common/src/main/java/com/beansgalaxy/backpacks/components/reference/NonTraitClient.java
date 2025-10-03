@@ -8,7 +8,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.Slot;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 public class NonTraitClient implements IClientTraits<NonTrait> {
@@ -35,10 +34,6 @@ public class NonTraitClient implements IClientTraits<NonTrait> {
       }
 
       @Override
-      public void appendEquipmentLines(NonTrait traits, Consumer<Component> pTooltipAdder) {
-      }
-
-      @Override
-      public void appendTooltipLines(NonTrait traits, List<Component> lines) {
+      public void appendTooltipLines(NonTrait traits, Consumer<Component> lines) {
       }
 }

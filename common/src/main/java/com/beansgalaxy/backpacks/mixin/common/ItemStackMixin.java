@@ -1,10 +1,9 @@
 package com.beansgalaxy.backpacks.mixin.common;
 
 import com.beansgalaxy.backpacks.components.UtilityComponent;
-import com.beansgalaxy.backpacks.components.equipable.EquipableComponent;
-import com.beansgalaxy.backpacks.components.reference.NonTrait;
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.ChatFormatting;
@@ -51,12 +50,12 @@ public abstract class ItemStackMixin {
 
       @Inject(method = "getTooltipLines", locals = LocalCapture.CAPTURE_FAILHARD, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/Item;appendHoverText(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/Item$TooltipContext;Ljava/util/List;Lnet/minecraft/world/item/TooltipFlag;)V"))
       private void backpackTooltipLines(Item.TooltipContext pTooltipContext, Player pPlayer, TooltipFlag pTooltipFlag, CallbackInfoReturnable<List<Component>> cir, List<Component> list) {
-            if (EquipableComponent.get(instance).isPresent())
+            if (BackpackTraits.get(instance) != null)
                   return;
 
-            Traits.runIfPresent(instance, traits -> {
-                  traits.client().appendTooltipLines(traits, list);
-            });
+            Traits.runIfPresent(instance, traits ->
+                        traits.client().appendTooltipLines(traits, list::add)
+            );
       }
 
       @Inject(method = "getTooltipLines", locals = LocalCapture.CAPTURE_FAILHARD, at = @At(value = "INVOKE", ordinal = 3, target = "Ljava/util/List;add(Ljava/lang/Object;)Z"))
@@ -72,20 +71,18 @@ public abstract class ItemStackMixin {
 
       @Inject(method = "addAttributeTooltips", at = @At(value = "INVOKE", shift = At.Shift.BEFORE, target = "Lnet/minecraft/world/item/ItemStack;forEachModifier(Lnet/minecraft/world/entity/EquipmentSlotGroup;Ljava/util/function/BiConsumer;)V"))
       private void backpackAttributeLines(Consumer<Component> pTooltipAdder, Player pPlayer, CallbackInfo ci, @Local EquipmentSlotGroup slotGroup, @Local MutableBoolean mutableboolean) {
-            EquipableComponent.get(instance).ifPresent(equipable ->
-                  Traits.runIfPresent(instance, traits -> {
-                        if (NonTrait.is(traits) || !equipable.slots().test(slotGroup))
-                              return;
-
+            BackpackTraits traits = BackpackTraits.get(instance);
+            if (traits != null) {
+                  if (traits.slots().test(slotGroup)) {
                         if (mutableboolean.isTrue()) {
                               pTooltipAdder.accept(CommonComponents.EMPTY);
                               pTooltipAdder.accept(Component.translatable("item.modifiers." + slotGroup.getSerializedName()).withStyle(ChatFormatting.GRAY));
                               mutableboolean.setFalse();
                         }
 
-                        traits.client().appendEquipmentLines(traits, pTooltipAdder);
-                  })
-            );
+                        traits.client().appendTooltipLines(traits, pTooltipAdder);
+                  }
+            }
 
             if (EquipmentSlotGroup.BODY.equals(slotGroup)) {
                   byte size = UtilityComponent.getSize(instance);
