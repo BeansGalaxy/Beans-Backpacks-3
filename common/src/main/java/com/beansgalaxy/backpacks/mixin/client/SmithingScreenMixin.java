@@ -33,11 +33,9 @@ public class SmithingScreenMixin {
             }
       }
 
-      // TODO: ARMOR STANDS QUICKLY FLIP AROUND WHEN OPENING SMITHING TABLE; START VALUES AT THE RIGHT ANGLE SO IT DOESN'T :mindblown :sunglass :eggplant :drips :drips :drips
-
       @Unique float beans_Backpacks_3$progress = 0f;
-      @Unique float beans_Backpacks_3$yRotO = 0f;
-      @Unique float beans_Backpacks_3$yRot = 0f;
+      @Unique float beans_Backpacks_3$yRotO = -150f;
+      @Unique float beans_Backpacks_3$yRot = -150f;
 
       @Inject(method = "containerTick", at = @At("TAIL"))
       private void backpackCalculateArmorStandRot(CallbackInfo ci) {
