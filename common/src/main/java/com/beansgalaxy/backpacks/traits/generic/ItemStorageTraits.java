@@ -6,14 +6,10 @@ import com.beansgalaxy.backpacks.screen.TinyClickType;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
-import com.beansgalaxy.backpacks.util.DraggingContainer;
-import com.beansgalaxy.backpacks.traits.abstract_traits.IDraggingTrait;
 import com.beansgalaxy.backpacks.util.ModSound;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.component.DataComponentHolder;
-import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
-import net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket;
 import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -21,7 +17,6 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
@@ -32,7 +27,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 
 public abstract class ItemStorageTraits extends GenericTraits {
@@ -73,27 +67,6 @@ public abstract class ItemStorageTraits extends GenericTraits {
             }
       }
 
-      public static void runIfEquipped(Player player, BiPredicate<ItemStorageTraits, EquipmentSlot> runnable) {
-            EquipmentSlot[] values = EquipmentSlot.values();
-            int size = values.length;
-            for (int i = size - 1; i >= 0; i--) {
-                  EquipmentSlot slot = values[i];
-                  ItemStack stack = player.getItemBySlot(slot);
-                  if (stack.isEmpty())
-                        continue;
-
-                  BackpackTraits traits = BackpackTraits.get(stack);
-                  if (traits == null)
-                        continue;
-
-                  if (!traits.slots().test(slot))
-                        continue;
-
-                  if (runnable.test(traits, slot))
-                        return;
-            }
-      }
-
       protected static boolean tryMoveItems(MutableItemStorage to, ItemStack from, Player player) {
             if (to.isFull())
                   return false;
@@ -125,42 +98,6 @@ public abstract class ItemStorageTraits extends GenericTraits {
       public abstract void hotkeyThrow(Slot slot, ComponentHolder backpack, int button, Player player, boolean menuKeyDown, CallbackInfo ci);
 
       public abstract boolean pickupToBackpack(Player player, EquipmentSlot equipmentSlot, Inventory inventory, ItemStack backpack, ItemStack stack, CallbackInfoReturnable<Boolean> cir);
-
-      public abstract void clientPickBlock(EquipmentSlot equipmentSlot, boolean instantBuild, Inventory inventory, ItemStack itemStack, Player player, CallbackInfo ci);
-
-      public void serverPickBlock(ComponentHolder holder, int index, ServerPlayer sender) {
-            Inventory inventory = sender.getInventory();
-
-            int freeSlot = inventory.getFreeSlot();
-            if (freeSlot == -1)
-                  return;
-
-
-            if (freeSlot < 9)
-                  inventory.selected = freeSlot;
-
-            ItemStack selectedStack = inventory.getItem(inventory.selected);
-
-            MutableItemStorage mutable = mutable(holder);
-            ItemStack take = mutable.removeItem(index);
-            inventory.setItem(inventory.selected, take);
-            mutable.push();
-
-            int overflowSlot = -1;
-            if (!selectedStack.isEmpty())
-            {
-                  overflowSlot = inventory.getFreeSlot();
-                  inventory.setItem(overflowSlot, selectedStack);
-            }
-
-            sender.connection.send(new ClientboundContainerSetSlotPacket(-2, 0, inventory.selected, selectedStack));
-            sender.connection.send(new ClientboundSetCarriedItemPacket(inventory.selected));
-
-//            Services.REGISTRY.triggerSpecial(sender, SpecialCriterion.Special.PICK_BACKPACK);
-
-            if (overflowSlot > -1)
-                  sender.connection.send(new ClientboundContainerSetSlotPacket(-2, 0, overflowSlot, inventory.getItem(overflowSlot)));
-      }
 
       public boolean overflowFromInventory(EquipmentSlot equipmentSlot, Player player, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
             ItemStack backpack = player.getItemBySlot(equipmentSlot);
@@ -197,7 +134,7 @@ public abstract class ItemStorageTraits extends GenericTraits {
                   return;
 
             if (clickType.isAction()) {
-                  ItemStorageTraits.runIfEquipped(player, ((storageTraits, equipment) -> {
+                  BackpackTraits.runIfEquipped(player, ((storageTraits, equipment) -> {
                         ItemStack backpack = player.getItemBySlot(equipment);
                         MutableItemStorage itemStorage = storageTraits.mutable(ComponentHolder.of(backpack));
                         if (canItemFit(ComponentHolder.of(backpack), hotbar)) {

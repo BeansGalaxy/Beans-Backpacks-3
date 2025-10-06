@@ -62,7 +62,7 @@ public class BackFeature extends RenderLayer<AbstractClientPlayer, PlayerModel<A
             if (CommonClass.CLIENT_CONFIG.disable_equipable_render.get())
                   return;
 
-            BackpackTraits.runIfPresent(player, (traits, slot) -> {
+            BackpackTraits.runAllEquipped(player, (traits, slot) -> {
                   ItemStack itemStack = player.getItemBySlot(slot);
                   ResourceLocation texture = traits.getTexture();
 

@@ -1,6 +1,8 @@
 package com.beansgalaxy.backpacks.traits.backpack;
 
 import com.beansgalaxy.backpacks.components.equipable.EquipmentGroups;
+import com.beansgalaxy.backpacks.network.serverbound.PickBlock;
+import com.beansgalaxy.backpacks.network.serverbound.PickItem;
 import com.beansgalaxy.backpacks.traits.IEntityTraits;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
@@ -21,8 +23,12 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
@@ -35,6 +41,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 
 public class BackpackTraits extends BundleLikeTraits implements IEntityTraits<BackpackTraits> {
       public static final String NAME = "backpack";
@@ -50,6 +57,40 @@ public class BackpackTraits extends BundleLikeTraits implements IEntityTraits<Ba
       @Nullable
       public static BackpackTraits get(ItemStack stack) {
             return Traits.get(ComponentHolder.of(stack), Traits.BACKPACK);
+      }
+
+      public static void runAllEquipped(LivingEntity entity, BiConsumer<BackpackTraits, EquipmentSlot> runnable) {
+            EquipmentSlot[] values = EquipmentSlot.values();
+            for (int i = values.length - 1; i >= 0; i--) {
+                  EquipmentSlot slot = values[i];
+                  ItemStack backpack = entity.getItemBySlot(slot);
+                  BackpackTraits traits = get(backpack);
+                  if (traits == null)
+                        continue;
+
+                  runnable.accept(traits, slot);
+            }
+      }
+
+      public static void runIfEquipped(Player player, BiPredicate<BackpackTraits, EquipmentSlot> runnable) {
+            EquipmentSlot[] values = EquipmentSlot.values();
+            int size = values.length;
+            for (int i = size - 1; i >= 0; i--) {
+                  EquipmentSlot slot = values[i];
+                  ItemStack stack = player.getItemBySlot(slot);
+                  if (stack.isEmpty())
+                        continue;
+
+                  BackpackTraits traits = get(stack);
+                  if (traits == null)
+                        continue;
+
+                  if (!traits.slots().test(slot))
+                        continue;
+
+                  if (runnable.test(traits, slot))
+                        return;
+            }
       }
 
       @Override
@@ -89,17 +130,9 @@ public class BackpackTraits extends BundleLikeTraits implements IEntityTraits<Ba
             }
       }
 
-      public static void runIfPresent(LivingEntity entity, BiConsumer<BackpackTraits, EquipmentSlot> runnable) {
-            EquipmentSlot[] values = EquipmentSlot.values();
-            for (int i = values.length - 1; i >= 0; i--) {
-                  EquipmentSlot slot = values[i];
-                  ItemStack backpack = entity.getItemBySlot(slot);
-                  BackpackTraits traits = get(backpack);
-                  if (traits == null)
-                        continue;
+      @Override
+      public void stackedOnOther(ComponentHolder backpack, ItemStack other, Slot slot, ClickAction click, Player player, CallbackInfoReturnable<Boolean> cir) {
 
-                  runnable.accept(traits, slot);
-            }
       }
 
       public EquipmentGroups slots() {
@@ -122,7 +155,7 @@ public class BackpackTraits extends BundleLikeTraits implements IEntityTraits<Ba
       }
 
       @Override
-      public MutableBundleLike<?> mutable(ComponentHolder holder) {
+      public BackpackMutable mutable(ComponentHolder holder) {
             return new BackpackMutable(this, holder);
       }
 
@@ -192,5 +225,66 @@ public class BackpackTraits extends BundleLikeTraits implements IEntityTraits<Ba
       @Override
       public Container createHopperContainer(BackpackEntity backpack) {
             return new BundleHopper(backpack, this);
+      }
+
+      public boolean pickItemClient(Player player, EquipmentSlot slot, SlotAccess access, AbstractContainerMenu menu, ItemStack hoveredStack, CallbackInfoReturnable<Boolean> cir) {
+            ItemStack backpack = player.getItemBySlot(slot);
+
+            BackpackMutable mutable = mutable(ComponentHolder.of(backpack));
+            List<ItemStack> stacks = mutable.getItemStacks();
+
+            for (int i = 0; i < stacks.size(); i++) {
+                  ItemStack stack = stacks.get(i);
+                  if (ItemStack.isSameItemSameComponents(hoveredStack, stack)) {
+                        int count = stack.getCount();
+                        int maxStackSize = stack.getMaxStackSize();
+
+                        if (count > maxStackSize) {
+                              mutable.pickItem(i, maxStackSize, access);
+                              PickItem.send(menu.containerId, i, maxStackSize, slot);
+                        } else {
+                              mutable.pickItem(i, -1, access);
+                              PickItem.send(menu.containerId, i, -1, slot);
+                        }
+
+                        sound().atClient(player, ModSound.Type.REMOVE);
+                        cir.setReturnValue(true);
+                        return true;
+                  }
+            }
+
+            return false;
+      }
+
+      public void pickBlockClient(Player player, EquipmentSlot slot, Inventory inventory, ItemStack matchedStack, CallbackInfo ci) {
+            ItemStack backpack = player.getItemBySlot(slot);
+            BackpackTraits traits = BackpackTraits.get(backpack);
+            if (traits == null)
+                  return;
+
+            int freeSlot = inventory.getFreeSlot();
+            if (freeSlot == -1) {
+                  sound().atClient(player, ModSound.Type.HIT);
+                  return;
+            }
+
+            ComponentHolder holder = ComponentHolder.of(backpack);
+            BackpackMutable mutable = traits.mutable(holder);
+            List<ItemStack> stacks = mutable.getItemStacks();
+            for (int i = 0; i < stacks.size(); i++) {
+                  ItemStack stack = stacks.get(i);
+                  if (ItemStack.isSameItemSameComponents(matchedStack, stack)) {
+                        int count = stack.getCount();
+                        int maxStackSize = stack.getMaxStackSize();
+                        int amount = count > maxStackSize ? maxStackSize : -1;
+
+                        mutable.pickBlock(player, i, amount, freeSlot);
+                        PickBlock.send(i, amount, slot, freeSlot);
+                        sound().atClient(player, ModSound.Type.REMOVE);
+                        mutable.push();
+                        ci.cancel();
+                        return;
+                  }
+            }
       }
 }

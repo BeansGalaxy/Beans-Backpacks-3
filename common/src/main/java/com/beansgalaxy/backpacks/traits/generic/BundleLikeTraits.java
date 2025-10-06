@@ -1,13 +1,13 @@
 package com.beansgalaxy.backpacks.traits.generic;
 
-import com.beansgalaxy.backpacks.components.SlotSelection;
+import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
-import com.beansgalaxy.backpacks.network.serverbound.PickBlock;
 import com.beansgalaxy.backpacks.network.serverbound.TraitMenuClick;
 import com.beansgalaxy.backpacks.screen.TinyClickType;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.traits.bundle.BundleScreen;
 import com.beansgalaxy.backpacks.util.ModSound;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
@@ -317,41 +317,6 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
       }
 
       @Override
-      public void clientPickBlock(EquipmentSlot equipmentSlot, boolean instantBuild, Inventory inventory, ItemStack itemStack, Player player, CallbackInfo ci) {
-            if (instantBuild || inventory.getFreeSlot() == -1)
-                  return;
-
-            int slot = inventory.findSlotMatchingItem(itemStack);
-            if (slot > -1 || player == null)
-                  return;
-
-            ItemStack backpack = player.getItemBySlot(equipmentSlot);
-            List<ItemStack> stacks = backpack.get(ITraitData.ITEM_STACKS);
-            if (stacks == null)
-                  return;
-
-            int size = stacks.size();
-            for (int j = 0; j < size; j++) {
-                  ItemStack backpackStack = stacks.get(j);
-                  if (ItemStack.isSameItem(itemStack, backpackStack)) {
-                        slot = j;
-                  }
-            }
-
-            if (slot < 0)
-                  return;
-
-            PickBlock.send(slot, equipmentSlot);
-            sound().atClient(player, ModSound.Type.REMOVE);
-            ci.cancel();
-
-            SlotSelection selection = backpack.get(ITraitData.SLOT_SELECTION);
-            if (selection != null) {
-                  selection.limit(slot, size);
-            }
-      }
-
-      @Override
       public void breakTrait(ServerPlayer pPlayer, ItemStack instance) {
             List<ItemStack> stacks = instance.get(ITraitData.ITEM_STACKS);
             if (stacks == null)
@@ -456,7 +421,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                         return;
 
                   ItemStack stack = stacks.get(index);
-                  ItemStorageTraits.runIfEquipped(player, ((storageTraits, slot) -> {
+                  BackpackTraits.runIfEquipped(player, ((storageTraits, slot) -> {
                         ItemStack backpack = player.getItemBySlot(slot);
                         MutableItemStorage itemStorage = storageTraits.mutable(ComponentHolder.of(backpack));
                         if (canItemFit(holder, stack)) {
@@ -654,7 +619,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                         return;
 
                   ItemStack stack = stacks.get(index);
-                  ItemStorageTraits.runIfEquipped(player, ((storageTraits, slot) -> {
+                  BackpackTraits.runIfEquipped(player, ((storageTraits, slot) -> {
                         ItemStack backpack = player.getItemBySlot(slot);
                         MutableItemStorage itemStorage = storageTraits.mutable(ComponentHolder.of(backpack));
                         if (canItemFit(holder, stack)) {
@@ -670,7 +635,17 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
             }
 
             if (clickType.isDrop()) {
-                  ItemStack stack = mutable.removeItem(index);
+                  BackData backData = BackData.get(player);
+                  ItemStack stack;
+                  if (backData.isMenuKeyDown()) {
+                        stack = mutable.removeItem(index);
+                  }
+                  else {
+                        ItemStack item = mutable.getItemStacks().get(index);
+                        stack = item.copyWithCount(1);
+                        item.shrink(1);
+                  }
+
                   player.drop(stack, true);
                   mutable.push();
                   return;

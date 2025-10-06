@@ -124,29 +124,24 @@ public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
       private tSlot hoveredSlot = null;
 
       private void renderItems(GuiGraphics gui, int mouseX, int mouseY) {
-            List<ItemStack> stacks = holder.get(ITraitData.ITEM_STACKS);
-            if (stacks != null && stacks.size() != size)
-                  updateSize();
+            updateSize();
 
+            List<ItemStack> stacks = holder.get(ITraitData.ITEM_STACKS);
             hoveredSlot = null;
 
             for (int y = 0; y < rows; y++) {
                   for (int x = 0; x < columns; x++) {
                         int i = y * columns + x;
 
-                        if (i > size)
-                              break;
-
                         int x1 = x * 16 + 8;
                         int y1 = y * 16 + 4;
                         int x2 = x1 + 16;
                         int y2 = y1 + 16;
 
-                        if (mouseX >= x1 && mouseY >= y1 && mouseX < x2 && mouseY < y2) {
+                        if (mouseX >= x1 && mouseY >= y1 && mouseX < x2 && mouseY < y2)
                               hoveredSlot = new tSlot(i, x1, x2, y1, y2);
-                        }
 
-                        if (i == size)
+                        if (i == size || stacks == null)
                               break;
 
                         ItemStack stack = stacks.get(i);
@@ -155,9 +150,8 @@ public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
                   }
             }
 
-            if (hoveredSlot != null) {
+            if (hoveredSlot != null)
                   gui.fill(hoveredSlot.x1, hoveredSlot.y1, hoveredSlot.x2, hoveredSlot.y2, 30, 0x60FFFFFF);
-            }
       }
 
       record tSlot(int index, int x1, int x2, int y1, int y2) {

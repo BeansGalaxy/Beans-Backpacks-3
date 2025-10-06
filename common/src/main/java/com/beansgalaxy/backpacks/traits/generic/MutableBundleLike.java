@@ -100,29 +100,24 @@ public class MutableBundleLike<T extends BundleLikeTraits> implements MutableIte
             if (toInsert == 0)
                   return null;
 
-            int count = toInsert;
             List<ItemStack> stacks = getItemStacks();
             int i = stacks.size();
             while (i > 0) {
                   i--;
 
                   ItemStack stored = stacks.get(i);
-                  if (inserted.isEmpty() || count < 1)
+                  if (inserted.isEmpty() || toInsert < 1)
                         return ItemStack.EMPTY;
 
                   if (ItemStack.isSameItemSameComponents(stored, inserted)) {
-                        if (stored.getMaxStackSize() == stored.getCount())
-                              continue;
-
-                        int insert = Math.min(stored.getMaxStackSize() - stored.getCount(), count);
-                        stored.grow(insert);
-                        inserted.shrink(insert);
-                        count -= insert;
+                        stored.grow(toInsert);
+                        inserted.shrink(toInsert);
+                        return ItemStack.EMPTY;
                   }
             }
 
             if (!inserted.isEmpty()) {
-                  ItemStack split = inserted.split(count);
+                  ItemStack split = inserted.split(toInsert);
                   getItemStacks().addFirst(split);
                   growSelectedSlot(0);
             }
@@ -139,14 +134,13 @@ public class MutableBundleLike<T extends BundleLikeTraits> implements MutableIte
             if (toInsert == 0)
                   return null;
 
-            int count = toInsert;
             List<ItemStack> stacks = getItemStacks();
             int i = stacks.size();
             while (i > 0) {
                   i--;
 
                   ItemStack stored = stacks.get(i);
-                  if (inserted.isEmpty() || count < 1)
+                  if (inserted.isEmpty() || toInsert < 1)
                         return ItemStack.EMPTY;
 
                   if (ItemStack.isSameItemSameComponents(stored, inserted)) {
@@ -154,15 +148,15 @@ public class MutableBundleLike<T extends BundleLikeTraits> implements MutableIte
                         int size = stacks.size();
                         stacks.add(Math.min(slot, size), removed);
 
-                        removed.grow(count);
-                        inserted.shrink(count);
+                        removed.grow(toInsert);
+                        inserted.shrink(toInsert);
                         return ItemStack.EMPTY;
                   }
             }
 
             if (!inserted.isEmpty()) {
                   int selectedSlot = Math.min(slot, getItemStacks().size());
-                  ItemStack split = inserted.split(count);
+                  ItemStack split = inserted.split(toInsert);
                   getItemStacks().add(selectedSlot, split);
                   growSelectedSlot(selectedSlot);
             }

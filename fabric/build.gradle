@@ -51,6 +51,11 @@ loom {
     }
     runs {
         client {
+            vmArg "-Dmixin.debug.export=true"
+            vmArg "-Dmixin.debug.verbose=true"
+            vmArg "-Dmixin.debug.countInjections=true"
+            vmArg "-XX:+AllowEnhancedClassRedefinition"
+
             client()
             setConfigName('Fabric Client')
             ideConfigGenerated(true)

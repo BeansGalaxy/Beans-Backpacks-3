@@ -2,14 +2,11 @@ package com.beansgalaxy.backpacks.mixin.client;
 
 import com.beansgalaxy.backpacks.CommonClient;
 import com.beansgalaxy.backpacks.access.EquipmentSlotAccess;
-import com.beansgalaxy.backpacks.items.ModItems;
 import com.beansgalaxy.backpacks.screen.TraitMenu;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.util.DraggingContainer;
 import com.beansgalaxy.backpacks.traits.abstract_traits.IDraggingTrait;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -17,6 +14,8 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
@@ -30,8 +29,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.*;
 
 @Mixin(AbstractContainerScreen.class)
 public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> extends Screen {
@@ -54,8 +51,6 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
 
       @Shadow protected int topPos;
 
-      @Shadow protected abstract boolean isHovering(Slot slot, double mouseX, double mouseY);
-
       protected AbstractScreenMixin(Component pTitle) {
             super(pTitle);
       }
@@ -68,7 +63,7 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
                   if (traitMenu.isHoveringSlot((int) pMouseX, (int) pMouseY)) {
                         traitMenu = null;
                         skipNextRelease = true;
-                        cir.cancel();
+                        cir.setReturnValue(true);
                         return;
                   }
                   else {
@@ -85,6 +80,13 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
                         TraitMenu<?> menu = TraitMenu.create(minecraft, leftPos, topPos, hoveredSlot);
                         if (menu != null)
                               traitMenu = menu;
+                  }
+                  else if (menu.getCarried().isEmpty() && hoveredSlot.hasItem() && minecraft.options.keyPickItem.matchesMouse(pButton)) {
+                        BackpackTraits.runIfEquipped(minecraft.player, ((traits, slot) -> {
+                              Player player = minecraft.player;
+                              SlotAccess access = SlotAccess.of(menu::getCarried, menu::setCarried);
+                              return traits.pickItemClient(player, slot, access, menu, hoveredSlot.getItem(), cir);
+                        }));
                   }
             }
       }
@@ -185,41 +187,9 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
             }
       }
 
-      @WrapOperation(method = "renderSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;renderItem(Lnet/minecraft/world/item/ItemStack;III)V"))
-      private void renderHoveredSlotItem(GuiGraphics instance, ItemStack stack, int x, int y, int seed, Operation<Void> original, @Local(argsOnly = true, ordinal = 0) Slot slot) {
-            int mouseX = (int) (
-                        this.minecraft.mouseHandler.xpos() * (double)this.minecraft.getWindow().getGuiScaledWidth() / (double)this.minecraft.getWindow().getScreenWidth()
-            );
-            int mouseY = (int) (
-                        this.minecraft.mouseHandler.ypos() * (double)this.minecraft.getWindow().getGuiScaledHeight() / (double)this.minecraft.getWindow().getScreenHeight()
-            );
-
-            if (isHovering(slot, mouseX, mouseY)) {
-                  if (stack.is(ModItems.LUNCH_BOX.get())) {
-                        CommonClient.renderHoveredItem(minecraft, instance, stack, x, y, seed, original, "lunch_box_open");
-                        return;
-                  }
-                  if (stack.is(ModItems.NETHERITE_LUNCH_BOX.get())) {
-                        CommonClient.renderHoveredItem(minecraft, instance, stack, x, y, seed, original, "netherite_lunch_box_open");
-                        return;
-                  }
-                  if (stack.is(ModItems.ALCHEMIST_BAG.get())) {
-                        CommonClient.renderHoveredItem(minecraft, instance, stack, x, y, seed, original, "alchemy_bag_open");
-                        return;
-                  }
-            }
-
-            original.call(instance, stack, x, y, seed);
-      }
-
-      @Inject(method = "renderSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;renderItem(Lnet/minecraft/world/item/ItemStack;III)V"))
-      private void renderHoveredSlotItem(GuiGraphics pGuiGraphics, Slot pSlot, CallbackInfo ci) {
-
-      }
-
       @Inject(method = "renderSlot", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;popPose()V"))
       public void renderBackpackDraggedSlot(GuiGraphics pGuiGraphics, Slot pSlot, CallbackInfo ci) {
-            ItemStack pair = findMatchingBackpackDraggedPair(pSlot);
+            ItemStack pair = drag.allSlots.get(pSlot);
             if (pair != null) {
                   int i = pSlot.x;
                   int j = pSlot.y;
@@ -238,15 +208,5 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
 
                   pGuiGraphics.fill(i, j, i + 16, j + 16, drag.isPickup ? 200 : 0,-2130706433);
             }
-      }
-
-      @Unique @Nullable
-      private ItemStack findMatchingBackpackDraggedPair(Slot pSlot) {
-            for (Map.Entry<Slot, ItemStack> slotPair : drag.allSlots.entrySet()) {
-                  if (slotPair.getKey() == pSlot) {
-                        return slotPair.getValue();
-                  }
-            }
-            return null;
       }
 }

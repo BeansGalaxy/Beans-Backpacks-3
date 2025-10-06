@@ -5,7 +5,6 @@ import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.data.ServerSave;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
-import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
@@ -87,7 +86,7 @@ public abstract class InventoryMixin implements BackData {
 
 
 
-                  ItemStorageTraits.runIfEquipped(player, (traits, equipmentSlot) -> {
+                  BackpackTraits.runIfEquipped(player, (traits, equipmentSlot) -> {
                         ItemStack backpack = player.getItemBySlot(equipmentSlot);
                         return traits.pickupToBackpack(player, equipmentSlot, instance, backpack, stack, cir);
                   });
@@ -97,7 +96,7 @@ public abstract class InventoryMixin implements BackData {
       @Inject(method = "add(ILnet/minecraft/world/item/ItemStack;)Z", at = @At("RETURN"), cancellable = true)
       public void addToBackpackAfterInventory(int $$0, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
             if (!cir.getReturnValue()) {
-                  ItemStorageTraits.runIfEquipped(player, (traits, equipmentSlot) ->
+                  BackpackTraits.runIfEquipped(player, (traits, equipmentSlot) ->
                               traits.overflowFromInventory(equipmentSlot, player, stack, cir)
                   );
             }

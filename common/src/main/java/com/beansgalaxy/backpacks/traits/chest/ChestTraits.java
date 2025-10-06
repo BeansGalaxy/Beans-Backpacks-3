@@ -1,12 +1,12 @@
 package com.beansgalaxy.backpacks.traits.chest;
 
 import com.beansgalaxy.backpacks.access.BackData;
-import com.beansgalaxy.backpacks.network.serverbound.PickBlock;
 import com.beansgalaxy.backpacks.screen.TinyClickType;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.abstract_traits.IDraggingTrait;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.traits.chest.screen.ChestScreen;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
@@ -274,39 +274,6 @@ public class ChestTraits extends ItemStorageTraits implements IDraggingTrait {
       }
 
       @Override
-      public void clientPickBlock(EquipmentSlot equipmentSlot, boolean instantBuild, Inventory inventory, ItemStack itemStack, Player player, CallbackInfo ci) {
-            if (instantBuild || inventory.getFreeSlot() == -1)
-                  return;
-
-            int slot = inventory.findSlotMatchingItem(itemStack);
-            if (slot > -1 || player == null)
-                  return;
-
-            ItemStack backpack = player.getItemBySlot(equipmentSlot);
-            ItemContainerContents contents = backpack.get(ITraitData.CHEST);
-            if (contents == null) {
-                  return;
-            }
-
-            NonNullList<ItemStack> stacks = NonNullList.of(ItemStack.EMPTY);
-            contents.copyInto(stacks);
-
-            for (int j = 0; j < stacks.size(); j++) {
-                  ItemStack backpackStack = stacks.get(j);
-                  if (ItemStack.isSameItem(itemStack, backpackStack)) {
-                        slot = j;
-                  }
-            }
-
-            if (slot < 0)
-                  return;
-
-            PickBlock.send(slot, equipmentSlot);
-            sound().atClient(player, ModSound.Type.REMOVE);
-            ci.cancel();
-      }
-
-      @Override
       public void breakTrait(ServerPlayer pPlayer, ItemStack backpack) {
             ItemContainerContents contents = backpack.get(ITraitData.CHEST);
             if (contents == null) {
@@ -411,7 +378,7 @@ public class ChestTraits extends ItemStorageTraits implements IDraggingTrait {
             if (clickType.isAction()) {
                   ItemStack stack = mutable.getItem(index);
                   CallbackInfo ci = new CallbackInfo("chest_tiny_menu", true);
-                  ItemStorageTraits.runIfEquipped(player, ((storageTraits, slot) -> {
+                  BackpackTraits.runIfEquipped(player, ((storageTraits, slot) -> {
                         ItemStack backpack = player.getItemBySlot(slot);
                         MutableItemStorage itemStorage = storageTraits.mutable(ComponentHolder.of(backpack));
                         if (canItemFit(holder, stack)) {

@@ -48,7 +48,7 @@ public class ArmorStandFeature extends RenderLayer<ArmorStand, ArmorStandArmorMo
 
       @Override
       public void render(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, ArmorStand armorStand, float limbAngle, float limbDistance, float tick, float animationProgress, float playerHeadYaw, float playerHeadPitch) {
-            BackpackTraits.runIfPresent(armorStand, (traits, slot) -> {
+            BackpackTraits.runAllEquipped(armorStand, (traits, slot) -> {
                   ItemStack itemStack = armorStand.getItemBySlot(slot);
                   ResourceLocation texture = traits.getTexture();
 

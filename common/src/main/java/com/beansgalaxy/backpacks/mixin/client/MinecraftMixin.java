@@ -5,6 +5,7 @@ import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.access.MinecraftAccessor;
 import com.beansgalaxy.backpacks.client.KeyPress;
 import com.beansgalaxy.backpacks.data.EnderStorage;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -12,6 +13,8 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
@@ -22,6 +25,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.OptionalInt;
 
@@ -88,5 +92,16 @@ public abstract class MinecraftMixin implements MinecraftAccessor {
                   DeltaTracker tracker = getTimer();
                   KeyPress.INSTANCE.tick(instance, player, tracker);
             }
+      }
+
+      @Inject(method = "pickBlock", locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true, at = @At(value = "JUMP", opcode = 159, ordinal = 0))
+      private void pickFromBackpack(CallbackInfo ci, @Local int i, @Local ItemStack itemstack, @Local Inventory inventory) {
+            if (i != -1)
+                  return;
+
+            BackpackTraits.runIfEquipped(player, (traits, slot) -> {
+                  traits.pickBlockClient(player, slot, inventory, itemstack, ci);
+                  return ci.isCancelled();
+            });
       }
 }

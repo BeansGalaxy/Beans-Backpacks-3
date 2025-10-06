@@ -3,6 +3,7 @@ package com.beansgalaxy.backpacks.mixin.common;
 import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.access.EquipmentSlotAccess;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.world.entity.player.Player;
@@ -46,7 +47,7 @@ public abstract class AbstractMenuMixin {
                               trait.hotkeyUse(slot, null, button, actionType, player, ci);
                         });
                   } else {
-                        ItemStorageTraits.runIfEquipped(player, (trait, equipmentSlot) -> {
+                        BackpackTraits.runIfEquipped(player, (trait, equipmentSlot) -> {
                               trait.hotkeyUse(slot, equipmentSlot, button, actionType, player, ci);
                               return ci.isCancelled();
                         });
