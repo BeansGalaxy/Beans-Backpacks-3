@@ -1,8 +1,10 @@
 package com.beansgalaxy.backpacks.mixin;
 
-import com.beansgalaxy.backpacks.CommonClient;
+import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.components.DisplayComponent;
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
+import com.beansgalaxy.backpacks.items.ModItems;
+import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
 import com.llamalad7.mixinextras.sugar.Local;
@@ -15,6 +17,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
@@ -52,9 +55,18 @@ public abstract class ItemRendererMixin {
                   @Local(ordinal = 0, argsOnly = true) LocalRef<BakedModel> model,
                   @Local(ordinal = 1) boolean flag
       ) {
-            if (displayContext.firstPerson()) {
+            if (!flag && itemStack.is(ModItems.QUIVER.get())) {
+                  ModelResourceLocation location = Services.PLATFORM.getModelVariant(
+                              ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "backpack/quiver")
+                  );
+
+                  BakedModel quiverModel = itemModelShaper.getModelManager().getModel(location);
+                  BakedModel resolve = quiverModel.getOverrides().resolve(quiverModel, itemStack, minecraft.level, null, 1);
+                  model.set(resolve);
+            }
+            else if (displayContext.firstPerson()) {
                   LocalPlayer player = minecraft.player;
-                  ItemStack food = ISlotSelectorTrait.getFoodStuffsSelection(itemStack, player);
+                  ItemStack food = ISlotSelectorTrait.getFoodstuffsSelection(itemStack, player);
                   if (food != null) {
                         BakedModel foodModel = getModel(food, minecraft.level, player, player.getId());
                         model.set(foodModel);
@@ -66,6 +78,7 @@ public abstract class ItemRendererMixin {
             if (optional.isPresent()) {
                   ModelResourceLocation modelLocation = optional.get().getModel();
                   model.set(itemModelShaper.getModelManager().getModel(modelLocation));
+                  return;
             }
             else {
                   ReferenceTrait reference = itemStack.get(Traits.REFERENCE);
@@ -74,20 +87,10 @@ public abstract class ItemRendererMixin {
                         if (display.isPresent()) {
                               ModelResourceLocation modelLocation = display.get().getModel();
                               model.set(itemModelShaper.getModelManager().getModel(modelLocation));
+                              return;
                         }
                   }
             }
-
-            if (flag)
-                  return;
-
-            BakedModel itemModel = model.get();
-            BakedModel resolve = itemModel.getOverrides().resolve(itemModel, CommonClient.NO_GUI_STAND_IN, null, null, 0);
-            if (resolve == null)
-                  return;
-
-            BakedModel resolve1 = resolve.getOverrides().resolve(resolve, itemStack, minecraft.level, null, 0);
-            model.set(resolve1);
       }
 
 }

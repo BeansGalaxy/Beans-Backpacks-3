@@ -36,7 +36,6 @@ import java.util.function.Function;
 public class NeoForgeClient {
 
       public NeoForgeClient(IEventBus eventBus, ModContainer container) {
-            ItemProperties.registerGeneric(ResourceLocation.withDefaultNamespace("no_gui"), CommonClient.NO_GUI_PREDICATE);
             ItemProperties.registerGeneric(ResourceLocation.withDefaultNamespace("utilities"), CommonClient.UTILITIES_PREDICATE);
             ItemProperties.registerGeneric(ResourceLocation.withDefaultNamespace("fullness"), CommonClient.FULLNESS_ITEM_PREDICATE);
             ItemProperties.registerGeneric(ResourceLocation.withDefaultNamespace("eating"), CommonClient.EATING_TRAIT_ITEM_PREDICATE);

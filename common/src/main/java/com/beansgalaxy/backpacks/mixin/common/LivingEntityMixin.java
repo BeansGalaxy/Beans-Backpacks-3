@@ -3,6 +3,7 @@ package com.beansgalaxy.backpacks.mixin.common;
 import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
 import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
+import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxTraits;
 import com.beansgalaxy.backpacks.util.ModSound;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
@@ -53,30 +54,10 @@ public abstract class LivingEntityMixin extends Entity {
             super(pEntityType, pLevel);
       }
 
-      @Inject(method = "triggerItemUseEffects", at = @At(value = "INVOKE", ordinal = 0,
-                  target = "Lnet/minecraft/world/item/ItemStack;getUseAnimation()Lnet/minecraft/world/item/UseAnim;"))
+      @Inject(method = "triggerItemUseEffects", at = @At("HEAD"))
       private void backpacks_useLunchBoxEffects(ItemStack ignored, int pAmount, CallbackInfo ci, @Local(ordinal = 0, argsOnly = true) LocalRef<ItemStack> pStack) {
-            if (instance instanceof Player player) {
-                  ItemStack selection = ISlotSelectorTrait.getFoodStuffsSelection(pStack.get(), player);
-                  if (selection != null) {
-                         pStack.set(selection);
-                  }
-            }
+            LunchBoxTraits.selectionIsPresent(pStack.get(), instance, pStack::set);
       }
-//
-//      @Inject(method = "getDrinkingSound", at = @At("HEAD"), cancellable = true)
-//      private void lunchBoxDrinkingSound(ItemStack pStack, CallbackInfoReturnable<SoundEvent> cir) {
-//            LunchBoxTraits.firstIsPresent(pStack, instance, food -> {
-//                  cir.setReturnValue(food.getDrinkingSound());
-//            });
-//      }
-//
-//      @Inject(method = "getEatingSound", at = @At("HEAD"), cancellable = true)
-//      private void lunchBoxEatingSound(ItemStack pStack, CallbackInfoReturnable<SoundEvent> cir) {
-//            LunchBoxTraits.firstIsPresent(pStack, instance, food -> {
-//                  cir.setReturnValue(food.getEatingSound());
-//            });
-//      }
 
       @Inject(method = "onEquipItem", cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD,
                   at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;isSilent()Z"))

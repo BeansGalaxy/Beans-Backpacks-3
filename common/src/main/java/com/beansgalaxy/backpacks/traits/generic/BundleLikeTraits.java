@@ -268,55 +268,6 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
       }
 
       @Override
-      public boolean pickupToBackpack(Player player, EquipmentSlot equipmentSlot, Inventory inventory, ItemStack backpack, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
-            if (!isFull(backpack)) {
-                  inventory.items.forEach(stacks -> {
-                        if (ItemStack.isSameItemSameComponents(stacks, stack)) {
-                              int present = stacks.getCount();
-                              int inserted = stack.getCount();
-                              int count = present + inserted;
-                              int remainder = Math.max(0, count - stack.getMaxStackSize());
-                              count -= remainder;
-
-                              stacks.setCount(count);
-                              stack.setCount(remainder);
-                        }
-                  });
-
-                  if (stack.isEmpty()) {
-                        cir.setReturnValue(true);
-                        return true;
-                  }
-
-                  MutableBundleLike<?> mutable = mutable(ComponentHolder.of(backpack));
-                  Iterator<ItemStack> iterator = mutable.getItemStacks().iterator();
-                  while (iterator.hasNext() && !stack.isEmpty()) {
-                        ItemStack itemStack = iterator.next();
-                        if (ItemStack.isSameItemSameComponents(itemStack, stack)) {
-                              ItemStack returnStack = mutable.addItem(stack);
-                              if (returnStack != null) {
-                                    cir.setReturnValue(true);
-                              }
-                        }
-                  }
-
-                  if (cir.isCancelled() && cir.getReturnValue()) {
-                        sound().toClient(player, ModSound.Type.INSERT, 1, 1);
-                        mutable.push();
-
-                        if (player instanceof ServerPlayer serverPlayer) {
-                              List<Pair<EquipmentSlot, ItemStack>> pSlots = List.of(Pair.of(equipmentSlot, backpack));
-                              ClientboundSetEquipmentPacket packet = new ClientboundSetEquipmentPacket(serverPlayer.getId(), pSlots);
-                              serverPlayer.serverLevel().getChunkSource().broadcastAndSend(serverPlayer, packet);
-                        }
-                  }
-
-                  return stack.isEmpty();
-            }
-            return false;
-      }
-
-      @Override
       public void breakTrait(ServerPlayer pPlayer, ItemStack instance) {
             List<ItemStack> stacks = instance.get(ITraitData.ITEM_STACKS);
             if (stacks == null)

@@ -1,10 +1,9 @@
 package com.beansgalaxy.backpacks.mixin.common;
 
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
-import com.beansgalaxy.backpacks.traits.ITraitData;
-import com.beansgalaxy.backpacks.traits.abstract_traits.IProjectileTrait;
-import com.beansgalaxy.backpacks.traits.abstract_traits.MutableSlotSelector;
+import com.beansgalaxy.backpacks.network.clientbound.SendItemComponentPatch;
 import com.beansgalaxy.backpacks.traits.generic.MutableBundleLike;
+import com.beansgalaxy.backpacks.traits.quiver.QuiverTraits;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -43,7 +42,7 @@ public abstract class BowMixin extends ProjectileWeaponItem {
       private void useBackpackQuiverArrow(ItemStack bowStack, Level level, LivingEntity pEntityLiving, int pTimeLeft, CallbackInfo ci) {
             Player player = (Player) pEntityLiving;
             Predicate<ItemStack> predicate = getAllSupportedProjectiles();
-            IProjectileTrait.runIfEquipped(player, (proTrait, slot, quiver, holder) -> {
+            QuiverTraits.runIfPresent(player, (proTrait, slot, quiver, holder) -> {
                   MutableBundleLike<?> mutable = proTrait.mutable(holder);
                   List<ItemStack> stacks = mutable.getItemStacks();
                   if (stacks.isEmpty())
@@ -72,9 +71,8 @@ public abstract class BowMixin extends ProjectileWeaponItem {
                               if (holder instanceof EnderTraits enderTraits)
                                     enderTraits.broadcastChanges();
                               else if (player instanceof ServerPlayer serverPlayer) {
-                                    List<Pair<EquipmentSlot, ItemStack>> pSlots = List.of(Pair.of(slot, quiver));
-                                    ClientboundSetEquipmentPacket packet = new ClientboundSetEquipmentPacket(serverPlayer.getId(), pSlots);
-                                    serverPlayer.serverLevel().getChunkSource().broadcastAndSend(serverPlayer, packet);
+                                    SendItemComponentPatch.send(serverPlayer, slot, quiver);
+
                               }
                         }
 

@@ -5,6 +5,7 @@ import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.data.ServerSave;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
+import com.beansgalaxy.backpacks.traits.quiver.QuiverTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.llamalad7.mixinextras.sugar.ref.LocalRef;
@@ -84,11 +85,13 @@ public abstract class InventoryMixin implements BackData {
                         }
                   }
 
-
-
                   BackpackTraits.runIfEquipped(player, (traits, equipmentSlot) -> {
                         ItemStack backpack = player.getItemBySlot(equipmentSlot);
                         return traits.pickupToBackpack(player, equipmentSlot, instance, backpack, stack, cir);
+                  });
+
+                  QuiverTraits.runIfPresent(player, (traits, slot, itemStack, holder) -> {
+                        return traits.pickupToQuiver(player, slot, itemStack, stack, cir);
                   });
             }
       }

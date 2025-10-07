@@ -97,8 +97,6 @@ public abstract class ItemStorageTraits extends GenericTraits {
 
       public abstract void hotkeyThrow(Slot slot, ComponentHolder backpack, int button, Player player, boolean menuKeyDown, CallbackInfo ci);
 
-      public abstract boolean pickupToBackpack(Player player, EquipmentSlot equipmentSlot, Inventory inventory, ItemStack backpack, ItemStack stack, CallbackInfoReturnable<Boolean> cir);
-
       public boolean overflowFromInventory(EquipmentSlot equipmentSlot, Player player, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
             ItemStack backpack = player.getItemBySlot(equipmentSlot);
             MutableItemStorage mutable = mutable(ComponentHolder.of(backpack));

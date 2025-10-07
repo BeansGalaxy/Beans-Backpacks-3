@@ -6,12 +6,6 @@
   "overrides": [
     {
       "predicate": {
-        "no_gui": 1
-      },
-      "model": "beansbackpacks:backpack/quiver"
-    },
-    {
-      "predicate": {
         "fullness": 0.1
       },
       "model": "beansbackpacks:item/quiver/1"

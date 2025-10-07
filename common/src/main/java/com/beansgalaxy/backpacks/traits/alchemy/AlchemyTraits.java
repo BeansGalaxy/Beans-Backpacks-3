@@ -34,6 +34,7 @@ import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
@@ -121,52 +122,69 @@ public class AlchemyTraits extends BundleLikeTraits implements ISlotSelectorTrai
             double rad = Math.PI / 180;
             double yRot = -player.getYHeadRot() * rad;
             double xRot = -player.getXRot() * rad;
-            double x = player.getX() + Math.sin(yRot) * 0.5* Math.cos(xRot);
+            double x = player.getX() + Math.sin(yRot) * 0.5 * Math.cos(xRot);
             double z = player.getZ() + Math.cos(yRot) * 0.5 * Math.cos(xRot);
             double yO = Math.sin(xRot) * 0.3 - 0.2;
+
+            Vec3 movement = player.getDeltaMovement().multiply(2, 1, 2);
 
             for (int j = 0; j < 5; j++) {
                   double random = level.random.nextDouble();
                   double y = Mth.lerp(random * random, lowY, eyeY) + yO;
                   double xySpeed = (random - 0.5);
 
-                  level.addParticle(particleOption, x, y, z, xySpeed, -random * 0.4, xySpeed);
+                  double xSpeed = movement.x + xySpeed;
+                  double ySpeed = movement.y - random * 0.4;
+                  double zSpeed = movement.z + xySpeed;
+
+                  level.addParticle(particleOption, x, y, z, xSpeed, ySpeed, zSpeed);
             }
       }
 
       private static void useMilkBucketItem(AlchemyMutable mutable, Level level, Player player, Item item, ItemStack selected) {
             ItemStack consumedStack = item.finishUsingItem(selected.copyWithCount(1), level, player);
-            selected.shrink(1);
 
-            List<ItemStack> itemStacks = mutable.getItemStacks();
-
-            if (!consumedStack.isEmpty()) {
-                  for (int i = 0; i < itemStacks.size(); i++) {
-                        ItemStack nonEdible = itemStacks.get(i);
-                        if (ItemStack.isSameItemSameComponents(nonEdible, consumedStack)) {
-                              ItemStack removed = itemStacks.remove(i);
-                              consumedStack.grow(removed.getCount());
-                              mutable.limitSelectedSlot(i);
-                        }
-                  }
-
+            if (!player.hasInfiniteMaterials()) {
+                  selected.shrink(1);
+                  List<ItemStack> itemStacks = mutable.getItemStacks();
                   if (!consumedStack.isEmpty()) {
-                        itemStacks.addFirst(consumedStack);
-                        mutable.setSelectedSlot(player, mutable.getSelectedSlot(player));
+                        for (int i = 0; i < itemStacks.size(); i++) {
+                              ItemStack nonEdible = itemStacks.get(i);
+                              if (ItemStack.isSameItemSameComponents(nonEdible, consumedStack)) {
+                                    ItemStack removed = itemStacks.remove(i);
+                                    consumedStack.grow(removed.getCount());
+                                    mutable.limitSelectedSlot(i);
+                              }
+                        }
 
-                        mutable.growSelectedSlot(0);
+                        if (!consumedStack.isEmpty()) {
+                              itemStacks.addFirst(consumedStack);
+                              mutable.setSelectedSlot(player, mutable.getSelectedSlot(player));
+
+                              mutable.growSelectedSlot(0);
+                        }
                   }
             }
 
             player.playSound(SoundEvents.PLAYER_SPLASH);
-            for (int j = 0; j < 4; j++) {
+
+            Vec3 movement = player.getDeltaMovement().multiply(1.75, 0.5, 1.75);
+
+            for (int j = 0; j < 6; j++) {
                   double random = level.random.nextDouble();
-                  double y = Mth.lerp(Math.sqrt(random), player.getY(), player.getEyeY());
                   double centered = random - 0.5;
-                  double xySpeed = centered * .1;
+                  double xySpeed = centered * (Math.abs(movement.x) + Math.abs(movement.z)) * 0.5;
+                  double xSpeed = movement.x + xySpeed;
+                  double ySpeed = movement.y;
+                  double zSpeed = movement.z + xySpeed;
                   double centered1 = level.random.nextDouble() - 0.5;
                   double centered2 = level.random.nextDouble() - 0.5;
-                  level.addParticle(ParticleTypes.SNOWFLAKE, player.getX() + centered1, y, player.getZ() + centered2, xySpeed, -random * 0.2, xySpeed);
+
+                  double top = player.getBbHeight() + player.getY();
+                  level.addParticle(ParticleTypes.SNOWFLAKE, player.getX() + centered1, top, player.getZ() + centered2, xSpeed + xySpeed, ySpeed, zSpeed + xySpeed);
+
+                  double y = Mth.lerp(random, player.getY(), player.getEyeY());
+                  level.addParticle(ParticleTypes.WHITE_SMOKE, player.getX() + centered2, y, player.getZ() + centered1, xSpeed, ySpeed, zSpeed);
             }
 
             ColorParticleOption particleOption = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, FastColor.ARGB32.color(100, 0xFFFFFF));
@@ -184,10 +202,6 @@ public class AlchemyTraits extends BundleLikeTraits implements ISlotSelectorTrai
                   double centered = random - 0.5;
                   double xySpeed = centered * 10;
                   level.addParticle(alphaOption, player.getX(), y, player.getZ(), xySpeed, -random * 0.2, xySpeed);
-
-                  double centered1 = level.random.nextDouble() - 0.5;
-                  double centered2 = level.random.nextDouble() - 0.5;
-                  level.addParticle(ParticleTypes.WHITE_SMOKE, player.getX() + centered1, y, player.getZ() + centered2, 0, -random * 0.2, 0);
             }
       }
 
@@ -200,6 +214,8 @@ public class AlchemyTraits extends BundleLikeTraits implements ISlotSelectorTrai
                                     Potions.WATER.equals(holder)
             ).orElse(false);
 
+            Vec3 movement = player.getDeltaMovement().multiply(2, 0.5, 2);
+
             if (waterLike) {
                   player.extinguishFire();
                   player.playSound(SoundEvents.PLAYER_SPLASH);
@@ -211,7 +227,12 @@ public class AlchemyTraits extends BundleLikeTraits implements ISlotSelectorTrai
                         double xySpeed = centered * .1;
                         double centered1 = level.random.nextDouble() - 0.5;
                         double centered2 = level.random.nextDouble() - 0.5;
-                        level.addParticle(ParticleTypes.FALLING_WATER, player.getX() + centered1, y, player.getZ() + centered2, xySpeed, -random * 0.2, xySpeed);
+
+                        double xSpeed = movement.x + xySpeed;
+                        double ySpeed = movement.y - random * 0.2;
+                        double zSpeed = movement.z + xySpeed;
+
+                        level.addParticle(ParticleTypes.FALLING_WATER, player.getX() + centered1, y, player.getZ() + centered2, xSpeed, ySpeed, zSpeed);
                   }
 
                   ColorParticleOption particleOption = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, FastColor.ARGB32.color(100, -13083194));
@@ -219,8 +240,13 @@ public class AlchemyTraits extends BundleLikeTraits implements ISlotSelectorTrai
                         double random = level.random.nextDouble();
                         double y = Mth.lerp(Math.sqrt(random), player.getY(), player.getEyeY());
                         double xySpeed = (random - 0.5) * .1;
-                        level.addParticle(particleOption, player.getX(), y, player.getZ(), xySpeed, -random * 0.2, xySpeed);
-                        level.addParticle(ParticleTypes.SPLASH, player.getX(), y, player.getZ(), xySpeed, -random * 0.2, xySpeed);
+
+                        double xSpeed = movement.x + xySpeed;
+                        double ySpeed = movement.y - random * 0.2;
+                        double zSpeed = movement.z + xySpeed;
+
+                        level.addParticle(particleOption, player.getX(), y, player.getZ(), xSpeed, ySpeed, zSpeed);
+                        level.addParticle(ParticleTypes.SPLASH, player.getX(), y, player.getZ(), xSpeed, ySpeed, zSpeed);
                   }
 
                   ColorParticleOption alphaOption = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, FastColor.ARGB32.color(200, -13083194));
@@ -229,8 +255,13 @@ public class AlchemyTraits extends BundleLikeTraits implements ISlotSelectorTrai
                         double y = Mth.lerp(random * random, player.getY(), player.getEyeY());
                         double centered = random - 0.5;
                         double xySpeed = centered * 10;
-                        level.addParticle(alphaOption, player.getX(), y, player.getZ(), xySpeed, -random * 0.2, xySpeed);
-                        level.addParticle(ParticleTypes.SPLASH, player.getX(), y, player.getZ(), xySpeed, -random * 0.2, xySpeed);
+
+                        double xSpeed = movement.x + xySpeed;
+                        double ySpeed = movement.y - random * 0.2;
+                        double zSpeed = movement.z + xySpeed;
+
+                        level.addParticle(alphaOption, player.getX(), y, player.getZ(), xSpeed, ySpeed, zSpeed);
+                        level.addParticle(ParticleTypes.SPLASH, player.getX(), y, player.getZ(), xSpeed, ySpeed, zSpeed);
                   }
 
             }
@@ -239,7 +270,12 @@ public class AlchemyTraits extends BundleLikeTraits implements ISlotSelectorTrai
                         double random = level.random.nextDouble();
                         double y = Mth.lerp(random * random, player.getY(), player.getEyeY());
                         double xySpeed = (random - 0.5);
-                        level.addParticle(effect.getParticleOptions(), player.getX(), y, player.getZ(), xySpeed, -random * 0.2, xySpeed);
+
+                        double xSpeed = movement.x + xySpeed;
+                        double ySpeed = movement.y - random * 0.2;
+                        double zSpeed = movement.z + xySpeed;
+
+                        level.addParticle(effect.getParticleOptions(), player.getX(), y, player.getZ(), xSpeed, ySpeed, zSpeed);
                   }
             });
 

@@ -8,6 +8,7 @@ import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -30,6 +31,7 @@ public abstract class TraitMenu<T extends GenericTraits> {
 
       protected final int slotX;
       protected final int slotY;
+      public final long timeOpened;
 
       protected int leftPos;
       protected int topPos;
@@ -48,6 +50,8 @@ public abstract class TraitMenu<T extends GenericTraits> {
             this.slotY = slotY;
             this.leftPos = slotX + 14;
             this.topPos = slotY - 2;
+
+            this.timeOpened = Util.getMillis();
       }
 
       @Nullable

@@ -59,19 +59,8 @@ public class ItemMixin {
 
       @Inject(method = "getUseDuration", at = @At("HEAD"), cancellable = true)
       private void backpackFitInsideContainer(ItemStack backpack, LivingEntity entity, CallbackInfoReturnable<Integer> cir) {
-            LunchBoxTraits.firstIsPresent(backpack, entity, food -> {
+            LunchBoxTraits.selectionIsPresent(backpack, entity, food -> {
                   cir.setReturnValue(food.getUseDuration(entity));
-            });
-      }
-
-      @Inject(method = "getUseAnimation", at = @At("HEAD"), cancellable = true)
-      private void lunchBoxUseAnimation(ItemStack backpack, CallbackInfoReturnable<UseAnim> cir) {
-            LunchBoxTraits.ifPresent(backpack, traits -> {
-                  List<ItemStack> stacks = backpack.get(ITraitData.ITEM_STACKS);
-                  if (stacks == null || stacks.isEmpty())
-                        return;
-
-                  cir.setReturnValue(UseAnim.EAT);
             });
       }
 

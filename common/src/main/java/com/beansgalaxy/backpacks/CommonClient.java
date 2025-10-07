@@ -41,6 +41,8 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -50,6 +52,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.CompassItem;
@@ -74,15 +77,6 @@ public class CommonClient {
       public static void init() {
 
       }
-
-      public static final ItemStack NO_GUI_STAND_IN = new ItemStack(Items.AIR);
-      public static final ClampedItemPropertyFunction NO_GUI_PREDICATE = (itemStack, clientLevel, livingEntity, i) -> {
-            if (itemStack == NO_GUI_STAND_IN && clientLevel == null && livingEntity == null && i == 0)
-                  return 1;
-
-            return 0;
-      };
-
 
       public static final ItemStack UTILITY_DISPLAY_STAND_IN = new ItemStack(Items.AIR);
       public static final ClampedItemPropertyFunction UTILITIES_PREDICATE = (itemStack, clientLevel, livingEntity, i) -> {
@@ -570,5 +564,15 @@ public class CommonClient {
                         pose.popPose();
                   }
             }
+      }
+
+      public static void handleSentItemComponentPatch(int slot, DataComponentPatch patch) {
+            if (slot < 0)
+                  return;
+
+            Minecraft minecraft = Minecraft.getInstance();
+            Inventory inventory = minecraft.player.getInventory();
+            ItemStack stack = inventory.getItem(slot);
+            stack.applyComponents(patch);
       }
 }

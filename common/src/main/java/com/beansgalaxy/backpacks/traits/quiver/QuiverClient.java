@@ -36,7 +36,13 @@ public class QuiverClient extends BundleClient {
 
                   ItemStack arrow = stacks.get(i);
                   CommonClient.renderItem(minecraft, gui, arrow, x + 8, y + 8, 200, false);
+                  CommonClient.renderItemDecorations(gui, font, arrow, x + 8, y + 8, 200);
             }
             super.renderItemDecorations(trait, holder, gui, font, stack, x, y);
+      }
+
+      @Override
+      public boolean isBarVisible(BundleLikeTraits trait, ComponentHolder holder) {
+            return false;
       }
 }

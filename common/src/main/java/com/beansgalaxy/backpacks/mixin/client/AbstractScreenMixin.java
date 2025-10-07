@@ -3,11 +3,14 @@ package com.beansgalaxy.backpacks.mixin.client;
 import com.beansgalaxy.backpacks.CommonClient;
 import com.beansgalaxy.backpacks.access.EquipmentSlotAccess;
 import com.beansgalaxy.backpacks.screen.TraitMenu;
+import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
+import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.util.DraggingContainer;
 import com.beansgalaxy.backpacks.traits.abstract_traits.IDraggingTrait;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -30,6 +33,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Optional;
+
 @Mixin(AbstractContainerScreen.class)
 public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> extends Screen {
 
@@ -51,6 +56,10 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
 
       @Shadow protected int topPos;
 
+      @Shadow private long lastClickTime;
+
+      @Shadow private int lastClickButton;
+
       protected AbstractScreenMixin(Component pTitle) {
             super(pTitle);
       }
@@ -61,10 +70,19 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
       private void mouseClicked(double pMouseX, double pMouseY, int pButton, CallbackInfoReturnable<Boolean> cir) {
             if (traitMenu != null) {
                   if (traitMenu.isHoveringSlot((int) pMouseX, (int) pMouseY)) {
+                        long i = Util.getMillis();
+                        boolean doubleClick = i - traitMenu.timeOpened < 250L && this.lastClickButton == pButton;
+                        if (doubleClick) {
+                              cir.setReturnValue(true);
+                              return;
+                        }
+
                         traitMenu = null;
-                        skipNextRelease = true;
-                        cir.setReturnValue(true);
-                        return;
+                        if (pButton == 1) {
+                              skipNextRelease = true;
+                              cir.setReturnValue(true);
+                              return;
+                        }
                   }
                   else {
                         traitMenu.mouseClicked(pMouseX, pMouseY, pButton, cir);
@@ -208,5 +226,23 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
 
                   pGuiGraphics.fill(i, j, i + 16, j + 16, drag.isPickup ? 200 : 0,-2130706433);
             }
+      }
+
+      @Inject(method = "slotClicked", cancellable = true, at = @At("HEAD"))
+      private void slotClicked(Slot pSlot, int pSlotId, int pMouseButton, ClickType pType, CallbackInfo ci) {
+            if (pSlot == null || pType != ClickType.PICKUP_ALL)
+                  return;
+
+            Optional<GenericTraits> traits = Traits.get(menu.getCarried());
+            if (traits.isEmpty())
+                  return;
+
+            this.minecraft.gameMode.handleInventoryMouseClick(this.menu.containerId, pSlot.index, pMouseButton, ClickType.PICKUP, this.minecraft.player);
+
+            TraitMenu<?> menu = TraitMenu.create(minecraft, leftPos, topPos, hoveredSlot);
+            if (menu != null)
+                  traitMenu = menu;
+
+            ci.cancel();
       }
 }

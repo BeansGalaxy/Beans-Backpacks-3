@@ -79,7 +79,7 @@ public class LunchBoxTraits extends BundleLikeTraits implements ISlotSelectorTra
             });
       }
 
-      public static void firstIsPresent(ItemStack lunchBox, LivingEntity entity, Consumer<ItemStack> ifPresent) {
+      public static void selectionIsPresent(ItemStack lunchBox, LivingEntity entity, Consumer<ItemStack> ifPresent) {
             ifPresent(lunchBox, traits -> {
                   LunchBoxMutable mutable = traits.mutable(ComponentHolder.of(lunchBox));
                   if (mutable.isEmpty())
@@ -89,7 +89,20 @@ public class LunchBoxTraits extends BundleLikeTraits implements ISlotSelectorTra
                               ? mutable.getSelectedSlot(player)
                               : 0;
 
-                  ifPresent.accept(mutable.getItemStacks().get(selectedSlotSafe));
+                  ItemStack food = mutable.getItemStacks().get(selectedSlotSafe);
+                  ifPresent.accept(food);
+            });
+      }
+
+      public static void selectionIsPresent(ItemStack lunchBox, Player player, Consumer<ItemStack> ifPresent) {
+            ifPresent(lunchBox, traits -> {
+                  LunchBoxMutable mutable = traits.mutable(ComponentHolder.of(lunchBox));
+                  if (mutable.isEmpty())
+                        return;
+
+                  int selectedSlotSafe = mutable.getSelectedSlot(player);
+                  ItemStack food = mutable.getItemStacks().get(selectedSlotSafe);
+                  ifPresent.accept(food);
             });
       }
 

@@ -15,7 +15,10 @@ import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.generic.MutableBundleLike;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.beansgalaxy.backpacks.util.ModSound;
+import com.mojang.datafixers.util.Pair;
+import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
@@ -39,6 +42,7 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
@@ -133,6 +137,53 @@ public class BackpackTraits extends BundleLikeTraits implements IEntityTraits<Ba
       @Override
       public void stackedOnOther(ComponentHolder backpack, ItemStack other, Slot slot, ClickAction click, Player player, CallbackInfoReturnable<Boolean> cir) {
 
+      }
+
+      public boolean pickupToBackpack(Player player, EquipmentSlot equipmentSlot, Inventory inventory, ItemStack backpack, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
+            if (!isFull(backpack)) {
+                  inventory.items.forEach(stacks -> {
+                        if (ItemStack.isSameItemSameComponents(stacks, stack)) {
+                              int present = stacks.getCount();
+                              int inserted = stack.getCount();
+                              int count = present + inserted;
+                              int remainder = Math.max(0, count - stack.getMaxStackSize());
+                              count -= remainder;
+
+                              stacks.setCount(count);
+                              stack.setCount(remainder);
+                        }
+                  });
+
+                  if (stack.isEmpty()) {
+                        cir.setReturnValue(true);
+                        return true;
+                  }
+
+                  MutableBundleLike<?> mutable = mutable(ComponentHolder.of(backpack));
+                  Iterator<ItemStack> iterator = mutable.getItemStacks().iterator();
+                  while (iterator.hasNext() && !stack.isEmpty()) {
+                        ItemStack itemStack = iterator.next();
+                        if (ItemStack.isSameItemSameComponents(itemStack, stack)) {
+                              ItemStack returnStack = mutable.addItem(stack);
+                              if (returnStack != null)
+                                    cir.setReturnValue(true);
+                        }
+                  }
+
+                  if (cir.isCancelled() && cir.getReturnValue()) {
+                        sound().toClient(player, ModSound.Type.INSERT, 1, 1);
+                        mutable.push();
+
+                        if (player instanceof ServerPlayer serverPlayer) {
+                              List<Pair<EquipmentSlot, ItemStack>> pSlots = List.of(Pair.of(equipmentSlot, backpack));
+                              ClientboundSetEquipmentPacket packet = new ClientboundSetEquipmentPacket(serverPlayer.getId(), pSlots);
+                              serverPlayer.serverLevel().getChunkSource().broadcastAndSend(serverPlayer, packet);
+                        }
+                  }
+
+                  return stack.isEmpty();
+            }
+            return false;
       }
 
       public EquipmentGroups slots() {

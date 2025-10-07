@@ -4,14 +4,9 @@
   "package": "com.beansgalaxy.backpacks.mixin",
   "refmap": "${mod_id}.refmap.json",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [
-    "InventoryMixin",
-    "ItemsMixin",
-    "ItemStackMixin",
-    "ItemRendererMixin"
-  ],
+  "mixins": [ "InventoryMixin", "ItemRendererMixin", "ItemsMixin", "ItemStackMixin" ],
   "client": [
-
+    "AbstractContainerScreenMixin"
   ],
   "server": [ ],
   "injectors": {

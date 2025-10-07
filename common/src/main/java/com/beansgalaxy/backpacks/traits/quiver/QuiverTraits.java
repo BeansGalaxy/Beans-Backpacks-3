@@ -1,10 +1,11 @@
 package com.beansgalaxy.backpacks.traits.quiver;
 
+import com.beansgalaxy.backpacks.components.ender.EnderTraits;
+import com.beansgalaxy.backpacks.network.clientbound.SendItemComponentPatch;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.abstract_traits.IDraggingTrait;
-import com.beansgalaxy.backpacks.traits.abstract_traits.IProjectileTrait;
 import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
 import com.beansgalaxy.backpacks.traits.abstract_traits.MutableSlotSelector;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
@@ -12,11 +13,9 @@ import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.generic.MutableBundleLike;
 import com.beansgalaxy.backpacks.util.ModSound;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
-import com.mojang.datafixers.util.Pair;
-import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
+import com.mojang.datafixers.util.Function4;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArrowItem;
 import net.minecraft.world.item.Item;
@@ -25,12 +24,45 @@ import org.apache.commons.lang3.math.Fraction;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
+import java.util.Optional;
 
-public class QuiverTraits extends BundleLikeTraits implements IProjectileTrait, ISlotSelectorTrait, IDraggingTrait {
+public class QuiverTraits extends BundleLikeTraits implements ISlotSelectorTrait, IDraggingTrait {
       public static final String NAME = "quiver";
 
       public QuiverTraits(ModSound sound, int size) {
             super(sound, size);
+      }
+
+      public static QuiverTraits get(ItemStack stack) {
+            return Traits.get(ComponentHolder.of(stack), Traits.QUIVER);
+      }
+
+      public static void runIfPresent(Player player, Function4<QuiverTraits, Integer, ItemStack, ComponentHolder, Boolean> runnable) {
+            int[] i = {-1};
+
+            player.getInventory().contains(stack -> {
+                  i[0]++;
+
+                  QuiverTraits trait = get(stack);
+                  ComponentHolder holder;
+                  if (trait == null) {
+                        Optional<EnderTraits> optionalEnder = EnderTraits.get(stack);
+                        if (optionalEnder.isEmpty()) {
+                              return false;
+                        }
+
+                        EnderTraits ender = optionalEnder.get();
+                        GenericTraits generic = ender.getTrait(player.level());
+                        if (generic instanceof QuiverTraits quiverTraits) {
+                              trait = quiverTraits;
+                              holder = ender;
+                        }
+                        else return false;
+                  }
+                  else holder = ComponentHolder.of(stack);
+
+                  return runnable.apply(trait, i[0], stack, holder);
+            });
       }
 
       @Override
@@ -60,30 +92,27 @@ public class QuiverTraits extends BundleLikeTraits implements IProjectileTrait, 
             return true;
       }
 
-      public boolean pickupToBackpack(Player player, EquipmentSlot equipmentSlot, Inventory inventory, ItemStack backpack, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
+      public boolean pickupToQuiver(Player player, int slot, ItemStack backpack, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
             List<ItemStack> stacks = backpack.get(ITraitData.ITEM_STACKS);
             Fraction fraction = stacks == null || stacks.isEmpty()
                         ? Fraction.ZERO
                         : Traits.getWeight(stacks);
 
             int i = Fraction.getFraction(size(), 1).compareTo(fraction);
-            if (i > 0) {
-                  MutableBundleLike<QuiverTraits> mutable = this.mutable(ComponentHolder.of(backpack));
-                  if (mutable.addItem(stack) != null) {
-                        cir.setReturnValue(true);
-                        sound().toClient(player, ModSound.Type.INSERT, 1, 1);
-                        mutable.push();
+            if (i <= 0)
+                  return false;
 
-                        if (player instanceof ServerPlayer serverPlayer) {
-                              List<Pair<EquipmentSlot, ItemStack>> pSlots = List.of(Pair.of(equipmentSlot, backpack));
-                              ClientboundSetEquipmentPacket packet = new ClientboundSetEquipmentPacket(serverPlayer.getId(), pSlots);
-                              serverPlayer.serverLevel().getChunkSource().broadcastAndSend(serverPlayer, packet);
-                        }
-                  }
+            MutableBundleLike<QuiverTraits> mutable = this.mutable(ComponentHolder.of(backpack));
+            if (mutable.addItem(stack) != null) {
+                  cir.setReturnValue(true);
+                  sound().toClient(player, ModSound.Type.INSERT, 1, 1);
+                  mutable.push();
 
-                  return stack.isEmpty();
+                  if (player instanceof ServerPlayer serverPlayer)
+                        SendItemComponentPatch.send(serverPlayer, slot, backpack);
             }
-            return false;
+
+            return stack.isEmpty();
       }
 
       @Override

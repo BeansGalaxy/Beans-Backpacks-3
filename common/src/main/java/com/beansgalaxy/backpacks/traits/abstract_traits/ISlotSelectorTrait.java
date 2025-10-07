@@ -73,7 +73,7 @@ public interface ISlotSelectorTrait {
       }
 
       @Nullable
-      static ItemStack getFoodStuffsSelection(ItemStack lunchBox, Player player) {
+      static ItemStack getFoodstuffsSelection(ItemStack lunchBox, Player player) {
             BundleLikeTraits traits = getFoodStuffsTrait(lunchBox);
             if (traits == null)
                   return null;

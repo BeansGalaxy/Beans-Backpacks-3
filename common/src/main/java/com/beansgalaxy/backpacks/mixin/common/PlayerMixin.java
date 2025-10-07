@@ -10,9 +10,9 @@ import com.beansgalaxy.backpacks.data.ServerSave;
 import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
-import com.beansgalaxy.backpacks.traits.abstract_traits.IProjectileTrait;
 import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
+import com.beansgalaxy.backpacks.traits.quiver.QuiverTraits;
 import com.beansgalaxy.backpacks.util.ModSound;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
@@ -164,7 +164,7 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
       @Inject(method = "getProjectile", locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true, at = @At(value = "INVOKE", shift = At.Shift.BEFORE,
                   target = "Lnet/minecraft/world/item/ProjectileWeaponItem;getHeldProjectile(Lnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Predicate;)Lnet/minecraft/world/item/ItemStack;"))
       private void getBackpackProjectile(ItemStack pShootable, CallbackInfoReturnable<ItemStack> cir, Predicate<ItemStack> predicate) {
-            IProjectileTrait.runIfEquipped(instance, (proTrait, slot, quiver, holder) -> {
+            QuiverTraits.runIfPresent(instance, (proTrait, slot, quiver, holder) -> {
                   List<ItemStack> stacks = holder.get(ITraitData.ITEM_STACKS);
                   if (stacks == null || stacks.isEmpty())
                         return false;
