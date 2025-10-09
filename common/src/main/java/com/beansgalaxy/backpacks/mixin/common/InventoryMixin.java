@@ -105,10 +105,4 @@ public abstract class InventoryMixin implements BackData {
             }
       }
 
-      @Inject(method = "dropAll", at = @At(value = "CONSTANT", args = "intValue=0", shift = At.Shift.BEFORE))
-      private void cancelDropAllBackSlot(CallbackInfo ci, @Local LocalRef<List<ItemStack>> list) {
-            if (list.get() == beans_Backpacks_3$getBody() && ServerSave.CONFIG.keep_back_on_death.get())
-                  list.set(List.of());
-      }
-
 }

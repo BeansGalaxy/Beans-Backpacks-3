@@ -1,7 +1,6 @@
 package com.beansgalaxy.backpacks.data.config.screen;
 
 import com.beansgalaxy.backpacks.data.config.options.Orientation;
-import com.beansgalaxy.backpacks.data.config.types.EnumConfigVariant;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -10,10 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.function.TriConsumer;
 
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 
 public class MoveElementConfigScreen extends Screen {
       private final ResourceLocation background;
@@ -78,7 +74,7 @@ public class MoveElementConfigScreen extends Screen {
             }).bounds(center - 85, height - 26, 80, 20).build();
 
             Button rotate = Button.builder(Component.translatable("screen.beansbackpacks.move_element.rotate"), in -> {
-                  Orientation lastValue = Orientation.RIGHT;
+                  Orientation lastValue = Orientation.Right;
                   for (Orientation value : Orientation.values()) {
                         if (value == orientation) {
                               orientation = lastValue;

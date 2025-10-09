@@ -1,5 +1,6 @@
 package com.beansgalaxy.backpacks.data.config;
 
+import com.beansgalaxy.backpacks.data.config.options.BackpackOnDeath;
 import com.beansgalaxy.backpacks.data.config.screen.ConfigRows;
 import com.beansgalaxy.backpacks.data.config.screen.ConfigScreen;
 import net.minecraft.client.Minecraft;
@@ -24,9 +25,7 @@ public class CommonConfigRows extends ConfigRows {
 
             return List.of(
                         new ConfigLabel(Component.translatable("config.beansbackpacks.common.keepInventory")),
-                        new BoolConfigRow(config.keep_back_on_death),
-                        new ConfigLabel(Component.translatable("config.beansbackpacks.common.misc")),
-                        new BoolConfigRow(config.do_nbt_stacking)
+                        new EnumConfigRow<>(config.keep_back_on_death, BackpackOnDeath.values())
             );
       }
 

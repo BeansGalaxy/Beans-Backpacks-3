@@ -1,17 +1,17 @@
 package com.beansgalaxy.backpacks.data.config.options;
 
 public enum Orientation {
-      UP,
-      LEFT,
-      DOWN,
-      RIGHT,
+      Up,
+      Left,
+      Down,
+      Right,
       ;
 
       public boolean isVertical() {
-            return this == UP || this == DOWN;
+            return this == Up || this == Down;
       }
 
       public boolean isPositive() {
-            return this == DOWN || this == RIGHT;
+            return this == Down || this == Right;
       }
 }

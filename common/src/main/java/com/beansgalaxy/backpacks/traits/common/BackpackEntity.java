@@ -211,6 +211,15 @@ public class BackpackEntity extends Entity implements ComponentHolder {
 
             return create(backpackStack, traits, level, pos, yRot, clickedFace, player);
       }
+      
+      public static void drop(Player player) {
+            ItemStack backpack = player.getItemBySlot(EquipmentSlot.BODY);
+            BackpackTraits traits = BackpackTraits.get(backpack);
+            if (traits == null)
+                  return;
+            
+            BackpackEntity.create(backpack, traits, player.level(), player.position().add(0, 1, 0), player.yBodyRot + 180, Direction.UP, player);
+      }
 
       public static @NotNull BackpackEntity create(ItemStack backpackStack, BackpackTraits traits, Level level, Vec3 pos, float yRot, Direction direction, Player player) {
             BackpackEntity backpackEntity = new BackpackEntity(CommonClass.BACKPACK_ENTITY.get(), level);

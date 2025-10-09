@@ -26,7 +26,7 @@ public class ClientConfig implements IConfig {
                   disable_equipable_render = new BoolConfigVariant("disable_backpack_render", false, "Disables backpacks and \"beansbackpacks:equipable\" rendering on the player"),
                   back_slot_pos = ListConfigVariant.create(String::valueOf, JsonElement::getAsInt)
                               .defau(77, 44).valid(in -> in.size() == 2).build("back_slot_pos"),
-                  back_and_utility_direction = new EnumConfigVariant<>("back_and_utility_direction", Orientation.UP, Orientation.values()),
+                  back_and_utility_direction = new EnumConfigVariant<>("back_and_utility_direction", Orientation.Up, Orientation.values()),
       };
 
       @Override

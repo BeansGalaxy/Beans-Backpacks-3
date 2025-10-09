@@ -332,17 +332,10 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
             pBuilder.define(IS_OPEN, false);
       }
 
-      @Inject(method = "dropEquipment", at = @At(value = "INVOKE",
-                  target = "Lnet/minecraft/world/entity/player/Player;destroyVanishingCursedItems()V"))
+      @Inject(method = "dropEquipment", at = @At(value = "HEAD"))
       private void backpackDropEquipment(CallbackInfo ci) {
-            if (!ServerSave.CONFIG.keep_back_on_death.get()) {
-                  ItemStack backpack = instance.getItemBySlot(EquipmentSlot.BODY);
-                  BackpackTraits traits = BackpackTraits.get(backpack);
-                  if (traits == null) {
-                        return;
-                  }
-
-                  BackpackEntity.create(backpack, traits, instance.level(), instance.position().add(0, 1, 0), instance.yBodyRot + 180, Direction.UP, instance);
+            if (!ServerSave.CONFIG.keepBackpack(level())) {
+                  BackpackEntity.drop(instance);
             }
       }
 
