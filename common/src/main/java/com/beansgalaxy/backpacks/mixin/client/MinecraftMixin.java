@@ -91,6 +91,8 @@ public abstract class MinecraftMixin implements MinecraftAccessor {
             if (player != null && !pause) {
                   DeltaTracker tracker = getTimer();
                   KeyPress.INSTANCE.tick(instance, player, tracker);
+                  
+                  CommonClient.testingHitbox(instance, hitResult, player);
             }
       }
 

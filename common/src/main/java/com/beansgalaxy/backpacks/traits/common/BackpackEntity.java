@@ -129,7 +129,7 @@ public class BackpackEntity extends Entity implements ComponentHolder {
             Level level = ctx.getLevel();
             BlockPos blockPos = ctx.getClickedPos();
             Player player = ctx.getPlayer();
-
+            
             Direction clickedFace;
             Vec3 clickLocation;
             if (level.getBlockState(blockPos).getCollisionShape(level, blockPos).isEmpty()) {
@@ -141,9 +141,9 @@ public class BackpackEntity extends Entity implements ComponentHolder {
                   clickedFace = ctx.getClickedFace();
                   clickLocation = ctx.getClickLocation();
             }
-
+            
             float rotation = ctx.getRotation();
-
+            
             float yRot;
             Vec3 pos;
             switch (clickedFace) {
@@ -158,21 +158,21 @@ public class BackpackEntity extends Entity implements ComponentHolder {
                   case NORTH, SOUTH -> { // Z
                         yRot = clickedFace.toYRot();
                         pos = new Vec3(
-                                    roundToScale(clickLocation.x, 2),
+                                    roundToScale(clickLocation.x, 1),
                                     roundForY(clickLocation.y, player.getEyeY()) - 6/16.0,
                                     clickLocation.z + clickedFace.getAxisDirection().getStep() * (2 / 16f)
                         );
                   }
                   default -> {
                         pos = new Vec3(
-                                    Mth.lerp(0.85, player.getX(), clickLocation.x),
+                                    Mth.lerp(0.9, player.getX(), clickLocation.x),
                                     clickLocation.y,
-                                    Mth.lerp(0.85, player.getZ(), clickLocation.z)
+                                    Mth.lerp(0.9, player.getZ(), clickLocation.z)
                         );
                         yRot = rotation + 180;
                   }
             }
-
+            
             AABB aabb = BackpackEntity.newBoundingBox(clickedFace, pos);
             if (!level.noCollision(player, aabb.deflate(0.01))) {
                   switch (clickedFace) {
@@ -202,13 +202,13 @@ public class BackpackEntity extends Entity implements ComponentHolder {
                               yRot = rotation + 180;
                         }
                   }
-
+                  
                   aabb = BackpackEntity.newBoundingBox(clickedFace, pos);
                   if (!level.noCollision(player, aabb)) {
                         return null;
                   }
             }
-
+            
             return create(backpackStack, traits, level, pos, yRot, clickedFace, player);
       }
       
@@ -218,7 +218,12 @@ public class BackpackEntity extends Entity implements ComponentHolder {
             if (traits == null)
                   return;
             
-            BackpackEntity.create(backpack, traits, player.level(), player.position().add(0, 1, 0), player.yBodyRot + 180, Direction.UP, player);
+            float angle = player.yBodyRot + 180;
+            double radians = Math.toRadians(angle);
+            double x = Math.sin(radians) * (4.0/16.0);
+            double z = Math.cos(radians) * (4.0/16.0);
+            
+            BackpackEntity.create(backpack, traits, player.level(), player.position().add(x, 0.6, z), angle, Direction.UP, player);
       }
 
       public static @NotNull BackpackEntity create(ItemStack backpackStack, BackpackTraits traits, Level level, Vec3 pos, float yRot, Direction direction, Player player) {
@@ -278,12 +283,20 @@ public class BackpackEntity extends Entity implements ComponentHolder {
             int i = position < 0 ? -1 : 1;
             int block = (int) position;
             double v = Math.abs(position - block);
-            if (v < 0.3)
+            
+            if (v < 0.12)
                   return block;
-            else if (v > 0.7)
-                  return block + (i);
-            else
-                  return block + (i * 0.5);
+            
+            if (v > 0.89)
+                  return block + i;
+            
+            if (v < 0.38)
+                  return block + (i * 0.25);
+            
+            if (v > 0.63)
+                  return block + (i * 0.75);
+            
+            return block + (i * 0.5);
       }
 
       public ItemStack toStack() {
