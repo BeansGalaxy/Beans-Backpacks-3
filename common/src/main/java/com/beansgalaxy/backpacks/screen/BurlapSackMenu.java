@@ -205,7 +205,8 @@ public class BurlapSackMenu extends AbstractContainerMenu {
 
             @Override
             public boolean mayPlace(ItemStack pStack) {
-                  return entity.getRemainingSpace(pStack) > pStack.getCount();
+                  int space = entity.getRemainingSpace(pStack);
+                  return space >= pStack.getCount();
             }
 
             @Override

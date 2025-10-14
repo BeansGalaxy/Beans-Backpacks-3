@@ -476,7 +476,6 @@ public class CommonClient {
                         }
                         else if (count > 99) {
                               char[] chars = string.toCharArray();
-
                               for (int i1 = 0; i1 < chars.length; i1++) {
                                     char c = chars[i1];
                                     String s = CommonClass.getTinyNumberFromDigitChar(c);
