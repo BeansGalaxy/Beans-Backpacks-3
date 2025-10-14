@@ -1,4 +1,4 @@
-package com.beansgalaxy.backpacks.util;
+package com.beansgalaxy.backpacks.traits.abstract_traits;
 
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
