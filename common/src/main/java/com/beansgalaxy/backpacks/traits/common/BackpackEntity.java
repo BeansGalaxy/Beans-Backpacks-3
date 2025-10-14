@@ -3,12 +3,11 @@ package com.beansgalaxy.backpacks.traits.common;
 import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.access.BackData;
-import com.beansgalaxy.backpacks.components.equipable.EquipmentGroups;
 import com.beansgalaxy.backpacks.components.reference.NonTrait;
 import com.beansgalaxy.backpacks.traits.IEntityTraits;
-import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.items.ModItems;
+import com.beansgalaxy.backpacks.util.CollidingVertexMap;
 import com.beansgalaxy.backpacks.util.ModSound;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
@@ -29,7 +28,6 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -54,6 +52,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import java.util.List;
 import java.util.Objects;
@@ -118,98 +117,137 @@ public class BackpackEntity extends Entity implements ComponentHolder {
             return Objects.requireNonNullElse(traits, NonTrait.INSTANCE);
 
       }
-
+      
       @Nullable
       public static BackpackEntity create(
-                  UseOnContext ctx,
-                  ItemStack backpackStack,
-                  BackpackTraits traits
-                  )
-      {
+            UseOnContext ctx,
+            ItemStack backpackStack,
+            BackpackTraits traits
+      ) {
             Level level = ctx.getLevel();
             BlockPos blockPos = ctx.getClickedPos();
             Player player = ctx.getPlayer();
             
-            Direction clickedFace;
-            Vec3 clickLocation;
+            Direction direction;
+            Vec3 cursor;
+            
             if (level.getBlockState(blockPos).getCollisionShape(level, blockPos).isEmpty()) {
                   BlockHitResult hitResult = Constants.getPlayerPOVHitResult(level, player, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE);
-                  clickedFace = HitResult.Type.MISS.equals(hitResult.getType()) ? Direction.UP : hitResult.getDirection();
-                  clickLocation = hitResult.getLocation();
+                  direction = HitResult.Type.MISS.equals(hitResult.getType())
+                        ? Direction.UP
+                        : hitResult.getDirection();
+                  cursor = hitResult.getLocation();
             }
             else {
-                  clickedFace = ctx.getClickedFace();
-                  clickLocation = ctx.getClickLocation();
+                  direction = ctx.getClickedFace();
+                  cursor = ctx.getClickLocation();
             }
-            
-            float rotation = ctx.getRotation();
             
             float yRot;
             Vec3 pos;
-            switch (clickedFace) {
-                  case WEST, EAST -> { // X
-                        yRot = clickedFace.toYRot();
-                        pos = new Vec3(
-                                    clickLocation.x + clickedFace.getAxisDirection().getStep() * (2 / 16f),
-                                    roundForY(clickLocation.y, player.getEyeY()) - 6/16.0,
-                                    roundToScale(clickLocation.z, 2)
-                        );
-                  }
+            switch (direction) {
                   case NORTH, SOUTH -> { // Z
-                        yRot = clickedFace.toYRot();
+                        double y = snapY(player.getEyeY(), cursor);
+                        double z = snapXZ(cursor.x);
+                        
                         pos = new Vec3(
-                                    roundToScale(clickLocation.x, 1),
-                                    roundForY(clickLocation.y, player.getEyeY()) - 6/16.0,
-                                    clickLocation.z + clickedFace.getAxisDirection().getStep() * (2 / 16f)
+                              z,
+                              y - 5 / 16f,
+                              cursor.z
                         );
+                        
+                        yRot = direction.toYRot();
+                  }
+                  case EAST, WEST -> { // X
+                        double y = snapY(player.getEyeY(), cursor);
+                        double z = snapXZ(cursor.z);
+                        
+                        pos = new Vec3(
+                              cursor.x,
+                              y - 5 / 16.0,
+                              z
+                        );
+                        
+                        yRot = direction.toYRot();
                   }
                   default -> {
+                        if (direction == Direction.DOWN) {
+                              cursor = cursor.add(0, -9 / 16.0, 0);
+                              direction = Direction.UP;
+                        }
+                        
                         pos = new Vec3(
-                                    Mth.lerp(0.9, player.getX(), clickLocation.x),
-                                    clickLocation.y,
-                                    Mth.lerp(0.9, player.getZ(), clickLocation.z)
+                              Mth.lerp(0.85, player.getX(), cursor.x),
+                              cursor.y,
+                              Mth.lerp(0.85, player.getZ(), cursor.z)
                         );
-                        yRot = rotation + 180;
+                        
+                        yRot = player.getYHeadRot() + 180;
                   }
             }
             
-            AABB aabb = BackpackEntity.newBoundingBox(clickedFace, pos);
-            if (!level.noCollision(player, aabb.deflate(0.01))) {
-                  switch (clickedFace) {
-                        case WEST, EAST -> { // X
-                              yRot = clickedFace.toYRot();
-                              pos = new Vec3(
-                                          clickLocation.x + clickedFace.getAxisDirection().getStep() * (2 / 16f),
-                                          blockPos.getY() + 4/16f,
-                                          blockPos.getZ() + 0.5
-                              );
-                        }
-                        case NORTH, SOUTH -> { // Z
-                              yRot = clickedFace.toYRot();
-                              pos = new Vec3(
-                                          blockPos.getX() + 0.5,
-                                          blockPos.getY() + 4/16f,
-                                          clickLocation.z + clickedFace.getAxisDirection().getStep() * (2 / 16f)
-                              );
-                        }
-                        default -> {
-                              Vec3 center = blockPos.getBottomCenter();
-                              pos = new Vec3(
-                                          center.x,
-                                          clickLocation.y,
-                                          center.z
-                              );
-                              yRot = rotation + 180;
-                        }
-                  }
+            Vector3f step = direction.step().mul(2 / 16f, 0, 2 / 16f);
+            Vec3 stepped_pos = pos.add(step.x, step.y, step.z);
+            AABB aabb = newBoundingBox(direction, stepped_pos);
+            
+            Vector3f inset = direction.step().mul(-1 / 16f, -1 / 16f, -1 / 16f);
+            AABB inset_aabb = aabb.move(inset);
+            CollidingVertexMap map = new CollidingVertexMap(inset_aabb, direction, level, cursor);
+            map.pushClippedPoints();
+            map.pushHangingPoints();
+            
+            Vector3f offset = inset.mul(-1);
+            AABB box = map.box.move(offset);
+            
+            if (!map.areClippedPointsStable() || !level.noBlockCollision(null, box)) {
+                  map.box = box;
+                  map.stabilizeHangingPoints();
+                  box = map.box;
                   
-                  aabb = BackpackEntity.newBoundingBox(clickedFace, pos);
-                  if (!level.noCollision(player, aabb)) {
+                  if (!level.noBlockCollision(player, box))
                         return null;
-                  }
             }
             
-            return create(backpackStack, traits, level, pos, yRot, clickedFace, player);
+            return create(backpackStack, traits, level, box.getBottomCenter(), yRot, direction, player);
+      }
+      
+      private static double snapXZ(double clickLocation) {
+            int iX = clickLocation < 0
+                  ? -1
+                  : 1;
+            int block = (int) clickLocation;
+            double vX = Math.abs(clickLocation - block);
+            
+            double z;
+            if (vX < 0.09)
+                  z = block;
+            else if (vX > 0.91)
+                  z = block + iX;
+            else if (vX < 0.35)
+                  z = block + (iX * 0.25);
+            else if (vX > 0.65)
+                  z = block + (iX * 0.75);
+            else
+                  z = block + (iX * 0.5);
+            
+            return z;
+      }
+      
+      private static double snapY(double targetY, Vec3 clickLocation) {
+            double i = clickLocation.y;
+            i -= 1.0 / 16;
+            double scale = 8;
+            double scaled = i * scale;
+            double v = i - targetY;
+            
+            double y;
+            if (v > 0) {
+                  y = (int) scaled / scale;
+            }
+            else {
+                  y = Mth.ceil(scaled) / scale;
+            }
+            return y;
       }
       
       public static void drop(Player player) {
@@ -256,15 +294,28 @@ public class BackpackEntity extends Entity implements ComponentHolder {
             double d = (4 / 32.0);
             double w = (8 / 32.0);
             double h = 9 / 16.0;
-
-            return switch (direction) {
-                  case NORTH, SOUTH -> new AABB(pos.x - w, pos.y, pos.z + d, pos.x + w, pos.y + h, pos.z - d); // -Z
-                  case EAST, WEST -> new AABB(pos.x - d, pos.y, pos.z - w, pos.x + d, pos.y + h, pos.z + w); // X
-                  case null, default -> {
-                        double width = (7 / 32.0);
-                        yield new AABB(pos.add(width, h, width), pos.add(-width, 0, -width));
+            
+            AABB aabb;
+            switch (direction) {
+                  case NORTH, SOUTH -> {
+                        aabb = new AABB(
+                              pos.x - w, pos.y, pos.z + d,
+                              pos.x + w, pos.y + h, pos.z - d
+                        );
                   }
-            };
+                  case EAST, WEST -> {
+                        aabb = new AABB(
+                              pos.x - d, pos.y, pos.z - w,
+                              pos.x + d, pos.y + h, pos.z + w
+                        );
+                  }
+                  default -> {
+                        double width = (7 / 32.0);
+                        aabb = new AABB(pos.add(width, h, width), pos.add(-width, 0, -width));
+                  }
+            }
+            
+            return aabb;
       }
 
       private static double roundForY(double i, double playerEye) {
