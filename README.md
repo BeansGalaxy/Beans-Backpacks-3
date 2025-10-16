@@ -37,6 +37,9 @@
     - `KeepInventory` (*default*): keeps/drops the backpack according the KeepInventory gamerule
   - Removed ticking methods which traits no longer used
  
+- **TO DO**
+  - Hovering over an item in a trait menu should show it's tooltip on the left side of the item
+ 
 
 <h2>0.10 Fabric <br> 0.10 NeoForge</h2><img width="204" height="92" align="right" alt="crafting-grid(1)" src="https://github.com/user-attachments/assets/9144fd7c-36b1-451a-ab49-538c6e0595ff" />
 
