@@ -1,6 +1,7 @@
 package com.beansgalaxy.backpacks.components.reference;
 
 import com.beansgalaxy.backpacks.components.DisplayComponent;
+import com.beansgalaxy.backpacks.components.FilterComponent;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.mojang.serialization.Codec;
@@ -8,6 +9,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.crafting.Ingredient;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -15,7 +17,8 @@ import java.util.HashMap;
 public record ReferenceRegistry(GenericTraits traits,
                                 ItemAttributeModifiers modifiers,
                                 byte utilities,
-                                DisplayComponent display
+                                DisplayComponent display,
+                                FilterComponent filter
 ) {
       public static final HashMap<ResourceLocation, ReferenceRegistry> REFERENCES = new HashMap<>();
 
@@ -28,7 +31,7 @@ public record ReferenceRegistry(GenericTraits traits,
       }
 
       public static ReferenceRegistry createEmptyReference() {
-            return new ReferenceRegistry(NonTrait.INSTANCE, ItemAttributeModifiers.EMPTY, (byte) 0, null);
+            return new ReferenceRegistry(NonTrait.INSTANCE, ItemAttributeModifiers.EMPTY, (byte) 0, null, FilterComponent.EMPTY);
       }
 
       @Nullable
@@ -59,6 +62,8 @@ public record ReferenceRegistry(GenericTraits traits,
                         DisplayComponent.STREAM_CODEC.encode(buf, reference.display);
 
                   buf.writeByte(reference.utilities);
+                  
+                  FilterComponent.STREAM_CODEC.encode(buf, reference.filter);
             }
 
             private <T extends GenericTraits> void encode(RegistryFriendlyByteBuf buf, Codec<T> codec, GenericTraits fields) {
@@ -74,18 +79,14 @@ public record ReferenceRegistry(GenericTraits traits,
 
 
                   boolean hasDisplay = buf.readBoolean();
-                  DisplayComponent displayComponent = hasDisplay ? DisplayComponent.STREAM_CODEC.decode(buf) : null;
+                  DisplayComponent display = hasDisplay ? DisplayComponent.STREAM_CODEC.decode(buf) : null;
 
                   byte utilities = buf.readByte();
-
-                  return new ReferenceRegistry(fields, modifiers, utilities, displayComponent);
+                  
+                  FilterComponent filter = FilterComponent.STREAM_CODEC.decode(buf);
+                  
+                  return new ReferenceRegistry(fields, modifiers, utilities, display, filter);
             }
       };
-
-      public record Temp(ResourceLocation parent,
-                         GenericTraits traits,
-                         ItemAttributeModifiers modifiers,
-                         byte utilities,
-                         DisplayComponent display
-      ) {}
+      
 }

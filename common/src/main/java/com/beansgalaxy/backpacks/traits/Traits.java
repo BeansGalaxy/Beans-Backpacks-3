@@ -2,6 +2,7 @@ package com.beansgalaxy.backpacks.traits;
 
 import com.beansgalaxy.backpacks.access.EquipmentSlotAccess;
 import com.beansgalaxy.backpacks.components.DisplayComponent;
+import com.beansgalaxy.backpacks.components.FilterComponent;
 import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.components.ender.EmptyEnderItem;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
@@ -33,6 +34,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import org.apache.commons.lang3.math.Fraction;
 import org.jetbrains.annotations.Nullable;
 
@@ -46,6 +48,9 @@ public interface Traits {
 
       DataComponentType<DisplayComponent>
                   DISPLAY = register(DisplayComponent.NAME, DisplayComponent.CODEC, DisplayComponent.STREAM_CODEC);
+      
+      DataComponentType<FilterComponent>
+                  FILTER = register(FilterComponent.NAME, FilterComponent.CODEC, FilterComponent.STREAM_CODEC);
 
       DataComponentType<ReferenceTrait>
                   REFERENCE = register("reference", ReferenceTrait.CODEC, ReferenceTrait.STREAM_CODEC);

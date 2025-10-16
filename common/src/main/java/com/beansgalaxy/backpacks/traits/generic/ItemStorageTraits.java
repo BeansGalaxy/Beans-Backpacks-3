@@ -1,5 +1,6 @@
 package com.beansgalaxy.backpacks.traits.generic;
 
+import com.beansgalaxy.backpacks.components.FilterComponent;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
 import com.beansgalaxy.backpacks.screen.TinyClickType;
@@ -15,12 +16,12 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.SlotAccess;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Ingredient;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -117,6 +118,12 @@ public abstract class ItemStorageTraits extends GenericTraits {
       }
 
       public boolean canItemFit(ComponentHolder holder, ItemStack inserted) {
+            FilterComponent component = FilterComponent.get(holder);
+            if (component != null && !component.isEmpty()) {
+                  if (!component.test(inserted))
+                        return false;
+            }
+            
             return inserted.getItem().canFitInsideContainerItems() && Traits.get(inserted).isEmpty();
       }
 

@@ -2,6 +2,7 @@ package com.beansgalaxy.backpacks.components.reference;
 
 import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.components.DisplayComponent;
+import com.beansgalaxy.backpacks.components.FilterComponent;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.mojang.serialization.Codec;
@@ -11,6 +12,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
+import net.minecraft.world.item.crafting.Ingredient;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -82,6 +84,15 @@ public record ReferenceTrait(ResourceLocation location) {
                   return Optional.empty();
 
             return Optional.ofNullable(reference.display());
+      }
+      
+      @NotNull
+      public Optional<FilterComponent> getFilter() {
+            ReferenceRegistry reference = ReferenceRegistry.getNullable(location);
+            if (reference == null)
+                  return Optional.empty();
+            
+            return Optional.of(reference.filter());
       }
 
       public static final Codec<ReferenceTrait> CODEC = ResourceLocation.CODEC.flatXmap(

@@ -1,7 +1,6 @@
 {
   "chest": {
-    "rows": 6,
-    "columns": 9,
+    "size": 27,
     "sound": "crunch"
   }
 }
