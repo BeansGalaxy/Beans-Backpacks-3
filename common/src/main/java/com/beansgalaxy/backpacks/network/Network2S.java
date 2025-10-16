@@ -15,7 +15,6 @@ public enum Network2S {
       PLACE_BACKPACK_2S(BackpackUseOn.class, BackpackUseOn.ID, BackpackUseOn::encode, BackpackUseOn::new, BackpackUseOn::handle),
       PICK_BLOCK_2S(PickBlock.class, PickBlock.ID, PickBlock::encode, PickBlock::new, PickBlock::handle),
       PICK_ITEM_2S(PickItem.class, PickItem.ID, PickItem::encode, PickItem::new, PickItem::handle),
-      TINY_SUB_CHEST_2S(TinyChestClick.class, TinyChestClick.ID, TinyChestClick::encode, TinyChestClick::new, TinyChestClick::handle),
       TINY_MENU_2S(TinyMenuClick.class, TinyMenuClick.ID, TinyMenuClick::encode, TinyMenuClick::new, TinyMenuClick::handle),
       TINY_HOTBAR_2S(TinyHotbarClick.class, TinyHotbarClick.ID, TinyHotbarClick::encode, TinyHotbarClick::new, TinyHotbarClick::handle),
       TINY_INTERACT_2S(TinyMenuInteract.class, TinyMenuInteract.ID, TinyMenuInteract::encode, TinyMenuInteract::new, TinyMenuInteract::handle),

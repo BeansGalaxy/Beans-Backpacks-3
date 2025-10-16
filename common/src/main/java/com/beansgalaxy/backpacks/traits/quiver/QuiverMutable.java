@@ -1,17 +1,19 @@
-package com.beansgalaxy.backpacks.traits.alchemy;
+package com.beansgalaxy.backpacks.traits.quiver;
 
 import com.beansgalaxy.backpacks.components.SlotSelection;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.abstract_traits.IMutableSelectionTrait;
+import com.beansgalaxy.backpacks.traits.generic.ChestLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.MutableChestLike;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
-public class AlchemyMutable extends MutableChestLike<AlchemyTraits> implements IMutableSelectionTrait {
+public class QuiverMutable extends MutableChestLike<QuiverTraits> implements IMutableSelectionTrait {
+      
       private final ITraitData<SlotSelection> selection;
       
-      public AlchemyMutable(AlchemyTraits traits, ComponentHolder holder) {
+      public QuiverMutable(QuiverTraits traits, ComponentHolder holder) {
             super(traits, holder);
             selection = ITraitData.NEW_SLOT_SELECTION.get(holder);
       }

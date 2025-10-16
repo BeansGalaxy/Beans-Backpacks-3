@@ -49,7 +49,7 @@ public class LunchBoxClient extends BundleClient {
 
                   int i;
                   if (slotSelection != null) {
-                        i = slotSelection.getSelectedSlot(minecraft.player);
+                        i = slotSelection.get(minecraft.player);
                   } else i = 0;
 
                   ItemStack food = stacks.get(i);

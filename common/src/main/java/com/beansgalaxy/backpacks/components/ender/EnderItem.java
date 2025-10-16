@@ -9,9 +9,7 @@ import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxTraits;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
@@ -21,7 +19,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.UseAnim;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.Cancellable;
@@ -105,7 +102,7 @@ public class EnderItem extends Item {
                         if (entity instanceof Player player) {
                               SlotSelection selection = enderTraits.get(ITraitData.SLOT_SELECTION);
                               selectedSlotSafe = selection != null
-                                                 ? selection.getSelectedSlot(player)
+                                                 ? selection.get(player)
                                                  : 0;
                         }
                         else selectedSlotSafe = 0;

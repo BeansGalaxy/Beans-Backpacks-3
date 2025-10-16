@@ -42,16 +42,10 @@ public abstract class AbstractMenuMixin {
             }
 
             if (menuKeyDown) {
-                  if (slot instanceof EquipmentSlotAccess) {
-                        ItemStorageTraits.runIfPresent(stack, trait -> {
-                              trait.hotkeyUse(slot, null, button, actionType, player, ci);
-                        });
-                  } else {
-                        BackpackTraits.runIfEquipped(player, (trait, equipmentSlot) -> {
-                              trait.hotkeyUse(slot, equipmentSlot, button, actionType, player, ci);
-                              return ci.isCancelled();
-                        });
-                  }
+                  BackpackTraits.runIfEquipped(player, (trait, equipmentSlot) -> {
+                        trait.hotkeyUse(slot, equipmentSlot, button, actionType, player, ci);
+                        return ci.isCancelled();
+                  });
             }
       }
 }

@@ -5,6 +5,7 @@ import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.abstract_traits.IDraggingTrait;
 import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
+import com.beansgalaxy.backpacks.traits.generic.ChestLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.util.ModSound;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
@@ -40,7 +41,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 import java.util.Optional;
 
-public class AlchemyTraits extends BundleLikeTraits implements ISlotSelectorTrait, IDraggingTrait {
+public class AlchemyTraits extends ChestLikeTraits implements ISlotSelectorTrait, IDraggingTrait {
       public static final String NAME = "alchemy";
 
       public AlchemyTraits(ModSound sound, int size) {
@@ -159,7 +160,7 @@ public class AlchemyTraits extends BundleLikeTraits implements ISlotSelectorTrai
 
                         if (!consumedStack.isEmpty()) {
                               itemStacks.addFirst(consumedStack);
-                              mutable.setSelectedSlot(player, mutable.getSelectedSlot(player));
+                              mutable.selection().set(player, mutable.getSelectedSlot(player));
 
                               mutable.growSelectedSlot(0);
                         }

@@ -18,12 +18,49 @@ public class SlotSelection {
             SLOT_SELECTION_COUNT++;
       }
 
-      public int getSelectedSlot(Player player) {
+      public int get(Player player) {
             return slots.get(player.getId());
       }
 
-      public void setSelectedSlot(Player player, int selectedSlot) {
+      public void set(Player player, int selectedSlot) {
             slots.put(player.getId(), selectedSlot);
+      }
+      
+      public void limit(int slot, int size) {
+            for (int key : slots.keySet()) {
+                  int selectedSlot = slots.get(key);
+                  if (selectedSlot == 0)
+                        continue;
+                  
+                  int safeSlot = selectedSlot - 1;
+                  int i = safeSlot < slot ? selectedSlot : safeSlot;
+                  slots.put(key, i);
+            }
+      }
+      
+      public void grow(int slot) {
+            for (int key : slots.keySet()) {
+                  int selectedSlot = slots.get(key);
+                  int i;
+                  if (slot == 0)
+                        i = selectedSlot + 1;
+                  else
+                        i = selectedSlot < slot ? selectedSlot : selectedSlot + 1;
+                  
+                  slots.put(key, i);
+            }
+      }
+      
+      public void ceil(int max) {
+            for (int key : slots.keySet()) {
+                  int i = slots.get(key);
+                  if (i > max)
+                        slots.put(key, max);
+            }
+      }
+      
+      public void clear() {
+            slots.clear();
       }
 
       @NotNull
@@ -34,7 +71,6 @@ public class SlotSelection {
       }
 
       public static final StreamCodec<RegistryFriendlyByteBuf, SlotSelection> STREAM_CODEC = new StreamCodec<>() {
-
             @Override
             public void encode(RegistryFriendlyByteBuf buf, SlotSelection slotSelection) {
                   int size = slotSelection.slots.size();
@@ -59,31 +95,6 @@ public class SlotSelection {
             }
       };
 
-      public void limit(int slot, int size) {
-            for (int key : slots.keySet()) {
-                  int selectedSlot = slots.get(key);
-                  if (selectedSlot == 0)
-                        continue;
-
-                  int safeSlot = selectedSlot - 1;
-                  int i = safeSlot < slot ? selectedSlot : safeSlot;
-                  slots.put(key, i);
-            }
-      }
-
-      public void grow(int slot) {
-            for (int key : slots.keySet()) {
-                  int selectedSlot = slots.get(key);
-                  int i;
-                  if (slot == 0)
-                        i = selectedSlot + 1;
-                  else
-                        i = selectedSlot < slot ? selectedSlot : selectedSlot + 1;
-
-                  slots.put(key, i);
-            }
-      }
-
       @Override
       public boolean equals(Object o) {
             if (this == o) return true;
@@ -94,17 +105,5 @@ public class SlotSelection {
       @Override
       public int hashCode() {
             return Objects.hashCode(id);
-      }
-
-      public void clear() {
-            slots.clear();
-      }
-
-      public void ceil(int max) {
-            for (int key : slots.keySet()) {
-                  int i = slots.get(key);
-                  if (i > max)
-                        slots.put(key, max);
-            }
       }
 }

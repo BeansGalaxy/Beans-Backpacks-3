@@ -44,12 +44,12 @@ public class MutableSlotSelector<T extends BundleLikeTraits> extends MutableBund
       }
 
       public void setSelectedSlot(Player player, int slot) {
-            selection.setSelectedSlot(player, slot);
+            selection.set(player, slot);
       }
 
       @Override
       public int getSelectedSlot(Player player) {
-            return selection.getSelectedSlot(player);
+            return selection.get(player);
       }
 
       public void limitSelectedSlot(int slot) {

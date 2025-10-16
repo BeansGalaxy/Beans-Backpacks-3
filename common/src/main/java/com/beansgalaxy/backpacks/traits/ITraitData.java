@@ -37,6 +37,9 @@ public abstract class ITraitData<T> {
 
       public static final DataComponentType<SlotSelection>
                   SLOT_SELECTION = Traits.register("data_selection", Codec.unit(SlotSelection::new), SlotSelection.STREAM_CODEC);
+      
+      public static final TraitDataComponentType<SlotSelection>
+                  NEW_SLOT_SELECTION = register("new_data_selection", Codec.unit(SlotSelection::new), SlotSelection.STREAM_CODEC, SlotSelector::new);
 
       public static final DataComponentType<UtilityComponent>
                   UTILITIES = Traits.register("utility_slots", UtilityComponent.CODEC, UtilityComponent.STREAM_CODEC);
@@ -144,12 +147,13 @@ public abstract class ITraitData<T> {
 
             @Override
             public DataComponentType<SlotSelection> type() {
-                  return SLOT_SELECTION;
+                  return NEW_SLOT_SELECTION;
             }
 
             @Override
             public boolean isEmpty(SlotSelection data) {
-                  return false;
+                  List<ItemStack> stacks = holder.get(ITraitData.ITEM_STACKS);
+                  return stacks == null || stacks.isEmpty();
             }
 
             @Override
@@ -160,6 +164,21 @@ public abstract class ITraitData<T> {
                         value = Objects.requireNonNullElse(t, new SlotSelection());
                   }
                   return value;
+            }
+            
+            @Override
+            public void push() {
+                  List<ItemStack> stacks = holder.get(ITraitData.ITEM_STACKS);
+                  if (stacks == null || stacks.isEmpty()) {
+                        holder().remove(type());
+                  }
+                  else if (isDirty) {
+                        int size = stacks.size();
+                        if (value != null)
+                              value.ceil(size);
+                        
+                        holder().set(type(), value);
+                  }
             }
       }
 

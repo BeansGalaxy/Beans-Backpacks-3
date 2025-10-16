@@ -87,20 +87,20 @@ public interface ISlotSelectorTrait {
       }
 
       default boolean mouseScrolled(Player player, ComponentHolder holder, Level level, Slot hoveredSlot, int containerId, int scrolled) {
-            MutableSlotSelector<?> mutable = mutable(holder);
-            int startSlot = mutable.getSelectedSlot(player);
+            IMutableSelectionTrait mutable = mutable(holder);
+            int startSlot = mutable.selection().get(player);
 
             int i = mutable.stepScrollTo(startSlot, scrolled);
             if (i == startSlot)
                   return false;
 
-            mutable.setSelectedSlot(player, i);
+            mutable.selection().set(player, i);
             SyncSelectedSlot.send(containerId, hoveredSlot.index, i);
 
             return true;
       }
 
-      MutableSlotSelector<?> mutable(ComponentHolder holder);
+      <T extends MutableBundleLike<?> & IMutableSelectionTrait> T mutable(ComponentHolder holder);
 
       boolean isFull(ComponentHolder holder);
 
@@ -115,7 +115,7 @@ public interface ISlotSelectorTrait {
       }
 
       default int getSelectedSlot(ComponentHolder holder, Player player) {
-            return getSlotSelection(holder).getSelectedSlot(player);
+            return getSlotSelection(holder).get(player);
       }
 
       @Nullable

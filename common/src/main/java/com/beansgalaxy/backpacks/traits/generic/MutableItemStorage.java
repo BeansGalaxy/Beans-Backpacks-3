@@ -12,8 +12,5 @@ public interface MutableItemStorage extends MutableTraits {
       ItemStack addItem(ItemStack inserted);
 
       void moveItemsTo(MutableItemStorage to, Player player, boolean fullStack);
-
-      default void limitSelectedSlot(int index) {
-
-      }
+      
 }

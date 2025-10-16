@@ -70,11 +70,7 @@ public abstract class GenericTraits {
       public boolean isStackable(ComponentHolder holder) {
             return false;
       }
-
-      public int getAnalogOutput(ComponentHolder holder) {
-            return 0;
-      }
-
+      
       public void onPlayerInteract(LivingEntity owner, Player player, ItemStack backpack, CallbackInfoReturnable<InteractionResult> cir) {
 
       }

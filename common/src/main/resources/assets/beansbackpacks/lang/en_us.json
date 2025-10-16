@@ -39,9 +39,8 @@
   "traits.beansbackpacks.tooltip.alchemy.solo": "§0.§r 1 Potion",
   "traits.beansbackpacks.tooltip.alchemy.size": "§0.§r %d Potions",
 
-  "traits.beansbackpacks.tooltip.chest.size": "§0.§r %dx%d Slots",
   "traits.beansbackpacks.tooltip.chest.solo": "§0.§r 1 Slot",
-  "traits.beansbackpacks.tooltip.chest.line": "§0.§r %d Slots",
+  "traits.beansbackpacks.tooltip.chest.size": "§0.§r %d Slots",
 
   "traits.beansbackpacks.tooltip.lunch.solo": "§0.§r 1 Edible Stack",
   "traits.beansbackpacks.tooltip.lunch.size": "§0.§r %d Edible Stacks",

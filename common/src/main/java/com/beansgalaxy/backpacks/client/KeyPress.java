@@ -8,7 +8,6 @@ import com.beansgalaxy.backpacks.network.serverbound.BackpackUseOn;
 import com.beansgalaxy.backpacks.network.serverbound.InstantKeyPress;
 import com.beansgalaxy.backpacks.network.serverbound.SyncHotkey;
 import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
-import com.beansgalaxy.backpacks.traits.chest.screen.MenuChestScreen;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.DeltaTracker;
@@ -81,12 +80,12 @@ public class KeyPress {
             isPressed actionKey = KeyPress.isPressed(minecraft, KeyPress.getActionKeyBind());
             boolean actionKeyPressed = actionKey.pressed() && INSTANT_KEY.isUnbound();
             isPressed menusKey = KeyPress.isPressed(minecraft, KeyPress.getMenusKeyBind());
-            int tinyChestSlot = minecraft.screen instanceof MenuChestScreen screen ? screen.slotIndex() : -1;
-            boolean menuKeyPressed = tinyChestSlot == -1 && menusKey.pressed();
+            int tinyChestSlot = -1;
+            boolean menuKeyPressed = menusKey.pressed();
 
             BackData backData = BackData.get(player);
 
-            if (actionKeyPressed == backData.isActionKeyDown() && menuKeyPressed == backData.isMenuKeyDown() && tinyChestSlot == backData.getTinySlot())
+            if (actionKeyPressed == backData.isActionKeyDown() && menuKeyPressed == backData.isMenuKeyDown())
                   return;
 
             backData.setActionKey(actionKeyPressed);

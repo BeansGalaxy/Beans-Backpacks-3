@@ -138,7 +138,7 @@ public class LunchBoxTraits extends BundleLikeTraits implements ISlotSelectorTra
                   if (!consumedStack.isEmpty()) {
                         itemStacks.addFirst(consumedStack);
                         if (entity instanceof Player player)
-                              mutable.setSelectedSlot(player, mutable.getSelectedSlot(player));
+                              mutable.selection().set(player, mutable.getSelectedSlot(player));
 
                         mutable.growSelectedSlot(0);
                   }

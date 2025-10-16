@@ -7,7 +7,6 @@ import com.beansgalaxy.backpacks.components.ender.EmptyEnderItem;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
 import com.beansgalaxy.backpacks.platform.Services;
-import com.beansgalaxy.backpacks.traits.abstract_traits.IDraggingTrait;
 import com.beansgalaxy.backpacks.traits.alchemy.AlchemyCodecs;
 import com.beansgalaxy.backpacks.traits.alchemy.AlchemyTraits;
 import com.beansgalaxy.backpacks.traits.backpack.BackpackCodecs;
@@ -71,9 +70,9 @@ public interface Traits {
 
       DataComponentType<Byte>
                   UTILITIES = register(UtilityComponent.NAME, UtilityComponent.SIZE_CODEC, ByteBufCodecs.BYTE);
-
+      
       TraitComponentKind<ChestTraits>
-                  CHEST = TraitComponentKind.registerItemStorage(ChestTraits.NAME, ChestCodecs.INSTANCE);
+                  CHEST = TraitComponentKind.registerBundleLike(ChestTraits.NAME, ChestCodecs.INSTANCE);
 
       TraitComponentKind<BackpackTraits>
                   BACKPACK = TraitComponentKind.registerBundleLike(BackpackTraits.NAME, BackpackCodecs.INSTANCE);

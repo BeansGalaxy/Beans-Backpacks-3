@@ -10,14 +10,12 @@ import com.beansgalaxy.backpacks.data.ServerSave;
 import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
-import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.beansgalaxy.backpacks.traits.quiver.QuiverTraits;
 import com.beansgalaxy.backpacks.util.ModSound;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
 import com.mojang.serialization.DataResult;
-import net.minecraft.core.Direction;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
@@ -230,7 +228,7 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
             if (slotSelection == null)
                   return;
 
-            int selectedSlot = slotSelection.getSelectedSlot(instance);
+            int selectedSlot = slotSelection.get(instance);
             if (selectedSlot == 0)
                   return;
 
@@ -323,7 +321,7 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
             SlotSelection slotSelection1 = item.getOrDefault(ITraitData.SLOT_SELECTION, new SlotSelection());
             int max = getMaxSelection(item);
 
-            slotSelection1.setSelectedSlot(instance, Math.min(selection, max));
+            slotSelection1.set(instance, Math.min(selection, max));
             item.set(ITraitData.SLOT_SELECTION, slotSelection1);
       }
 

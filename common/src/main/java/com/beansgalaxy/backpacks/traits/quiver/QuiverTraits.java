@@ -9,6 +9,7 @@ import com.beansgalaxy.backpacks.traits.abstract_traits.IDraggingTrait;
 import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
 import com.beansgalaxy.backpacks.traits.abstract_traits.MutableSlotSelector;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
+import com.beansgalaxy.backpacks.traits.generic.ChestLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.generic.MutableBundleLike;
 import com.beansgalaxy.backpacks.util.ModSound;
@@ -26,7 +27,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.List;
 import java.util.Optional;
 
-public class QuiverTraits extends BundleLikeTraits implements ISlotSelectorTrait, IDraggingTrait {
+public class QuiverTraits extends ChestLikeTraits implements ISlotSelectorTrait, IDraggingTrait {
       public static final String NAME = "quiver";
 
       public QuiverTraits(ModSound sound, int size) {
@@ -75,23 +76,6 @@ public class QuiverTraits extends BundleLikeTraits implements ISlotSelectorTrait
             return QuiverClient.INSTANCE;
       }
 
-
-      @Override
-      public boolean isFull(ComponentHolder holder) {
-            List<ItemStack> stacks = holder.get(ITraitData.ITEM_STACKS);
-            if (stacks == null || stacks.isEmpty() || stacks.size() < size())
-                  return false;
-
-            for (ItemStack stack : stacks) {
-                  int maxStackSize = stack.getMaxStackSize();
-                  int count = stack.getCount();
-                  if (maxStackSize != count)
-                        return false;
-            }
-
-            return true;
-      }
-
       public boolean pickupToQuiver(Player player, int slot, ItemStack backpack, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
             List<ItemStack> stacks = backpack.get(ITraitData.ITEM_STACKS);
             Fraction fraction = stacks == null || stacks.isEmpty()
@@ -134,8 +118,8 @@ public class QuiverTraits extends BundleLikeTraits implements ISlotSelectorTrait
       }
 
       @Override
-      public MutableSlotSelector<QuiverTraits> mutable(ComponentHolder holder) {
-            return new MutableSlotSelector<>(this, holder);
+public QuiverMutable mutable(ComponentHolder holder) {
+            return new QuiverMutable(this, holder);
       }
 
       @Override

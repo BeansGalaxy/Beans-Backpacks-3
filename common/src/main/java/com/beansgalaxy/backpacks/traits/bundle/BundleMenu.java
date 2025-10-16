@@ -33,13 +33,16 @@ public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
             updateSize();
             topPos -= rows * 6;
       }
+      
+      protected boolean hasSpace() {
+            return traits.fullness(holder).compareTo(Fraction.ONE) != 0;
+      }
 
       private void updateSize() {
             List<ItemStack> stacks = holder.get(ITraitData.ITEM_STACKS);
 
             this.size = stacks == null ? 0 : stacks.size();
-            boolean hasSpace = traits.fullness(holder).compareTo(Fraction.ONE) != 0;
-            int sudoSize = size + (hasSpace ? 1 : 0);
+            int sudoSize = size + (hasSpace() ? 1 : 0);
 
             boolean forCol = false;
             int columns = Math.min(sudoSize, 4);

@@ -1,7 +1,8 @@
 package com.beansgalaxy.backpacks.traits.chest;
 
 import com.beansgalaxy.backpacks.traits.ITraitCodec;
-import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
+import com.beansgalaxy.backpacks.traits.alchemy.AlchemyTraits;
+import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.util.ModSound;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -15,18 +16,13 @@ public class ChestCodecs implements ITraitCodec<ChestTraits> {
 
       public static final Codec<ChestTraits> CODEC = RecordCodecBuilder.create(in ->
             in.group(
-                        PrimitiveCodec.INT.fieldOf("rows").validate(rows ->
-                              rows < 16 ? rows > 0 ? DataResult.success(rows)
-                              : DataResult.error(() -> "The provided field \"rows\" must be greater than 0; Provided=" + rows, 1)
-                              : DataResult.error(() -> "The provided field \"rows\" must be smaller than 16; Provided=" + rows, 15)
-                        ).forGetter(chest -> chest.rows),
-                        PrimitiveCodec.INT.fieldOf("columns").validate(columns ->
-                              columns < 16 ? columns > 0 ? DataResult.success(columns)
-                              : DataResult.error(() -> "The provided field \"columns\" must be greater than 0; Provided=" + columns, 1)
-                              : DataResult.error(() -> "The provided field \"columns\" must be smaller than 16; Provided=" + columns, 15)
-                        ).forGetter(chest -> chest.columns),
+                        PrimitiveCodec.INT.fieldOf("size").validate(size ->
+                              size < 256 ? size > 0 ? DataResult.success(size)
+                              : DataResult.error(() -> "The provided field \"size\" must be greater than 0; Provided=" + size, 1)
+                              : DataResult.error(() -> "The provided field \"size\" must be smaller than 256; Provided=" + size, 255)
+                        ).forGetter(BundleLikeTraits::size),
                         ModSound.MAP_CODEC.forGetter(ChestTraits::sound)
-            ).apply(in, (rows, columns, sound) -> new ChestTraits(null, sound, rows, columns))
+            ).apply(in, (size, sound) -> new ChestTraits(sound, size))
       );
 
       @Override
@@ -35,17 +31,16 @@ public class ChestCodecs implements ITraitCodec<ChestTraits> {
       }
 
       public static final StreamCodec<RegistryFriendlyByteBuf, ChestTraits> STREAM_CODEC = StreamCodec.of((buf, traits) -> {
-            ModSound.STREAM_CODEC.encode(buf, traits.sound());
-            buf.writeByte(traits.rows);
-            buf.writeByte(traits.columns);
+                  ModSound.STREAM_CODEC.encode(buf, traits.sound());
+                  buf.writeInt(traits.size());
       }, buf ->
-            new ChestTraits(null,
-                  ModSound.STREAM_CODEC.decode(buf),
-                  buf.readByte(),
-                  buf.readByte()
-      ));
-      
-      @Override
+            new ChestTraits(
+                        ModSound.STREAM_CODEC.decode(buf),
+                        buf.readInt()
+            )
+      );
+
+            @Override
       public StreamCodec<RegistryFriendlyByteBuf, ChestTraits> streamCodec() {
             return STREAM_CODEC;
       }

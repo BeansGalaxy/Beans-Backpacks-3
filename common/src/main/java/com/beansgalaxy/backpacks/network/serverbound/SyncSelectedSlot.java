@@ -85,7 +85,7 @@ public class SyncSelectedSlot implements Packet2S {
                   selection = new SlotSelection();
             }
 
-            selection.setSelectedSlot(sender, selectedSlot);
+            selection.set(sender, selectedSlot);
       }
 
       public static Type<SyncSelectedSlot> ID = new Type<>(ResourceLocation.parse(Constants.MOD_ID + ":sync_selected_slot_s"));
