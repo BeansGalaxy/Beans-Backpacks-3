@@ -6,6 +6,7 @@
   - Overhauled controls to insert/remove items
   - Right-Clicking opens a tooltip where the mouse is used to move items
   - In Lunch Boxes, Alchemy Bags, and Quivers; MWheel Scrolling selects an item to use
+  - Overhauled hidden `chest` trait to work more simmilar to `bundle` traits
 - **Placing Backpacks**
   - Hanging snaps to where 4 corners are supported
   - Placing upright moves to be fully supported on the block
@@ -22,6 +23,8 @@
     - Combination of `bundle`, `placeable`, & `equipable` components
   - Added `parent` field to Reference Traits
     - Takes an existing `trait_id` for the current Reference to overlay ontop of
+  - Added `beansbackpacks:filter` which whitelists item's allowed onto the storage
+    - Works in a Reference too
 - **Bug Fixes**
   - Looking away from a block while trying to place right-clicks that block and cancels the placement
   - When opening the Smithing Screen, the Armor Stand started the wrong way
@@ -33,10 +36,6 @@
     - `Never`: always drops the backpack
     - `KeepInventory` (*default*): keeps/drops the backpack according the KeepInventory gamerule
   - Removed ticking methods which traits no longer used
- 
-- **TO DO**
-  - component to filter inserted items by id or tags
-  - chest-like traits
  
 
 <h2>0.10 Fabric <br> 0.10 NeoForge</h2><img width="204" height="92" align="right" alt="crafting-grid(1)" src="https://github.com/user-attachments/assets/9144fd7c-36b1-451a-ab49-538c6e0595ff" />
