@@ -3,7 +3,7 @@
   "minVersion": "0.8",
   "package": "com.beansgalaxy.backpacks.mixin",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [ "InventoryMixin", "ItemRendererMixin", "ItemsMixin", "ItemStackMixin" ],
+  "mixins": [ "AttributeUtilMixin", "InventoryMixin", "ItemRendererMixin", "ItemsMixin", "ItemStackMixin" ],
   "client": [
     "AbstractContainerScreenMixin"
   ],

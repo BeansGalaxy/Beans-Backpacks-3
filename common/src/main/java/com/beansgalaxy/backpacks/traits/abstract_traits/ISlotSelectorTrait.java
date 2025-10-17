@@ -88,13 +88,13 @@ public interface ISlotSelectorTrait {
 
       default boolean mouseScrolled(Player player, ComponentHolder holder, Level level, Slot hoveredSlot, int containerId, int scrolled) {
             IMutableSelectionTrait mutable = mutable(holder);
-            int startSlot = mutable.selection().get(player);
+            int startSlot = mutable.getSelectedSlot(player);
 
             int i = mutable.stepScrollTo(startSlot, scrolled);
             if (i == startSlot)
                   return false;
 
-            mutable.selection().set(player, i);
+            mutable.setSelectedSlot(player, i);
             SyncSelectedSlot.send(containerId, hoveredSlot.index, i);
 
             return true;

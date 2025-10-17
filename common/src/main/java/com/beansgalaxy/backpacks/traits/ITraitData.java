@@ -34,12 +34,9 @@ public abstract class ITraitData<T> {
 
       public static final TraitDataComponentType<Integer>
                   AMOUNT = register("data_amount", ExtraCodecs.NON_NEGATIVE_INT, ByteBufCodecs.INT, Amount::new);
-
+      
       public static final DataComponentType<SlotSelection>
                   SLOT_SELECTION = Traits.register("data_selection", Codec.unit(SlotSelection::new), SlotSelection.STREAM_CODEC);
-      
-      public static final TraitDataComponentType<SlotSelection>
-                  NEW_SLOT_SELECTION = register("new_data_selection", Codec.unit(SlotSelection::new), SlotSelection.STREAM_CODEC, SlotSelector::new);
 
       public static final DataComponentType<UtilityComponent>
                   UTILITIES = Traits.register("utility_slots", UtilityComponent.CODEC, UtilityComponent.STREAM_CODEC);
@@ -139,49 +136,7 @@ public abstract class ITraitData<T> {
       }
 
 // ===================================================================================================================== TRAIT DATA
-
-      static class SlotSelector extends ITraitData<SlotSelection> {
-            SlotSelector(ComponentHolder holder) {
-                  super(holder);
-            }
-
-            @Override
-            public DataComponentType<SlotSelection> type() {
-                  return NEW_SLOT_SELECTION;
-            }
-
-            @Override
-            public boolean isEmpty(SlotSelection data) {
-                  List<ItemStack> stacks = holder.get(ITraitData.ITEM_STACKS);
-                  return stacks == null || stacks.isEmpty();
-            }
-
-            @Override
-            public SlotSelection get() {
-                  if (value == null) {
-                        markDirty();
-                        SlotSelection t = holder().get(type());
-                        value = Objects.requireNonNullElse(t, new SlotSelection());
-                  }
-                  return value;
-            }
-            
-            @Override
-            public void push() {
-                  List<ItemStack> stacks = holder.get(ITraitData.ITEM_STACKS);
-                  if (stacks == null || stacks.isEmpty()) {
-                        holder().remove(type());
-                  }
-                  else if (isDirty) {
-                        int size = stacks.size();
-                        if (value != null)
-                              value.ceil(size);
-                        
-                        holder().set(type(), value);
-                  }
-            }
-      }
-
+      
       static class SoloItem extends ITraitData<ItemStack> {
             public SoloItem(ComponentHolder holder) {
                   super(holder);
@@ -234,12 +189,12 @@ public abstract class ITraitData<T> {
             public void push() {
                   List<ItemStack> stacks = value == null
                               ? holder.get(type())
-                              : value.stream().filter(itemStack -> !itemStack.isEmpty()).toList();
+                              : value;
 
                   if (stacks == null)
                         return;
 
-                  value = stacks;
+                  value = stacks.stream().filter(itemStack -> !itemStack.isEmpty()).toList();
 
                   if (value.isEmpty()) {
                         holder.remove(type());

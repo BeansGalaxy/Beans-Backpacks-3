@@ -2,11 +2,8 @@ package com.beansgalaxy.backpacks.traits.alchemy;
 
 import com.beansgalaxy.backpacks.components.SlotSelection;
 import com.beansgalaxy.backpacks.traits.ITraitData;
-import com.beansgalaxy.backpacks.traits.bundle.BundleClient;
 import com.beansgalaxy.backpacks.traits.chest.ChestClient;
-import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.ChestLikeTraits;
-import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxClient;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;

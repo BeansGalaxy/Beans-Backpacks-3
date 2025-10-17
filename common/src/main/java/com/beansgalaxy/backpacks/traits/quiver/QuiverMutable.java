@@ -1,31 +1,24 @@
 package com.beansgalaxy.backpacks.traits.quiver;
 
-import com.beansgalaxy.backpacks.components.SlotSelection;
-import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.abstract_traits.IMutableSelectionTrait;
-import com.beansgalaxy.backpacks.traits.generic.ChestLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.MutableChestLike;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
+import com.beansgalaxy.backpacks.util.SlotSelectorData;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 public class QuiverMutable extends MutableChestLike<QuiverTraits> implements IMutableSelectionTrait {
-      
-      private final ITraitData<SlotSelection> selection;
+      private final SlotSelectorData selection;
       
       public QuiverMutable(QuiverTraits traits, ComponentHolder holder) {
             super(traits, holder);
-            selection = ITraitData.NEW_SLOT_SELECTION.get(holder);
+            selection = new SlotSelectorData(holder, this::getItemStacks);
       }
       
       @Override
-      public SlotSelection selection() {
-            return selection.get();
-      }
-      
-      @Override public void push() {
-            selection.push();
+      public void push() {
             super.push();
+            selection.push();
       }
       
       @Override
@@ -33,18 +26,24 @@ public class QuiverMutable extends MutableChestLike<QuiverTraits> implements IMu
             return traits.canItemFit(holder, stack);
       }
       
+      
       @Override
       public int getSelectedSlot(Player player) {
-            return selection().get(player);
+            return selection.getSelectedSlot(player);
       }
       
       @Override
       public void growSelectedSlot(int slot) {
-            selection().grow(slot);
+            selection.growSelectedSlot(slot);
       }
       
       @Override
       public void limitSelectedSlot(int index) {
-            selection().limit(index, getItemStacks().size());
+            selection.limitSelectedSlot(index, getItemStacks().size());
+      }
+      
+      @Override
+      public void setSelectedSlot(Player player, int slot) {
+            selection.setSelectedSlot(player, slot);
       }
 }

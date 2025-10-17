@@ -14,17 +14,37 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 @Mixin(Item.class)
-public class ItemMixin {
-
+public abstract class ItemMixin {
+      
+      @Deprecated
+      @Inject(method="verifyComponentsAfterLoad", at=@At("HEAD"))
+      private void convertLegacyChestTraits(ItemStack pStack, CallbackInfo ci) {
+            ItemContainerContents contents = pStack.get(ITraitData.CHEST);
+            if (contents == null)
+                  return;
+            
+            Stream<ItemStack> stream = contents.nonEmptyStream();
+            
+            List<ItemStack> stacks = pStack.get(ITraitData.ITEM_STACKS);
+            if (stacks != null)
+                  stream = Stream.concat(stream, stacks.stream());
+            
+            pStack.set(ITraitData.ITEM_STACKS, stream.toList());
+      }
+      
       @Inject(method = "use", at = @At("HEAD"), cancellable = true)
       private void backpackUseOn(Level level, Player player, InteractionHand hand, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
             ItemStack backpack = player.getItemInHand(hand);

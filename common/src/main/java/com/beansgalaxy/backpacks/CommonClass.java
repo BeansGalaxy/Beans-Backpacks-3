@@ -1,21 +1,24 @@
 package com.beansgalaxy.backpacks;
 
+import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.data.config.ClientConfig;
 import com.beansgalaxy.backpacks.items.ModBlocks;
 import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.items.ModItems;
 import com.beansgalaxy.backpacks.util.ModSound;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.animal.allay.Allay;
@@ -24,11 +27,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class CommonClass {
@@ -168,5 +173,34 @@ public class CommonClass {
                   case '9' -> "\u2089";
                   default -> "\u2080";
             };
+      }
+      
+      public static void addAttributesToTooltip(Consumer<Component> pTooltipAdder, EquipmentSlotGroup slotGroup, MutableBoolean needsLabel, ItemStack backpack) {
+            BackpackTraits traits = BackpackTraits.get(backpack);
+            if (traits != null) {
+                  if (traits.slots().test(slotGroup)) {
+                        if (needsLabel.isTrue()) {
+                              pTooltipAdder.accept(CommonComponents.EMPTY);
+                              pTooltipAdder.accept(Component.translatable("item.modifiers." + slotGroup.getSerializedName()).withStyle(ChatFormatting.GRAY));
+                              needsLabel.setFalse();
+                        }
+
+                        traits.client().appendTooltipLines(traits, pTooltipAdder);
+                  }
+            }
+            
+            if (EquipmentSlotGroup.BODY.equals(slotGroup)) {
+                  byte size = UtilityComponent.getSize(backpack);
+                  if (size != 0) {
+                        if (needsLabel.isTrue()) {
+                              pTooltipAdder.accept(CommonComponents.EMPTY);
+                              pTooltipAdder.accept(Component.translatable("item.modifiers." + slotGroup.getSerializedName()).withStyle(ChatFormatting.GRAY));
+                              needsLabel.setFalse();
+                        }
+
+                        MutableComponent translatable = Component.translatable("traits.beansbackpacks.equipment.utility", size);
+                        pTooltipAdder.accept(translatable.withStyle(ChatFormatting.GOLD));
+                  }
+            }
       }
 }

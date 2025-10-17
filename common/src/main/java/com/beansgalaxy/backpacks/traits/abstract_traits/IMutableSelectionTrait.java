@@ -1,13 +1,12 @@
 package com.beansgalaxy.backpacks.traits.abstract_traits;
 
 import com.beansgalaxy.backpacks.components.SlotSelection;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.List;
 
 public interface IMutableSelectionTrait {
-      
-      SlotSelection selection();
       
       List<ItemStack> getItemStacks();
       
@@ -45,4 +44,10 @@ public interface IMutableSelectionTrait {
       default boolean isAcceptableSelection(ItemStack stack) {
             return true;
       }
+      
+      void setSelectedSlot(Player player, int i);
+      
+      int getSelectedSlot(Player player);
+      
+      
 }

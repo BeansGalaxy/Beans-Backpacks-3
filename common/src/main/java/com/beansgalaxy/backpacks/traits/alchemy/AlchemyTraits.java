@@ -38,6 +38,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import javax.xml.crypto.Data;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,7 +62,7 @@ public class AlchemyTraits extends ChestLikeTraits implements ISlotSelectorTrait
       @Override
       public boolean canItemFit(ComponentHolder holder, ItemStack inserted) {
             Item item = inserted.getItem();
-            boolean isPotion = item instanceof PotionItem || Items.HONEY_BOTTLE.equals(item) || Items.MILK_BUCKET.equals(item);
+            boolean isPotion = item instanceof PotionItem || Items.HONEY_BOTTLE.equals(item) || Items.MILK_BUCKET.equals(item) || Items.OMINOUS_BOTTLE.equals(item);
             return isPotion && super.canItemFit(holder, inserted);
       }
 
@@ -96,7 +97,43 @@ public class AlchemyTraits extends ChestLikeTraits implements ISlotSelectorTrait
                   PotionContents potioncontents = selected.get(DataComponents.POTION_CONTENTS);
                   if (potioncontents != null)
                         usePotionLikeItem(potioncontents, level, player, selected, item);
-                  else return;
+                  else {
+                        Integer ominousAmplifier = selected.get(DataComponents.OMINOUS_BOTTLE_AMPLIFIER);
+                        if (ominousAmplifier != null) {
+                              Vec3 movement = player.getDeltaMovement().multiply(2, 0.5, 2);
+                              ColorParticleOption effect = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, FastColor.ARGB32.color(255, 0x493348));
+                              
+                              for (int j = 0; j < 15; j++) {
+                                    double random0 = level.random.nextDouble();
+                                    double random1 = level.random.nextDouble();
+                                    double y = Mth.lerp(random0, player.getY() + player.getBbHeight(), player.getY());
+                                    
+                                    double centered0 = random0 - 0.5;
+                                    double xSpeed = movement.x + centered0 * 0.1;
+                                    double ySpeed = movement.y - random1 * 0.2;
+                                    double centered1 = random1 - 0.5;
+                                    double zSpeed = movement.z + centered1 * 0.1;
+                                    
+                                    level.addParticle(effect, player.getX(), y, player.getZ(), xSpeed, ySpeed, zSpeed);
+                                    
+                                    if (level.random.nextBoolean())
+                                          level.addParticle(ParticleTypes.SMOKE, player.getX() + centered1, y, player.getZ() + centered0, xSpeed, random0 * 0.1, zSpeed);
+                              }
+                              
+                              for (int j = 0; j < 5; j++) {
+                                    double random0 = level.random.nextDouble();
+                                    double random1 = level.random.nextDouble();
+                                    
+                                    double centered0 = random0 - 0.5;
+                                    double centered1 = random1 - 0.5;
+                                    double y = Mth.lerp(random0, player.getY() + player.getBbHeight(), player.getY());
+                                    
+                                    level.addParticle(ParticleTypes.SMOKE, player.getX() + centered1, y, player.getZ() + centered0, 0, random0 * 0.1, 0);
+                              }
+                              
+                              selected.finishUsingItem(level, player);
+                        }
+                  }
             }
 
             if (selected.isEmpty())
@@ -160,7 +197,7 @@ public class AlchemyTraits extends ChestLikeTraits implements ISlotSelectorTrait
 
                         if (!consumedStack.isEmpty()) {
                               itemStacks.addFirst(consumedStack);
-                              mutable.selection().set(player, mutable.getSelectedSlot(player));
+                              mutable.setSelectedSlot(player, mutable.getSelectedSlot(player));
 
                               mutable.growSelectedSlot(0);
                         }
@@ -280,7 +317,7 @@ public class AlchemyTraits extends ChestLikeTraits implements ISlotSelectorTrait
                   }
             });
 
-            item.finishUsingItem(selected, level, player);
+            selected.finishUsingItem(level, player);
             player.playSound(SoundEvents.GLASS_BREAK);
       }
 
