@@ -1,16 +1,17 @@
 package com.beansgalaxy.backpacks.mixin.common;
 
+import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
-import com.beansgalaxy.backpacks.data.ServerSave;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
 import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.traits.quiver.QuiverTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
-import com.llamalad7.mixinextras.sugar.Local;
-import com.llamalad7.mixinextras.sugar.ref.LocalRef;
+import net.minecraft.Util;
 import net.minecraft.core.NonNullList;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -25,8 +26,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
-import java.util.List;
 
 @Mixin(Inventory.class)
 public abstract class InventoryMixin implements BackData {
@@ -102,6 +101,34 @@ public abstract class InventoryMixin implements BackData {
                   BackpackTraits.runIfEquipped(player, (traits, equipmentSlot) ->
                               traits.overflowFromInventory(equipmentSlot, player, stack, cir)
                   );
+            }
+      }
+      
+      private long lastFailedTraitScroll = 0;
+      
+      @Inject(method = "swapPaint", cancellable = true, at = @At("HEAD"))
+      private void selectBackpackSlot(double pDirection, CallbackInfo ci) {
+            if (player.level().isClientSide) {
+                  long millis = Util.getMillis();
+                  if (!BackData.get(player).isActionKeyDown()) {
+                        lastFailedTraitScroll = millis;
+                        return;
+                  }
+                  
+                  if (millis - lastFailedTraitScroll < 550L) {
+                        lastFailedTraitScroll = millis;
+                        return;
+                  }
+                  
+                  ItemStack inHand = player.getItemInHand(InteractionHand.MAIN_HAND);
+                  ISlotSelectorTrait trait = ISlotSelectorTrait.get(inHand);
+                  if (trait == null) {
+                        lastFailedTraitScroll = millis;
+                        return;
+                  }
+                  
+                  trait.mouseScrolled(player, ComponentHolder.of(inHand), -1, -1, (int) Math.signum(pDirection));
+                  ci.cancel();
             }
       }
 

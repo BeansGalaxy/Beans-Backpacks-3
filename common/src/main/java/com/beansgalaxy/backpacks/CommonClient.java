@@ -444,7 +444,7 @@ public class CommonClient {
             ISlotSelectorTrait trait = ISlotSelectorTrait.get(stack);
             if (trait != null) {
                   ComponentHolder holder = ComponentHolder.of(stack);
-                  return trait.mouseScrolled(player, holder, level, hoveredSlot, containerId, scrolled);
+                  return trait.mouseScrolled(player, holder, hoveredSlot.index, containerId, scrolled);
             }
 
             Optional<EnderTraits> optionalEnder = EnderTraits.get(stack);
@@ -454,7 +454,7 @@ public class CommonClient {
                   if (optional.isPresent()) {
                         GenericTraits traits = optional.get();
                         if (traits instanceof ISlotSelectorTrait storageTraits) {
-                              return storageTraits.mouseScrolled(player, enderTraits, level, hoveredSlot, containerId, scrolled);
+                              return storageTraits.mouseScrolled(player, enderTraits, hoveredSlot.index, containerId, scrolled);
                         }
                   }
             }

@@ -64,7 +64,7 @@ public class CommonClass {
                   Services.PLATFORM.registerMemoryModule("backpack_owner", UUIDUtil.CODEC);
 
       public static final ClientConfig CLIENT_CONFIG = new ClientConfig();
-
+      
       public static void init() {
             ModSound.Events.register();
             Traits.register();

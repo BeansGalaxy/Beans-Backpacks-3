@@ -86,7 +86,7 @@ public interface ISlotSelectorTrait {
             return mutable.getItemStacks().get(selectedSlotSafe);
       }
 
-      default boolean mouseScrolled(Player player, ComponentHolder holder, Level level, Slot hoveredSlot, int containerId, int scrolled) {
+      default boolean mouseScrolled(Player player, ComponentHolder holder, int slotIndex, int containerId, int scrolled) {
             IMutableSelectionTrait mutable = mutable(holder);
             int startSlot = mutable.getSelectedSlot(player);
 
@@ -95,7 +95,7 @@ public interface ISlotSelectorTrait {
                   return false;
 
             mutable.setSelectedSlot(player, i);
-            SyncSelectedSlot.send(containerId, hoveredSlot.index, i);
+            SyncSelectedSlot.send(containerId, slotIndex, i);
 
             return true;
       }

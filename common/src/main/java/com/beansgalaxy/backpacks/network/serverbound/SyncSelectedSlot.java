@@ -6,12 +6,14 @@ import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.network.Network2S;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
@@ -54,24 +56,35 @@ public class SyncSelectedSlot implements Packet2S {
 
       @Override
       public void handle(Player sender) {
-            AbstractContainerMenu containerMenu = sender.containerMenu;
-            if (containerMenu.containerId != containerId)
-                  return;
+            
+            ItemStack stack;
+            if (containerId == -1) {
+                  if (slotIndex != -1)
+                        return;
+                  
+                  stack = sender.getItemInHand(InteractionHand.MAIN_HAND);
+            }
+            else {
+                  AbstractContainerMenu containerMenu = sender.containerMenu;
+                  if (containerMenu.containerId != containerId)
+                        return;
+                  
+                  Slot slot = containerMenu.getSlot(slotIndex);
+                  stack = slot.getItem();
+            }
 
-            Slot slot = containerMenu.getSlot(slotIndex);
-            ItemStack stack = slot.getItem();
             if (stack.isEmpty())
                   return;
 
-            Optional<BundleLikeTraits> optional = BundleLikeTraits.get(ComponentHolder.of(stack));
+            ISlotSelectorTrait selectorTrait = ISlotSelectorTrait.get(stack);
             ComponentHolder holder;
-            if (optional.isEmpty()) {
+            if (selectorTrait == null) {
                   EnderTraits enderTraits = stack.get(Traits.ENDER);
                   if (enderTraits == null)
                         return;
 
                   GenericTraits generic = enderTraits.getTrait(sender.level());
-                  if (generic instanceof BundleLikeTraits) {
+                  if (generic instanceof ISlotSelectorTrait) {
                         holder = enderTraits;
                   }
                   else return;
