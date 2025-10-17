@@ -37,9 +37,9 @@ public class BackpackClient implements IClientTraits<BackpackTraits> {
       }
 
       @Override
-      public TraitMenu<BackpackTraits> createTooltip(Minecraft minecraft, int leftPos, int topPos, Slot slot, ComponentHolder holder, BackpackTraits traits) {
+      public TraitMenu<BackpackTraits> createTooltip(Minecraft minecraft, int leftPos, int topPos, int screenHeight, int screenWidth, Slot slot, ComponentHolder holder, BackpackTraits traits) {
             if (slot instanceof EquipmentSlotAccess access && traits.slots().test(access.getSlot())) {
-                  return new BundleMenu<>(minecraft, leftPos, topPos, slot, holder, traits);
+                  return new BundleMenu<>(minecraft, leftPos, topPos, screenHeight, screenWidth, slot, holder, traits);
             }
 
             return null;

@@ -36,8 +36,8 @@ public class ChestClient implements IClientTraits<ChestLikeTraits> {
       }
       
       @Override
-      public TraitMenu<ChestLikeTraits> createTooltip(Minecraft minecraft, int leftPos, int topPos, Slot slot, ComponentHolder holder, ChestLikeTraits traits) {
-            return new ChestMenu<>(minecraft, leftPos, topPos, slot, holder, traits);
+      public TraitMenu<ChestLikeTraits> createTooltip(Minecraft minecraft, int leftPos, int topPos, int screenHeight, int screenWidth, Slot slot, ComponentHolder holder, ChestLikeTraits traits) {
+            return new ChestMenu<>(minecraft, leftPos, topPos, screenHeight, screenWidth, slot, holder, traits);
       }
       
       @Override

@@ -1,6 +1,7 @@
 package com.beansgalaxy.backpacks.mixin.client;
 
 import com.beansgalaxy.backpacks.CommonClient;
+import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.access.EquipmentSlotAccess;
 import com.beansgalaxy.backpacks.screen.TraitMenu;
 import com.beansgalaxy.backpacks.traits.Traits;
@@ -59,7 +60,11 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
       @Shadow private long lastClickTime;
 
       @Shadow private int lastClickButton;
-
+      
+      @Shadow protected int imageHeight;
+      
+      @Shadow protected int imageWidth;
+      
       protected AbstractScreenMixin(Component pTitle) {
             super(pTitle);
       }
@@ -92,10 +97,10 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
                         }
                   }
             }
-
+            
             if (hoveredSlot != null) {
-                  if (pButton == 1 || (pButton == 0 && hoveredSlot instanceof EquipmentSlotAccess && (!hoveredSlot.mayPickup(minecraft.player) || !hoveredSlot.mayPlace(menu.getCarried())))) {
-                        TraitMenu<?> menu = TraitMenu.create(minecraft, leftPos, topPos, hoveredSlot);
+                  if (shouldMakeNewMenu(pButton)) {
+                        TraitMenu<?> menu = TraitMenu.create(minecraft, leftPos, topPos, imageHeight, imageWidth, hoveredSlot);
                         if (menu != null)
                               traitMenu = menu;
                   }
@@ -107,6 +112,22 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
                         }));
                   }
             }
+      }
+      
+      @Unique
+      private boolean shouldMakeNewMenu(int mButton) {
+            if (mButton == 1)
+                  return true;
+            
+            if (mButton == 0) {
+                  if (BackData.get(minecraft.player).isMenuKeyDown())
+                        return true;
+                  
+                  if (hoveredSlot instanceof EquipmentSlotAccess)
+                        return !hoveredSlot.mayPickup(minecraft.player) || !hoveredSlot.mayPlace(menu.getCarried());
+            }
+            
+            return false;
       }
 
       @Inject(method = "init", at = @At("TAIL"))
@@ -239,7 +260,7 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
 
             this.minecraft.gameMode.handleInventoryMouseClick(this.menu.containerId, pSlot.index, pMouseButton, ClickType.PICKUP, this.minecraft.player);
 
-            TraitMenu<?> menu = TraitMenu.create(minecraft, leftPos, topPos, hoveredSlot);
+            TraitMenu<?> menu = TraitMenu.create(minecraft, leftPos, topPos, imageHeight, imageWidth, hoveredSlot);
             if (menu != null)
                   traitMenu = menu;
 

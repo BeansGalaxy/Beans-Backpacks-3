@@ -35,10 +35,13 @@ import java.util.Optional;
 public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
       int rows, columns, size;
 
-      public BundleMenu(Minecraft minecraft, int screenLeft, int screenTop, Slot slot, ComponentHolder holder, T traits) {
-            super(minecraft, screenLeft, screenTop, slot, holder, traits);
+      public BundleMenu(Minecraft minecraft, int screenLeft, int screenTop, int screenHeight, int screenWidth, Slot slot, ComponentHolder holder, T traits) {
+            super(minecraft, screenLeft, screenTop, screenHeight, screenWidth, slot, holder, traits);
             updateSize();
-            topPos -= rows * 6;
+            
+            double offset = slot.y * 0.1 - 2;
+            int drift = (int) ((rows - 1) * offset);
+            topPos -= drift + 2;
       }
       
       protected boolean hasSpace() {
@@ -51,16 +54,19 @@ public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
             this.size = stacks == null ? 0 : stacks.size();
             int sudoSize = size + (hasSpace() ? 1 : 0);
 
-            boolean forCol = false;
+            int forRow = 1;
             int columns = Math.min(sudoSize, 4);
             int rows = 1;
             for (int i = columns; i <= sudoSize; i++) {
                   if (i > columns * rows) {
-                        if (forCol)
+                        if (forRow == 2) {
                               columns++;
-                        else
+                              forRow = 0;
+                        }
+                        else {
                               rows++;
-                        forCol = !forCol;
+                              forRow++;
+                        }
                   }
             }
 

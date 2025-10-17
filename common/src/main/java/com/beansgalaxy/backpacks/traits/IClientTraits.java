@@ -57,5 +57,5 @@ public interface IClientTraits<T extends GenericTraits> {
       }
 
       @Nullable
-      TraitMenu<T> createTooltip(Minecraft minecraft, int leftPos, int topPos, Slot slot, ComponentHolder holder, T traits);
+      TraitMenu<T> createTooltip(Minecraft minecraft, int leftPos, int topPos, int screenHeight, int screenWidth, Slot slot, ComponentHolder holder, T traits);
 }

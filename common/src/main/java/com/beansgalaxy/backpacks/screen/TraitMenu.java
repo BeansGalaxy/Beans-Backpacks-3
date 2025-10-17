@@ -11,6 +11,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -32,15 +33,17 @@ public abstract class TraitMenu<T extends GenericTraits> {
       protected final int slotX;
       protected final int slotY;
       public final long timeOpened;
-
+      private final int screenWidth;
+      private final int screenHeight;
+      
       protected int leftPos;
       protected int topPos;
 
-      public TraitMenu(Minecraft minecraft, int screenLeft, int screenTop, Slot slot, ComponentHolder holder, T traits) {
-            this(minecraft, slot, holder, traits, screenLeft + slot.x, screenTop + slot.y);
+      public TraitMenu(Minecraft minecraft, int screenLeft, int screenTop, int screenHeight, int screenWidth, Slot slot, ComponentHolder holder, T traits) {
+            this(minecraft, slot, holder, traits, screenLeft + slot.x, screenTop + slot.y, screenHeight, screenWidth);
       }
 
-      public TraitMenu(Minecraft minecraft, Slot slot, ComponentHolder holder, T traits, int slotX, int slotY) {
+      public TraitMenu(Minecraft minecraft, Slot slot, ComponentHolder holder, T traits, int slotX, int slotY, int screenHeight, int screenWidth) {
             this.minecraft = minecraft;
             this.slot = slot;
             this.holder = holder;
@@ -50,26 +53,29 @@ public abstract class TraitMenu<T extends GenericTraits> {
             this.slotY = slotY;
             this.leftPos = slotX + 14;
             this.topPos = slotY - 2;
+            
+            this.screenHeight = screenHeight;
+            this.screenWidth = screenWidth;
 
             this.timeOpened = Util.getMillis();
       }
 
       @Nullable
-      public static TraitMenu<?> create(Minecraft minecraft, int leftPos, int topPos, Slot slot) {
+      public static TraitMenu<?> create(Minecraft minecraft, int leftPos, int topPos, int imageHeight, int imageWidth, Slot slot) {
             if (slot == null)
                   return null;
-
+            
             ItemStack stack = slot.getItem();
             Optional<GenericTraits> optional = Traits.get(stack);
-
+            
             GenericTraits traits;
             ComponentHolder holder;
-
+            
             if (optional.isEmpty()) {
                   Optional<EnderTraits> oEnderTraits = EnderTraits.get(stack);
                   if (oEnderTraits.isEmpty())
                         return null;
-
+                  
                   EnderTraits enderTraits = oEnderTraits.get();
                   traits = enderTraits.getTrait(Minecraft.getInstance().level);
                   holder = enderTraits;
@@ -78,32 +84,28 @@ public abstract class TraitMenu<T extends GenericTraits> {
                   traits = optional.get();
                   holder = ComponentHolder.of(slot);
             }
-
+            
             IClientTraits<GenericTraits> client = traits.client();
-
-            return client.createTooltip(minecraft, leftPos, topPos, slot, holder, traits);
+            
+            return client.createTooltip(minecraft, leftPos, topPos, imageHeight, imageWidth, slot, holder, traits);
       }
-
-      public static final ResourceLocation TEXTURE =
-                  ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/exit_trait_menu.png");
 
       public void render(AbstractContainerScreen<?> screen, GuiGraphics gui, int mouseX, int mouseY) {
             if (isHoveringSlot(mouseX, mouseY)) {
                   int x = slot.x;
                   int y = slot.y;
-
+                  
                   RenderSystem.enableBlend();
                   ResourceLocation location = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "exit_trait_menu");
                   gui.blitSprite(location, 16, 16, 0, 0, x, y, 310, 16, 16);
                   RenderSystem.disableBlend();
             }
-
+            
             PoseStack pose = gui.pose();
             pose.pushPose();
             pose.translate(slot.x - slotX + leftPos, slot.y - slotY + topPos, 301);
             menuRender(screen, gui, mouseX - leftPos, mouseY - topPos);
             pose.popPose();
-
       }
 
       public boolean isHovering(int mouseX, int mouseY) {
@@ -113,7 +115,7 @@ public abstract class TraitMenu<T extends GenericTraits> {
       public boolean isHoveringSlot(int mouseX, int mouseY) {
             if (mouseX < slotX - 1)
                   return false;
-
+            
             return mouseY >= slotY - 1 && mouseY <= slotY + 16 && mouseX <= slotX + 18; // IS HOVERING SLOT
       }
 

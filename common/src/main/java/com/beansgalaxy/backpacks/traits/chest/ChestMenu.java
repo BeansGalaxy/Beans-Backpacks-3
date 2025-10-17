@@ -11,8 +11,8 @@ import net.minecraft.world.item.ItemStack;
 import java.util.List;
 
 public class ChestMenu<T extends ChestLikeTraits> extends BundleMenu<T> {
-      public ChestMenu(Minecraft minecraft, int screenLeft, int screenTop, Slot slot, ComponentHolder holder, T traits) {
-            super(minecraft, screenLeft, screenTop, slot, holder, traits);
+      public ChestMenu(Minecraft minecraft, int screenLeft, int screenTop, int screenHeight, int screenWidth, Slot slot, ComponentHolder holder, T traits) {
+            super(minecraft, screenLeft, screenTop, screenHeight, screenWidth, slot, holder, traits);
       }
       
       @Override protected boolean hasSpace() {

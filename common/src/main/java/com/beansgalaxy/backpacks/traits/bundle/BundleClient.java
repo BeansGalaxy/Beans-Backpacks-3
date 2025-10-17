@@ -36,8 +36,8 @@ public class BundleClient implements IClientTraits<BundleLikeTraits> {
       }
 
       @Override
-      public TraitMenu<BundleLikeTraits> createTooltip(Minecraft minecraft, int leftPos, int topPos, Slot slot, ComponentHolder holder, BundleLikeTraits traits) {
-            return new BundleMenu<>(minecraft, leftPos, topPos, slot, holder, traits);
+      public TraitMenu<BundleLikeTraits> createTooltip(Minecraft minecraft, int leftPos, int topPos, int screenHeight, int screenWidth, Slot slot, ComponentHolder holder, BundleLikeTraits traits) {
+            return new BundleMenu<>(minecraft, leftPos, topPos, screenHeight, screenWidth, slot, holder, traits);
       }
 
       @Override

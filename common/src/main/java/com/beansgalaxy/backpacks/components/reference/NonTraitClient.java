@@ -24,7 +24,7 @@ public class NonTraitClient implements IClientTraits<NonTrait> {
       }
 
       @Override @Nullable
-      public TraitMenu<NonTrait> createTooltip(Minecraft minecraft, int leftPos, int topPos, @Nullable Slot slot, ComponentHolder holder, NonTrait traits) {
+      public TraitMenu<NonTrait> createTooltip(Minecraft minecraft, int leftPos, int topPos, int screenHeight, int screenWidth, @Nullable Slot slot, ComponentHolder holder, NonTrait traits) {
             return null;
       }
 
