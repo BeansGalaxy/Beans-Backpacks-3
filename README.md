@@ -4,29 +4,31 @@
 
 - **Tooltip Menus**
   - Overhauled controls to insert/remove items
-  - Right-Clicking opens a tooltip where the mouse is used to move items
+  - A Right-Click or Ctrl-Click opens a tooltip where the mouse is used to move items
   - In Lunch Boxes, Alchemy Bags, and Quivers; MWheel Scrolling selects an item to use
-  - Overhauled hidden `chest` trait to work more simmilar to `bundle` traits
+  - Overhauled hidden `chest` trait to look simmilar to `bundle` traits
 - **Placing Backpacks**
   - Hanging snaps to where 4 corners are supported
   - Placing upright moves to be fully supported on the block
   - Failure to place due to space happens ***much*** less often
 - **Selecting Items**
-  - Middle Mouse on a item in the inventory pulls matching items from Backpack to the cursor
-  - Quivers anywhere in the inventory can be used by Bows; Quivers are no longer worn on the Back
+  - Middle Mouse on a item in the inventory pulls matching items from the Backpack to cursor
+  - Holding a Quiver, Alchemy Bag, or Lunch Box and using the scroll wheel cycles the selected item
+  - Quivers can be used anywhere in the inventory and are no longer worn on the Back
   - Lunch Boxes & Alchemy Bags show the selected item when hovered or held
-  - Scrolling to select an item loops once scrolled to the end of the list
+  - Quivers show the selected arrow's amount
+  - Scrolling to select an item loops once scrolled past the end of the list
 - **Traits & Components**
   - Removed `beansbackpacks:equipable` component
   - Removed `beansbackpacks:placeable` component
   - Added `beansbackpacks:backpack` trait
     - Combination of `bundle`, `placeable`, & `equipable` components
   - Added `parent` field to Reference Traits
-    - Takes an existing `trait_id` for the current Reference to overlay ontop of
+    - Takes an existing `trait_id` for the current Reference Trait to overlay ontop of
   - Added `beansbackpacks:filter` which whitelists item's allowed onto the storage
     - Works in a Reference too
 - **Bug Fixes**
-  - Looking away from a block while trying to place right-clicks that block and cancels the placement
+  - Looking away from a block while trying to place a backpack right-clicks that block and cancels itself
   - When opening the Smithing Screen, the Armor Stand started the wrong way
   - The eating sounds from the Lunch Box depended on the first item, not the selected item
   - Alchemy Bag particles now take the player's momentum when used
@@ -36,10 +38,7 @@
     - `Never`: always drops the backpack
     - `KeepInventory` (*default*): keeps/drops the backpack according the KeepInventory gamerule
   - Removed ticking methods which traits no longer used
- 
-- **TO DO**
-  - Hovering over an item in a trait menu should show it's tooltip on the left side of the item
- 
+
 
 <h2>0.10 Fabric <br> 0.10 NeoForge</h2><img width="204" height="92" align="right" alt="crafting-grid(1)" src="https://github.com/user-attachments/assets/9144fd7c-36b1-451a-ab49-538c6e0595ff" />
 
