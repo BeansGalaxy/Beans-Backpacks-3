@@ -9,21 +9,28 @@ import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.math.Fraction;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
+import java.util.Optional;
 
 public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
       int rows, columns, size;
@@ -140,16 +147,30 @@ public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
                         int y1 = y * 16 + 4;
                         int x2 = x1 + 16;
                         int y2 = y1 + 16;
-
-                        if (mouseX >= x1 && mouseY >= y1 && mouseX < x2 && mouseY < y2)
+                        
+                        boolean isHovered = mouseX >= x1 && mouseY >= y1 && mouseX < x2 && mouseY < y2;
+                        if (isHovered)
                               hoveredSlot = new tSlot(i, x1, x2, y1, y2);
 
                         if (i == size || stacks == null)
                               break;
-
+                        
+                        Font font = minecraft.font;
                         ItemStack stack = stacks.get(i);
                         CommonClient.renderItem(minecraft, gui, stack, x1 + 8, y1 + 8, 15, false);
-                        CommonClient.renderItemDecorations(gui, minecraft.font, stack, x1 + 8, y1 + 8, 15);
+                        CommonClient.renderItemDecorations(gui, font, stack, x1 + 8, y1 + 8, 15);
+                        
+                        if (isHovered) {
+                              List<Component> lines = Screen.getTooltipFromItem(this.minecraft, stack);
+                              Optional<TooltipComponent> image = stack.getTooltipImage();
+                              
+                              Integer imageHeight = image.map(ClientTooltipComponent::create).map(ClientTooltipComponent::getHeight).orElse(0);
+                              int linesSize = lines.size();
+                              int linesHeight = linesSize < 2 ? 12 : 14 + (linesSize - 1) * 10;
+                              
+                              int height = imageHeight + linesHeight;
+                              gui.renderTooltip(font, lines, image, -4, -height + 10);
+                        }
                   }
             }
 
