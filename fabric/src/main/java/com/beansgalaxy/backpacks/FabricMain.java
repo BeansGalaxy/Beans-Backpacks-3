@@ -31,7 +31,6 @@ public class FabricMain implements ModInitializer {
 
         ServerLifecycleEvents.SYNC_DATA_PACK_CONTENTS.register(new SyncDataEvent());
         ServerLifecycleEvents.SERVER_STARTED.register(new ServerStartEvent());
-        MenuScreens.register(Registries.BURLAP_SACK_MENU, BurlapSackScreen::new);
     }
 
     public static final CreativeModeTab BACKPACK_TAB = ModItems.CREATIVE_TAB.apply(FabricItemGroup.builder()).build();

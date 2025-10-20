@@ -16,8 +16,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
-import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -75,17 +73,25 @@ public record FilterComponent(Iterable<Holder<Item>> items, @Nullable TagKey<Ite
                   return DataResult.error(() -> "Neither item nor tag was parsed correctly; item=" + decodeItem.error().get() + "; tag=" + decodeTag.error().get());
             }
             
-            @Override public <T> DataResult<T> encode(FilterComponent input, DynamicOps<T> ops, T prefix) {
-                  if (input.tag == null)
-                        return ItemStack.ITEM_NON_AIR_CODEC.listOf().encode(Lists.newArrayList(input.items.iterator()), ops, prefix);
+            @Override public <T> DataResult<T> encode(FilterComponent filter, DynamicOps<T> ops, T prefix) {
+                  if (filter.tag == null) {
+                        List<Holder<Item>> items = new ArrayList<>();
+                        for (Holder<Item> holder : filter.items)
+                              items.add(holder);
+                        
+                        return ItemStack.ITEM_NON_AIR_CODEC.listOf().encode(items, ops, prefix);
+                  }
                   else
-                        return TagKey.hashedCodec(Registries.ITEM).encode(input.tag, ops, prefix);
+                        return TagKey.hashedCodec(Registries.ITEM).encode(filter.tag, ops, prefix);
             }
       };
       
       public static final StreamCodec<RegistryFriendlyByteBuf, FilterComponent> STREAM_CODEC = StreamCodec.of(
             (buf, filter) -> {
-                  ArrayList<Holder<Item>> items = Lists.newArrayList(filter.items.iterator());
+                  List<Holder<Item>> items = new ArrayList<>();
+                  for (Holder<Item> holder : filter.items)
+                        items.add(holder);
+                  
                   int size = items.size();
                   buf.writeInt(size);
                   for (Holder<Item> item : items)
@@ -93,7 +99,7 @@ public record FilterComponent(Iterable<Holder<Item>> items, @Nullable TagKey<Ite
             },
             buf -> {
                   int size = buf.readInt();
-                  ArrayList<Holder<Item>> items = Lists.newArrayList();
+                  ArrayList<Holder<Item>> items = new ArrayList<>();
                   for (int i = 0; i < size; i++) {
                         Holder<Item> item = ByteBufCodecs.holderRegistry(Registries.ITEM).decode(buf);
                         items.add(item);

@@ -8,10 +8,12 @@ import com.beansgalaxy.backpacks.client.renderer.EntityRender;
 import com.beansgalaxy.backpacks.events.AppendLoadedModels;
 import com.beansgalaxy.backpacks.events.NetworkPackages;
 import com.beansgalaxy.backpacks.items.ModItems;
+import com.beansgalaxy.backpacks.screen.BurlapSackScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.model.loading.v1.PreparableModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.rendering.v1.*;
+import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 
@@ -40,6 +42,8 @@ public class FabricClient implements ClientModInitializer {
             EntityRendererRegistry.register(CommonClass.BACKPACK_ENTITY.get(), EntityRender::new);
             EntityRendererRegistry.register(CommonClass.LEGACY_ENDER_ENTITY.get(), EntityRender::new);
             EntityRendererRegistry.register(CommonClass.LEGACY_WINGED_ENTITY.get(), EntityRender::new);
+            
+            MenuScreens.register(Registries.BURLAP_SACK_MENU, BurlapSackScreen::new);
 
             CommonClass.CLIENT_CONFIG.read();
       }
