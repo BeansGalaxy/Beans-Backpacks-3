@@ -12,6 +12,7 @@ import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
 import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
+import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
@@ -31,6 +32,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderType;
@@ -65,6 +67,7 @@ import net.minecraft.world.phys.*;
 import org.apache.commons.lang3.math.Fraction;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
+import org.spongepowered.asm.mixin.Unique;
 
 import java.util.Iterator;
 import java.util.Optional;
@@ -570,5 +573,18 @@ public class CommonClient {
             Inventory inventory = minecraft.player.getInventory();
             ItemStack stack = inventory.getItem(slot);
             stack.applyComponents(patch);
+      }
+      
+      private static final ResourceLocation R_CLICK_ICON = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "r_click_icon");
+      
+      public static void renderInfoTooltip(GuiGraphics gui, int mouseX, int mouseY, Slot slot, BundleLikeTraits traits) {
+            int x = mouseX - 20;
+            int y = mouseY - 8;
+            TooltipRenderUtil.renderTooltipBackground(gui, x, y, 11, 13, 600);
+            ResourceLocation location = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/sprites/r_click_icon.png");
+//            gui.blit(location, x, y, 10, 0, 0, 16, 16, 16, 16);
+//
+            gui.blitSprite(R_CLICK_ICON, 16, 16, 0, 0, x - 2, y - 2, 600, 16, 16);
+            
       }
 }

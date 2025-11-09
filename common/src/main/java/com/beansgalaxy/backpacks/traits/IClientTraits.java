@@ -47,8 +47,8 @@ public interface IClientTraits<T extends GenericTraits> {
                         j1 += 1;
                   }
 
-                  gui.fill(RenderType.guiOverlay(), i1, j1, i1 + 13, j1 + 2, -16777216);
-                  gui.fill(RenderType.guiOverlay(), i1, j1, i1 + l, j1 + 1, i | -16777216);
+                  gui.fill(RenderType.guiOverlay(), i1, j1, i1 + 13, j1 + 2, 200, -16777216);
+                  gui.fill(RenderType.guiOverlay(), i1, j1, i1 + l, j1 + 1, 200, i | -16777216);
             }
       }
 

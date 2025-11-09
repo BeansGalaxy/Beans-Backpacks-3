@@ -6,6 +6,7 @@ import com.beansgalaxy.backpacks.access.EquipmentSlotAccess;
 import com.beansgalaxy.backpacks.screen.TraitMenu;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
+import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.traits.abstract_traits.DraggingContainer;
 import com.beansgalaxy.backpacks.traits.abstract_traits.IDraggingTrait;
@@ -15,6 +16,7 @@ import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -56,8 +58,6 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
       @Shadow protected int leftPos;
 
       @Shadow protected int topPos;
-
-      @Shadow private long lastClickTime;
 
       @Shadow private int lastClickButton;
       
@@ -152,6 +152,15 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
       protected void renderTooltip(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick, CallbackInfo ci) {
             if (traitMenu != null) {
                   traitMenu.render((AbstractContainerScreen<?>) (Object) this, pGuiGraphics, pMouseX, pMouseY);
+            }
+            if (hoveredSlot != null) {
+                  ItemStack stack = hoveredSlot.getItem();
+                  if (!stack.isEmpty()) {
+                        Optional<BundleLikeTraits> optional = BundleLikeTraits.get(ComponentHolder.of(stack));
+                        optional.ifPresent(traits ->
+                              CommonClient.renderInfoTooltip(pGuiGraphics, pMouseX - leftPos, pMouseY - topPos, hoveredSlot, traits)
+                        );
+                  }
             }
       }
 
