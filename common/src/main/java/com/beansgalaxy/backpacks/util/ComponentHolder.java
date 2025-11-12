@@ -51,7 +51,7 @@ public interface ComponentHolder {
                   return defau;
             return t;
       }
-
+      
       class StackReturningTraitHolder implements ComponentHolder {
             private final ItemStack stack;
             private final Player player;

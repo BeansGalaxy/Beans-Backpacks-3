@@ -1,6 +1,7 @@
 package com.beansgalaxy.backpacks.traits;
 
 import com.beansgalaxy.backpacks.access.EquipmentSlotAccess;
+import com.beansgalaxy.backpacks.components.BulkComponent;
 import com.beansgalaxy.backpacks.components.DisplayComponent;
 import com.beansgalaxy.backpacks.components.FilterComponent;
 import com.beansgalaxy.backpacks.components.UtilityComponent;
@@ -45,6 +46,9 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public interface Traits {
+      
+      DataComponentType<BulkComponent>
+                  BULK = register("bulk", BulkComponent.CODEC, BulkComponent.STREAM_CODEC);
 
       DataComponentType<DisplayComponent>
                   DISPLAY = register(DisplayComponent.NAME, DisplayComponent.CODEC, DisplayComponent.STREAM_CODEC);
@@ -168,16 +172,20 @@ public interface Traits {
 
             Fraction fraction = Fraction.ZERO;
             for (ItemStack stack : stacks) {
-                  Fraction stackWeight = getItemWeight(stack).multiplyBy(Fraction.getFraction(stack.getCount(), 1));
+                  Fraction stackWeight = getStackWeight(stack);
                   fraction = fraction.add(stackWeight);
             }
             return fraction;
       }
 
-      static Fraction getWeight(List<ItemStack> stacks, int denominator) {
-            return getWeight(stacks).multiplyBy(Fraction.getFraction(1, denominator));
+      static Fraction getWeight(List<ItemStack> stacks, int size) {
+            return getWeight(stacks).multiplyBy(Fraction.getFraction(1, size));
       }
 
+      static Fraction getStackWeight(ItemStack stack) {
+            return Fraction.getFraction(stack.getCount(), stack.getMaxStackSize());
+      }
+      
       static Fraction getItemWeight(ItemStack stack) {
             return Fraction.getFraction(1, stack.getMaxStackSize());
       }
