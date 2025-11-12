@@ -48,32 +48,30 @@ public class ArmorStandFeature extends RenderLayer<ArmorStand, ArmorStandArmorMo
 
       @Override
       public void render(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, ArmorStand armorStand, float limbAngle, float limbDistance, float tick, float animationProgress, float playerHeadYaw, float playerHeadPitch) {
-            BackpackTraits.runAllEquipped(armorStand, (traits, slot) -> {
-                  ItemStack itemStack = armorStand.getItemBySlot(slot);
-                  ResourceLocation texture = traits.getTexture();
+            ItemStack itemStack = armorStand.getItemBySlot(EquipmentSlot.BODY);
+            BackpackTraits traits = BackpackTraits.get(itemStack);
+            if (traits == null)
+                  return;
+            
+            pose.pushPose();
+            this.getParentModel().body.translateAndRotate(pose);
 
-                  if (texture == null)
-                        return;
+            pose.translate(0.0F, (armorStand.isCrouching() ? 1 / 16f : 0), -1/32f);
+            if (!armorStand.getItemBySlot(EquipmentSlot.CHEST).isEmpty())
+                  pose.translate(0.0F, -1 / 16f, 3 / 32f);
 
-                  pose.pushPose();
-                  this.getParentModel().body.translateAndRotate(pose);
+            ViewableBackpack viewable = ViewableBackpack.get(armorStand);
+            if (viewable.lastDelta > tick)
+                  viewable.updateOpen();
 
-                  pose.translate(0.0F, (armorStand.isCrouching() ? 1 / 16f : 0), -1/32f);
-                  if (!armorStand.getItemBySlot(EquipmentSlot.CHEST).isEmpty())
-                        pose.translate(0.0F, -1 / 16f, 3 / 32f);
+            float headPitch = Mth.lerp(tick, viewable.lastPitch, viewable.headPitch) * 0.25f;
+            model().setOpenAngle(headPitch);
+            viewable.lastDelta = tick;
 
-                  ViewableBackpack viewable = ViewableBackpack.get(armorStand);
-                  if (viewable.lastDelta > tick)
-                        viewable.updateOpen();
-
-                  float headPitch = Mth.lerp(tick, viewable.lastPitch, viewable.headPitch) * 0.25f;
-                  model().setOpenAngle(headPitch);
-                  viewable.lastDelta = tick;
-
-                  pose.translate(0, 13 / 16f, 0);
-                  renderTexture(pose, pBufferSource, pCombinedLight, texture, itemStack, viewable);
-                  pose.popPose();
-            });
+            pose.translate(0, 13 / 16f, 0);
+            ResourceLocation texture = traits.getTexture();
+            renderTexture(pose, pBufferSource, pCombinedLight, texture, itemStack, viewable);
+            pose.popPose();
       }
 
       private void renderModel(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, LivingEntity player, EquipmentModel model, ItemStack itemStack) {

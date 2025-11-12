@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -71,10 +72,7 @@ public class EntityRender extends EntityRenderer<BackpackEntity> implements Rend
 
             pose.pushPose();
             pose.mulPose(Axis.YN.rotationDegrees(yaw + 180));
-
-            IEntityTraits<?> traits = backpack.getTraits();
-            ResourceLocation texture = traits.getTexture();
-
+            
             pose.pushPose();
             pose.mulPose(Axis.XP.rotationDegrees(180));
             pose.translate(0, -10/16f, -4/16f);
@@ -88,27 +86,25 @@ public class EntityRender extends EntityRenderer<BackpackEntity> implements Rend
             viewable.lastDelta = tick;
 
             pose.translate(0, 13 / 16f, 0);
+            
+            IEntityTraits<?> traits = backpack.getTraits();
+            ResourceLocation texture = traits.getTexture();
             renderTexture(pose, source, light, texture, stack, viewable);
             pose.popPose();
-
-
             pose.popPose();
 
             renderNameAndHitbox(pose, source, backpack, yaw, light);
 
-            // ============================================= DESTROY DECAL =============================================
+//    ++++============================================= DESTROY DECAL ==============================================++++
 
-//            if (backpack.breakAmount > 0) {
-//                  pose.pushPose();
-//                  int breakStage = Math.min(Mth.ceil(backpack.breakAmount / 3f), 7);
-//                  ResourceLocation location = ResourceLocation.parse(Constants.MOD_ID + ":textures/entity/destroy_stage/" + breakStage + ".png");
-//                  VertexConsumer crumble = source.getBuffer(RenderType.crumbling(location));
-//                  customModel.renderToBuffer(pose, crumble, light, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
-//                  pose.popPose();
-//            }
-
-
-
+            if (backpack.breakAmount > 0) {
+                  pose.pushPose();
+                  int breakStage = Math.min(Mth.ceil(backpack.breakAmount / 3f), 7);
+                  ResourceLocation location = ResourceLocation.parse(Constants.MOD_ID + ":textures/entity/destroy_stage/" + breakStage + ".png");
+                  VertexConsumer crumble = source.getBuffer(RenderType.crumbling(location));
+                  model().renderToBuffer(pose, crumble, light, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
+                  pose.popPose();
+            }
       }
 
       @Override

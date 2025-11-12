@@ -26,7 +26,7 @@ public class BackpackCodecs implements ITraitCodec<BackpackTraits> {
                         ).forGetter(BundleLikeTraits::size),
                         ModSound.MAP_CODEC.forGetter(GenericTraits::sound),
                         EquipmentGroups.CODEC.optionalFieldOf("slot", EquipmentGroups.BODY).forGetter(BackpackTraits::slots),
-                        ResourceLocation.CODEC.optionalFieldOf("texture", ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "backpack/null")).forGetter(BackpackTraits::getTexture)
+                        ResourceLocation.CODEC.optionalFieldOf("texture", ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "null")).forGetter(BackpackTraits::getTexture)
             ).apply(in, (size, sound, slot, texture) -> new BackpackTraits(sound, size, slot, texture))
       );
 

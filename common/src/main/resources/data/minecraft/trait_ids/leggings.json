@@ -1,9 +1,7 @@
 {
-  "bundle": {
+  "backpack": {
     "size": 2,
-    "sound": "soft"
-  },
-  "equipable": {
-    "slots": "legs"
+    "sound": "soft",
+    "slot": "legs"
   }
 }

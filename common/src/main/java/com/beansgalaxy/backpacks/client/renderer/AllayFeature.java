@@ -54,9 +54,6 @@ public class AllayFeature extends RenderLayer<Allay, AllayModel> implements Rend
             if (traits == null)
                   return;
 
-            ResourceLocation texture = traits.getTexture();
-            pose.last().pose().translate(0, 0, 0);
-
             float pAgeInTicks = allay.tickCount + tick;
             float f3 = pAgeInTicks * 9.0F * 0.017453292F;
             float bobY = (float)Math.cos(f3) * 0.015F;
@@ -75,6 +72,7 @@ public class AllayFeature extends RenderLayer<Allay, AllayModel> implements Rend
             pose.mulPose(Axis.XN.rotationDegrees(16));
             float scale = 0.875f;
             pose.scale(scale, scale, scale);
+            ResourceLocation texture = traits.getTexture();
             renderTexture(pose, pBufferSource, pCombinedLight, texture, itemStack, viewable);
             pose.popPose();
 

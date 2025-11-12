@@ -61,42 +61,39 @@ public class BackFeature extends RenderLayer<AbstractClientPlayer, PlayerModel<A
       private void renderEquipables(PoseStack pose, MultiBufferSource pBufferSource, int pCombinedLight, AbstractClientPlayer player, float tick) {
             if (CommonClass.CLIENT_CONFIG.disable_equipable_render.get())
                   return;
+            ItemStack itemStack = player.getItemBySlot(EquipmentSlot.BODY);
+            BackpackTraits traits = BackpackTraits.get(itemStack);
+            if (traits == null)
+                  return;
 
-            BackpackTraits.runAllEquipped(player, (traits, slot) -> {
-                  ItemStack itemStack = player.getItemBySlot(slot);
-                  ResourceLocation texture = traits.getTexture();
+            pose.pushPose();
+            this.getParentModel().body.translateAndRotate(pose);
 
-                  if (texture == null)
-                        return;
+            ViewableBackpack viewable = ViewableBackpack.get(player);
+            if (viewable.lastDelta > tick)
+                  viewable.updateOpen();
 
-                  pose.pushPose();
-                  this.getParentModel().body.translateAndRotate(pose);
+            float headPitch = Mth.lerp(tick, viewable.lastPitch, viewable.headPitch) * 0.25f;
+            model().setOpenAngle(headPitch);
+            viewable.lastDelta = tick;
 
-                  ViewableBackpack viewable = ViewableBackpack.get(player);
-                  if (viewable.lastDelta > tick)
-                        viewable.updateOpen();
+            pose.translate(0, 13 / 16f, 0);
+            ItemStack chestStack = player.getItemBySlot(EquipmentSlot.CHEST);
+            if (CommonClass.CLIENT_CONFIG.elytra_model_equipment.get().contains(chestStack.getItem())) {
+                  float xRot = getParentModel().body.xRot;
+                  setUpWithWings(player, xRot, pose);
+            }
+            else {
+                  pose.translate(0.0F, (player.isCrouching() ? 1 / 16f : 0), 0.0F);
 
-                  float headPitch = Mth.lerp(tick, viewable.lastPitch, viewable.headPitch) * 0.25f;
-                  model().setOpenAngle(headPitch);
-                  viewable.lastDelta = tick;
-
-                  pose.translate(0, 13 / 16f, 0);
-                  ItemStack chestStack = player.getItemBySlot(EquipmentSlot.CHEST);
-                  if (CommonClass.CLIENT_CONFIG.elytra_model_equipment.get().contains(chestStack.getItem())) {
-                        float xRot = getParentModel().body.xRot;
-                        setUpWithWings(player, xRot, pose);
-                  }
-                  else {
-                        pose.translate(0.0F, (player.isCrouching() ? 1 / 16f : 0), 0.0F);
-
-                        if (!chestStack.isEmpty())
-                              pose.translate(0.0F, -1 / 16f, 1 / 16f);
-                        renderCapeAbove(pose, pBufferSource, pCombinedLight, player, headPitch);
-                  }
-
-                  renderTexture(pose, pBufferSource, pCombinedLight, texture, itemStack, viewable);
-                  pose.popPose();
-            });
+                  if (!chestStack.isEmpty())
+                        pose.translate(0.0F, -1 / 16f, 1 / 16f);
+                  renderCapeAbove(pose, pBufferSource, pCombinedLight, player, headPitch);
+            }
+            
+            ResourceLocation texture = traits.getTexture();
+            renderTexture(pose, pBufferSource, pCombinedLight, texture, itemStack, viewable);
+            pose.popPose();
       }
 
       private void renderCapeAbove(PoseStack pose, MultiBufferSource mbs, int light, AbstractClientPlayer player, float headPitch) {
