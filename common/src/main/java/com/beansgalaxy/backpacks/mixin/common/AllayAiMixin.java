@@ -4,8 +4,10 @@ import com.beansgalaxy.backpacks.CommonClass;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.mojang.datafixers.kinds.K1;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -19,15 +21,18 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.*;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
+import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.util.AirAndWaterRandomPos;
 import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.entity.animal.allay.AllayAi;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -39,13 +44,54 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 @Mixin(AllayAi.class)
 public class AllayAiMixin {
 
       @Inject(method = "makeBrain", at = @At("HEAD"))
       private static void backpackMakeBrain(Brain<Allay> pBrain, CallbackInfoReturnable<Brain<?>> cir) {
-
+            OneShot<LivingEntity> itemPickup = BehaviorBuilder.create((brain) -> brain.group(
+                  brain.registered(MemoryModuleType.LOOK_TARGET),
+                  brain.registered(MemoryModuleType.WALK_TARGET),
+                  brain.present(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM),
+                  brain.registered(MemoryModuleType.ITEM_PICKUP_COOLDOWN_TICKS),
+                  brain.present(CommonClass.BACKPACK_OWNER_MEMORY.get())
+            ).apply(brain, (look_target, walk_target, item, cooldown, owner) -> (level, allay, seed) -> {
+                  ItemEntity itementity = brain.get(item);
+                  if (!level.getWorldBorder().isWithinBounds(itementity.getBoundingBox()))
+                        return false;
+                  
+                  if (brain.tryGet(cooldown).isPresent())
+                        return false;
+                  
+                  if (!itementity.closerThan(allay, 16, 32))
+                        return false;
+                  
+                  UUID uuid = brain.get(owner);
+                  Player player = level.getPlayerByUUID(uuid);
+                  if (player != null) {
+                        Vector3f step;
+                        float yaw = player.getXRot();
+                        if (yaw < -60) // UP
+                              step = new Vector3f(0);
+                        else if (yaw > 60) // DOWN
+                              step = new Vector3f(0, -4, 0);
+                        else // HORIZONTAL
+                              step = player.getDirection().step().mul(2);
+                        
+                        Vec3 newPos = player.position().add(step.x, step.y, step.z);
+                        if (itementity.position().closerThan(newPos, 6))
+                              return false;
+                  }
+                  
+                  EntityTracker target = new EntityTracker(itementity, true);
+                  WalkTarget walktarget = new WalkTarget(target, 2F, 0);
+                  look_target.set(target);
+                  walk_target.set(walktarget);
+                  return true;
+            }));
+            
             BehaviorControl<LivingEntity> catchupToPlayer = StayCloseToTarget.create(
                         entity -> {
                               if (entity.level() instanceof ServerLevel serverLevel) {
@@ -56,29 +102,30 @@ public class AllayAiMixin {
                               }
                               return Optional.empty();
                         },
-                        entity -> !entity.getItemBySlot(EquipmentSlot.BODY).isEmpty(),
+                        entity -> !entity.getItemBySlot(EquipmentSlot.BODY).isEmpty() && !entity.getBrain().hasMemoryValue(MemoryModuleType.NEAREST_VISIBLE_WANTED_ITEM),
                         8, 5, 1.65f);
 
             OneShot<Allay> wanderNearTarget = beans_Backpacks_3$createWanderNearTarget();
             pBrain.addActivityWithConditions(
-                        CommonClass.CHESTER_ACTIVITY.get(),
-                        ImmutableList.of(
-                                    Pair.of(0, catchupToPlayer),
-                                    Pair.of(1, new RunOne<>(ImmutableList.of(
-                                                Pair.of(wanderNearTarget, 1),
-                                                Pair.of(SetEntityLookTarget.create(entity -> {
-                                                      EntityType<?> type = entity.getType();
-                                                      return type == EntityType.PLAYER || type == EntityType.ALLAY;
-                                                }, 8.0F), 2),
-                                                Pair.of(SetEntityLookTarget.create(entity -> {
-                                                      EntityType<?> type = entity.getType();
-                                                      return type == EntityType.GLOW_ITEM_FRAME || type == EntityType.ITEM_FRAME || type == CommonClass.BACKPACK_ENTITY.get();
-                                                }, 4.0F), 2),
-                                                Pair.of(new RandomLookAround(UniformInt.of(150, 250), 30.0F, 0.0F, 0.0F), 1),
-                                                Pair.of(new DoNothing(20, 60), 1)
-                                    )))
-                        ),
-                        ImmutableSet.of(Pair.of(CommonClass.BACKPACK_OWNER_MEMORY.get(), MemoryStatus.VALUE_PRESENT))
+                  CommonClass.CHESTER_ACTIVITY.get(),
+                  ImmutableList.of(
+                        Pair.of(0, itemPickup),
+                        Pair.of(1, catchupToPlayer),
+                        Pair.of(2, new RunOne<>(ImmutableList.of(
+                              Pair.of(wanderNearTarget, 1),
+                              Pair.of(SetEntityLookTarget.create(entity -> {
+                                    EntityType<?> type = entity.getType();
+                                    return type == EntityType.PLAYER || type == EntityType.ALLAY;
+                              }, 8.0F), 2),
+                              Pair.of(SetEntityLookTarget.create(entity -> {
+                                    EntityType<?> type = entity.getType();
+                                    return type == EntityType.GLOW_ITEM_FRAME || type == EntityType.ITEM_FRAME || type == CommonClass.BACKPACK_ENTITY.get();
+                              }, 4.0F), 2),
+                              Pair.of(new RandomLookAround(UniformInt.of(150, 250), 30.0F, 0.0F, 0.0F), 1),
+                              Pair.of(new DoNothing(20, 60), 1)
+                        )))
+                  ),
+                  ImmutableSet.of(Pair.of(CommonClass.BACKPACK_OWNER_MEMORY.get(), MemoryStatus.VALUE_PRESENT))
             );
       }
 
