@@ -12,7 +12,7 @@
     "ItemStackMixin"
   ],
   "client": [
-    "AbstractContainerScreenMixin"
+    "AbstractContainerScreenMixin", "MouseHandlerMixin"
   ],
   "server": [ ],
   "injectors": {

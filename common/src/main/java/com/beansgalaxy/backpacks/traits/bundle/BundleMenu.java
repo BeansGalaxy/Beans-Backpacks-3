@@ -1,7 +1,6 @@
 package com.beansgalaxy.backpacks.traits.bundle;
 
 import com.beansgalaxy.backpacks.CommonClient;
-import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.network.serverbound.TraitMenuClick;
 import com.beansgalaxy.backpacks.screen.TraitMenu;
 import com.beansgalaxy.backpacks.traits.ITraitData;
@@ -17,19 +16,18 @@ import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.math.Fraction;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
@@ -83,9 +81,77 @@ public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
       protected int getHeight() {
             return rows * 16 + 8;
       }
-
+      
+      private final class DragInstance {
+            final double startX;
+            final double startY;
+            final int button;
+            boolean hasMoved = false;
+            double currentX;
+            double currentY;
+            
+            private DragInstance(double startX, double startY, int button) {
+                  this.startX = startX;
+                  this.startY = startY;
+                  this.button = button;
+                  currentX = startX;
+                  currentY = startY;
+            }
+            
+            void move(double mouseX, double mouseY) {
+                  double oX = mouseX - currentX;
+                  double oY = mouseY - currentY;
+                  
+                  currentX += oX;
+                  currentY += oY;
+                  leftPos += oX;
+                  topPos += oY;
+            }
+      }
+      @Nullable private DragInstance dragInstance = null;
+      
+      @Override
+      public void mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY, CallbackInfoReturnable<Boolean> cir) {
+            super.mouseDragged(mouseX, mouseY, button, dragX, dragY, cir);
+            
+            if (dragInstance != null) {
+                  if (!dragInstance.hasMoved) {
+                        double x = dragInstance.startX - mouseX;
+                        double y = dragInstance.startY - mouseY;
+                        double distance = Math.abs(x) + Math.abs(y);
+                        System.out.println("x = " + x);
+                        System.out.println("y = " + y);
+                        System.out.println("distance = " + distance);
+                        dragInstance.hasMoved = true;
+                  }
+                  else {
+                        dragInstance.move(mouseX, mouseY);
+                  }
+            }
+            else if (hoveredSlot == null || hoveredSlot.isEmpty) {
+                  LocalPlayer player = minecraft.player;
+                  AbstractContainerMenu containerMenu = player.containerMenu;
+                  if (containerMenu.getCarried().isEmpty()) {
+                        System.out.println("dragX = " + dragX);
+                        System.out.println("dragY = " + dragY);
+                        dragInstance = new DragInstance(mouseX, mouseY, button);
+                        cir.setReturnValue(true);
+                        System.out.println("START");
+                  }
+            }
+            
+//            System.out.println("mouseX = " + mouseX);
+//            System.out.println("mouseY = " + mouseY);
+//            System.out.println("button = " + button);
+//            System.out.println("dragX = " + dragX);
+//            System.out.println("dragY = " + dragY);
+//            System.out.println();
+      }
+      
       @Override
       public void menuClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
+            dragInstance = null;
+            
             if (hoveredSlot != null) {
                   LocalPlayer player = minecraft.player;
                   AbstractContainerMenu containerMenu = player.containerMenu;
@@ -112,28 +178,66 @@ public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
 
             return TraitMenuClick.Kind.LEFT;
       }
-
+      
       @Override
-      public void keyPressed(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cir) {
+      public void dropHoveredItem(CallbackInfoReturnable<Boolean> cir) {
             if (hoveredSlot == null)
                   return;
-
-            if (keyCode == GLFW.GLFW_KEY_Q) {
-                  LocalPlayer player = minecraft.player;
-                  AbstractContainerMenu containerMenu = player.containerMenu;
-                  TraitMenuClick.Kind clickType = TraitMenuClick.Kind.DROP;
-
-                  TraitMenuClick.send(containerMenu.containerId, slot, hoveredSlot.index, clickType);
-                  SlotAccess access = SlotAccess.of(containerMenu::getCarried, containerMenu::setCarried);
-                  traits.menuClick(holder, hoveredSlot.index, clickType, access, player);
-                  updateSize();
-            }
+            
+            LocalPlayer player = minecraft.player;
+            AbstractContainerMenu containerMenu = player.containerMenu;
+            TraitMenuClick.Kind clickType = TraitMenuClick.Kind.DROP;
+            
+            TraitMenuClick.send(containerMenu.containerId, slot, hoveredSlot.index, clickType);
+            SlotAccess access = SlotAccess.of(containerMenu::getCarried, containerMenu::setCarried);
+            traits.menuClick(holder, hoveredSlot.index, clickType, access, player);
+            updateSize();
       }
 
       @Override
       protected void menuRender(AbstractContainerScreen<?> screen, GuiGraphics gui, int mouseX, int mouseY) {
-            TooltipRenderUtil.renderTooltipBackground(gui, 8, 4, getWidth() - 16, getHeight() - 8, 0);
+            if (isFocused())
+                  renderTooltipBackground(gui, 8, 4, getWidth() - 16, getHeight() - 8, 0);
+            else
+                  TooltipRenderUtil.renderTooltipBackground(gui, 8, 4, getWidth() - 16, getHeight() - 8, 0);
+            
             renderItems(gui, mouseX, mouseY);
+      }
+      
+      public static void renderTooltipBackground(GuiGraphics pGuiGraphics, int pX, int pY, int pWidth, int pHeight, int pZ) {
+            int i = pX - 3;
+            int j = pY - 3;
+            int k = pWidth + 3 + 3;
+            int l = pHeight + 3 + 3;
+            renderHorizontalLine(pGuiGraphics, i, j - 1, k, pZ, -267386864);
+            renderHorizontalLine(pGuiGraphics, i, j + l, k, pZ, -267386864);
+            renderRectangle(pGuiGraphics, i, j, k, l, pZ, -267386864);
+            renderVerticalLine(pGuiGraphics, i - 1, j, l, pZ, -267386864);
+            renderVerticalLine(pGuiGraphics, i + k, j, l, pZ, -267386864);
+            renderFrameGradient(pGuiGraphics, i, j + 1, k, l, pZ, 0xA0FFAA00, 0x50EB7114);
+      }
+      
+      private static void renderFrameGradient(GuiGraphics pGuiGraphics, int pX, int pY, int pWidth, int pHeight, int pZ, int pTopColor, int pBottomColor) {
+            renderVerticalLineGradient(pGuiGraphics, pX, pY, pHeight - 2, pZ, pTopColor, pBottomColor);
+            renderVerticalLineGradient(pGuiGraphics, pX + pWidth - 1, pY, pHeight - 2, pZ, pTopColor, pBottomColor);
+            renderHorizontalLine(pGuiGraphics, pX, pY - 1, pWidth, pZ, pTopColor);
+            renderHorizontalLine(pGuiGraphics, pX, pY - 1 + pHeight - 1, pWidth, pZ, pBottomColor);
+      }
+      
+      private static void renderVerticalLine(GuiGraphics pGuiGraphics, int pX, int pY, int pLength, int pZ, int pColor) {
+            pGuiGraphics.fill(pX, pY, pX + 1, pY + pLength, pZ, pColor);
+      }
+      
+      private static void renderVerticalLineGradient(GuiGraphics pGuiGraphics, int pX, int pY, int pLength, int pZ, int pTopColor, int pBottomColor) {
+            pGuiGraphics.fillGradient(pX, pY, pX + 1, pY + pLength, pZ, pTopColor, pBottomColor);
+      }
+      
+      private static void renderHorizontalLine(GuiGraphics pGuiGraphics, int pX, int pY, int pLength, int pZ, int pColor) {
+            pGuiGraphics.fill(pX, pY, pX + pLength, pY + 1, pZ, pColor);
+      }
+      
+      private static void renderRectangle(GuiGraphics pGuiGraphics, int pX, int pY, int pWidth, int pHeight, int pZ, int pColor) {
+            pGuiGraphics.fill(pX, pY, pX + pWidth, pY + pHeight, pZ, pColor);
       }
 
       @Nullable
@@ -144,6 +248,7 @@ public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
 
             List<ItemStack> stacks = holder.get(ITraitData.ITEM_STACKS);
             hoveredSlot = null;
+            tSlot lastSlot = null;
 
             for (int y = 0; y < rows; y++) {
                   for (int x = 0; x < columns; x++) {
@@ -154,11 +259,23 @@ public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
                         int x2 = x1 + 16;
                         int y2 = y1 + 16;
                         
-                        boolean isHovered = mouseX >= x1 && mouseY >= y1 && mouseX < x2 && mouseY < y2;
+                        boolean isHovered = isFocused && mouseX >= x1 && mouseY >= y1 && mouseX < x2 && mouseY < y2;
+                        
+                        if (i == size) {
+                              lastSlot = new tSlot(i, x1, x2, y1, y2, true);
+                        }
+                        
+                        if (i >= size) {
+                              if (isHovered)
+                                    hoveredSlot = lastSlot;
+                              continue;
+                        }
+                        
                         if (isHovered)
-                              hoveredSlot = new tSlot(i, x1, x2, y1, y2);
+                              hoveredSlot = new tSlot(i, x1, x2, y1, y2, false);
+                        
 
-                        if (i == size || stacks == null)
+                        if (stacks == null)
                               break;
                         
                         Font font = minecraft.font;
@@ -184,7 +301,7 @@ public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
                   gui.fill(hoveredSlot.x1, hoveredSlot.y1, hoveredSlot.x2, hoveredSlot.y2, 30, 0x60FFFFFF);
       }
 
-      record tSlot(int index, int x1, int x2, int y1, int y2) {
+      record tSlot(int index, int x1, int x2, int y1, int y2, boolean isEmpty) {
 
       }
 }

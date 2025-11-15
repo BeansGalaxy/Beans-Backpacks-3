@@ -464,12 +464,12 @@ public class CommonClient {
             return false;
       }
 
-      public static void renderItemDecorations(GuiGraphics gui, Font font, ItemStack $$1, int x, int y, int z) {
-            if (!$$1.isEmpty()) {
+      public static void renderItemDecorations(GuiGraphics gui, Font font, ItemStack pStack, int x, int y, int z) {
+            if (!pStack.isEmpty()) {
                   PoseStack pose = gui.pose();
+                  pose.translate(0.0F, 0.0F, z + 50);
                   pose.pushPose();
-                  pose.translate(0.0F, 0.0F, z + 10);
-                  int count = $$1.getCount();
+                  int count = pStack.getCount();
                   if (count != 1) {
                         String string = String.valueOf(count);
                         if (count > 999) {
@@ -492,13 +492,20 @@ public class CommonClient {
                               gui.drawString(font, string, x + 9 - font.width(string), y + 1, 0xFFFFFFFF, true);
                         }
                   }
-                  else if ($$1.isBarVisible()) {
-                        int barColor = $$1.getBarColor();
+                  else if (pStack.isBarVisible()) {
+                        int barColor = pStack.getBarColor();
                         int barX = x - 6;
                         int barY = y + 5;
                         gui.fill(barX, barY, barX + 13, barY + 2, 0xFF000000);
-                        gui.fill(barX, barY, barX + $$1.getBarWidth(), barY + 1, barColor | -16777216);
+                        gui.fill(barX, barY, barX + pStack.getBarWidth(), barY + 1, barColor | -16777216);
                   }
+                  
+                  Optional<GenericTraits> traitsOptional = Traits.get(pStack);
+                  if (traitsOptional.isPresent()) {
+                        GenericTraits traits = traitsOptional.get();
+                        traits.client().renderItemDecorations(traits, ComponentHolder.of(pStack), gui, font, pStack, x - 8, y - 8);
+                  }
+                  
                   pose.popPose();
             }
       }

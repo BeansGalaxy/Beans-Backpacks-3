@@ -6,7 +6,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [ "BlocksMixin", "InventoryMixin", "ItemRendererMixin", "ItemsMixin", "ItemStackMixin" ],
   "client": [
-    "AbstractContainerScreenMixin"
+    "AbstractContainerScreenMixin", "MouseHandlerMixin"
   ],
   "server": [ ],
   "injectors": {

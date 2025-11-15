@@ -90,10 +90,6 @@ public class EntityRender extends EntityRenderer<BackpackEntity> implements Rend
             IEntityTraits<?> traits = backpack.getTraits();
             ResourceLocation texture = traits.getTexture();
             renderTexture(pose, source, light, texture, stack, viewable);
-            pose.popPose();
-            pose.popPose();
-
-            renderNameAndHitbox(pose, source, backpack, yaw, light);
 
 //    ++++============================================= DESTROY DECAL ==============================================++++
 
@@ -105,6 +101,11 @@ public class EntityRender extends EntityRenderer<BackpackEntity> implements Rend
                   model().renderToBuffer(pose, crumble, light, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF);
                   pose.popPose();
             }
+            
+            pose.popPose();
+            pose.popPose();
+            
+            renderNameAndHitbox(pose, source, backpack, yaw, light);
       }
 
       @Override

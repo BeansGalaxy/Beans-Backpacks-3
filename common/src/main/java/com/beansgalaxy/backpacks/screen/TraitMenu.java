@@ -1,9 +1,11 @@
 package com.beansgalaxy.backpacks.screen;
 
+import com.beansgalaxy.backpacks.CommonClient;
 import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.traits.IClientTraits;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.bundle.BundleMenu;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -11,8 +13,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -36,8 +38,8 @@ public abstract class TraitMenu<T extends GenericTraits> {
       private final int screenWidth;
       private final int screenHeight;
       
-      protected int leftPos;
-      protected int topPos;
+      protected double leftPos;
+      protected double topPos;
 
       public TraitMenu(Minecraft minecraft, int screenLeft, int screenTop, int screenHeight, int screenWidth, Slot slot, ComponentHolder holder, T traits) {
             this(minecraft, slot, holder, traits, screenLeft + slot.x, screenTop + slot.y, screenHeight, screenWidth);
@@ -58,6 +60,14 @@ public abstract class TraitMenu<T extends GenericTraits> {
             this.screenWidth = screenWidth;
 
             this.timeOpened = Util.getMillis();
+      }
+      
+      int topPos() {
+            return (int) topPos;
+      }
+      
+      int leftPos() {
+            return (int) leftPos;
       }
 
       @Nullable
@@ -91,20 +101,22 @@ public abstract class TraitMenu<T extends GenericTraits> {
       }
 
       public void render(AbstractContainerScreen<?> screen, GuiGraphics gui, int mouseX, int mouseY) {
-            if (isHoveringSlot(mouseX, mouseY)) {
-                  int x = slot.x;
-                  int y = slot.y;
-                  
-                  RenderSystem.enableBlend();
-                  ResourceLocation location = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "exit_trait_menu");
-                  gui.blitSprite(location, 16, 16, 0, 0, x, y, 310, 16, 16);
-                  RenderSystem.disableBlend();
+            PoseStack pose = gui.pose();
+            pose.translate(0, 0, 300);
+            int y = slot.y;
+            int x = slot.x;
+            
+            if (isFocused) {
+                  ItemStack stack = slot.getItem();
+                  BundleMenu.renderTooltipBackground(gui, x + 1, y + 1, 14, 14, 0);
+                  CommonClient.renderItem(minecraft, gui, stack, x + 8, y + 8, 50, false);
+                  CommonClient.renderItemDecorations(gui, minecraft.font, stack, x + 8, y + 8, 50);
+                  pose.translate(0, 0, 300);
             }
             
-            PoseStack pose = gui.pose();
             pose.pushPose();
-            pose.translate(slot.x - slotX + leftPos, slot.y - slotY + topPos, 301);
-            menuRender(screen, gui, mouseX - leftPos, mouseY - topPos);
+            pose.translate(slot.x - slotX + leftPos(), slot.y - slotY + topPos(), 0);
+            menuRender(screen, gui, mouseX - leftPos(), mouseY - topPos());
             pose.popPose();
       }
 
@@ -120,11 +132,17 @@ public abstract class TraitMenu<T extends GenericTraits> {
       }
 
       public void mouseClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {
-            menuClicked(mouseX - leftPos, mouseY - topPos, button, cir);
+            menuClicked(mouseX - leftPos(), mouseY - topPos(), button, cir);
       }
 
       // ==============================================================================================================  MENU CLASSES
-
+      
+      protected boolean isFocused = false;
+      
+      public void setFocus(boolean isFocused) {
+            this.isFocused = isFocused;
+      }
+      
       protected void menuRender(AbstractContainerScreen<?> screen, GuiGraphics gui, int mouseX, int mouseY) {
             String name = traits.getClass().getSimpleName();
             MutableComponent component = Component.literal(name);
@@ -136,14 +154,14 @@ public abstract class TraitMenu<T extends GenericTraits> {
       }
 
       private boolean isHoveringMenu(int mouseX, int mouseY) {
-            mouseX -= leftPos;
-            mouseY -= topPos;
+            mouseX -= leftPos();
+            mouseY -= topPos();
 
             if (mouseX < 0 || mouseY < 0) {
                   return false;
             }
 
-            return getWidth() > mouseX && getHeight() > mouseY;
+            return getWidth() - 4 > mouseX && getHeight() > mouseY;
       }
 
       protected int getWidth() {
@@ -156,8 +174,15 @@ public abstract class TraitMenu<T extends GenericTraits> {
       protected int getHeight() {
             return 16;
       }
-
-      public void keyPressed(int keyCode, int scanCode, int modifiers, CallbackInfoReturnable<Boolean> cir) {
-
+      
+      public void dropHoveredItem(CallbackInfoReturnable<Boolean> cir) {
+      }
+      
+      public boolean isFocused() {
+            return isFocused;
+      }
+      
+      public void mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY, CallbackInfoReturnable<Boolean> cir) {
+      
       }
 }
