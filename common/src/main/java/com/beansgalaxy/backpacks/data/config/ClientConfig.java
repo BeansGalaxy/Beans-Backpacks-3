@@ -17,6 +17,7 @@ public class ClientConfig implements IConfig {
       public BoolConfigVariant disable_equipable_render;
       public ListConfigVariant<Integer> back_slot_pos;
       public EnumConfigVariant<Orientation> back_and_utility_direction;
+      public BoolConfigVariant hide_bundle_tutorial;
 
       private final ConfigLine[] LINES = new ConfigLine[] {
                   elytra_model_equipment = HSetConfigVariant.Builder.create(Constants::shortString, in -> BuiltInRegistries.ITEM.get(ResourceLocation.parse(in)))
@@ -27,6 +28,7 @@ public class ClientConfig implements IConfig {
                   back_slot_pos = ListConfigVariant.create(String::valueOf, JsonElement::getAsInt)
                               .defau(77, 44).valid(in -> in.size() == 2).build("back_slot_pos"),
                   back_and_utility_direction = new EnumConfigVariant<>("back_and_utility_direction", Orientation.Up, Orientation.values()),
+                  hide_bundle_tutorial = new BoolConfigVariant("hide_bundle_tutorial", false),
       };
 
       @Override
