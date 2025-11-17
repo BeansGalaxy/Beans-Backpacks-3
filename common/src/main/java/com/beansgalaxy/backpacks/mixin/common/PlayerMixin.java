@@ -10,6 +10,7 @@ import com.beansgalaxy.backpacks.data.ServerSave;
 import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
+import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.beansgalaxy.backpacks.traits.quiver.QuiverTraits;
 import com.beansgalaxy.backpacks.util.ModSound;
@@ -35,6 +36,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
@@ -332,8 +334,23 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
 
       @Inject(method = "dropEquipment", at = @At(value = "HEAD"))
       private void backpackDropEquipment(CallbackInfo ci) {
-            if (!ServerSave.CONFIG.keepBackpack(level())) {
+            if (!ServerSave.CONFIG.keepBackpack(level()))
                   BackpackEntity.drop(instance);
+            
+            if (!this.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
+                  for (EquipmentSlot slot: new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+                        ItemStack backpack = instance.getItemBySlot(slot);
+                        BackpackTraits traits = BackpackTraits.get(backpack);
+                        if (traits == null)
+                              continue;
+                        
+                        List<ItemStack> stacks = backpack.remove(ITraitData.ITEM_STACKS);
+                        if (stacks == null)
+                              continue;
+                        
+                        for (ItemStack stack : stacks)
+                              instance.drop(stack, true, false);
+                  }
             }
       }
 

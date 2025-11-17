@@ -138,7 +138,7 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
                         return true;
                   
                   if (hoveredSlot instanceof EquipmentSlotAccess)
-                        return !hoveredSlot.mayPickup(minecraft.player) || !hoveredSlot.mayPlace(menu.getCarried());
+                        return minecraft.player.isCreative() || !hoveredSlot.mayPickup(minecraft.player) || !hoveredSlot.mayPlace(menu.getCarried());
             }
             
             return false;

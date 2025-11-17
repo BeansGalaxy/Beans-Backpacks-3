@@ -23,10 +23,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.ClickType;
-import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -93,10 +90,16 @@ public abstract class BackpackScreen extends EffectRenderingInventoryScreen<Inve
                   this.minecraft.gameMode.handleInventoryMouseClick(this.menu.containerId, pSlotId, pMouseButton, pType, player);
                   return;
             }
-
-            switch (pType) {
-                  case QUICK_MOVE -> tinyHotbarClick(TinyClickType.SHIFT, menu, player, pSlot.index);
-                  default -> this.minecraft.gameMode.handleInventoryMouseClick(this.menu.containerId, pSlot.index, pMouseButton, pType, player);
+            
+            if (pType == ClickType.QUICK_MOVE) {
+                  TinyClickType tinyType = pSlot instanceof ResultSlot
+                        ? TinyClickType.CRAFT
+                        : TinyClickType.SHIFT;
+                  
+                  tinyHotbarClick(tinyType, menu, player, pSlot.index);
+            }
+            else {
+                  this.minecraft.gameMode.handleInventoryMouseClick(this.menu.containerId, pSlot.index, pMouseButton, pType, player);
             }
       }
 

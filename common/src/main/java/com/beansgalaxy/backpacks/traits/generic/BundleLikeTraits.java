@@ -21,10 +21,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ClickAction;
-import net.minecraft.world.inventory.ClickType;
-import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.math.Fraction;
 import org.jetbrains.annotations.Nullable;
@@ -221,11 +218,23 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                         }
                         return;
                   }
-
-                  if (canItemFit(holder, slot.getItem())) {
-                        ItemStack slotItem = slot.getItem().copy();
-                        int toAdd = mutable.getMaxAmountToAdd(slotItem);
-                        ItemStack removed = slot.remove(toAdd);
+                  
+                  ItemStack stack = slot.getItem();
+                  if (canItemFit(holder, stack)) {
+                        int toAdd = mutable.getMaxAmountToAdd(stack);
+                        ItemStack removed;
+                        if (slot instanceof ResultSlot) {
+                              Optional<ItemStack> optional = slot.tryRemove(stack.getCount(), toAdd, player);
+                              if (optional.isEmpty())
+                                    return;
+                              
+                              removed = optional.get();
+                              slot.onTake(player, removed);
+                        }
+                        else {
+                              removed = slot.remove(toAdd);
+                        }
+                        
                         if (mutable.addItem(removed, 0) != null) {
                               sound().atClient(player, ModSound.Type.INSERT);
                               mutable.push();

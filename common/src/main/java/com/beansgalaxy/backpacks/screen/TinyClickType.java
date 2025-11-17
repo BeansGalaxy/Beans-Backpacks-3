@@ -7,6 +7,7 @@ public enum TinyClickType {
       RIGHT(-1),
       SHIFT(-1),
       I_SHIFT(-1),
+      CRAFT(-1),
       ACTION(-1),
       DROP(-1),
       H_0(0),

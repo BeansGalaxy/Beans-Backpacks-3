@@ -19,6 +19,7 @@ import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.inventory.ResultSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -151,6 +152,26 @@ public abstract class ItemStorageTraits extends GenericTraits {
 
                         return hotbar.isEmpty();
                   }));
+            }
+            
+            if (slot instanceof ResultSlot resultSlot) {
+                  if (!canItemFit(holder, hotbar))
+                        return;
+                  
+                  MutableItemStorage mutable = mutable(holder);
+                  int toAdd = mutable.getMaxAmountToAdd(hotbar);
+                  Optional<ItemStack> optional = resultSlot.tryRemove(hotbar.getCount(), toAdd, player);
+                  if (optional.isEmpty())
+                        return;
+                  
+                  ItemStack removed = optional.get();
+                  resultSlot.onTake(player, removed);
+                  if (mutable.addItem(removed) != null) {
+                        sound().atClient(player, ModSound.Type.INSERT);
+                        mutable.push();
+                  }
+                  
+                  return;
             }
 
             if (clickType.isShift()) {
