@@ -1,0 +1,35 @@
+{
+  "display": {
+    "icon": {
+      "id": "beansbackpacks:quiver"
+    },
+    "title": {
+      "translate": "advancement.beansbackpacks.quiver.name"
+    },
+    "description": {
+      "translate": "advancement.beansbackpacks.quiver.desc"
+    },
+    "hidden": false
+  },
+  "parent": "beansbackpacks:item/lunch_box",
+  "criteria": {
+    "got_item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "beansbackpacks:quiver"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "got_item"
+    ]
+  ],
+  "rewards": {}
+}

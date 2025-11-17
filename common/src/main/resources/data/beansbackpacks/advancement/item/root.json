@@ -1,14 +1,18 @@
 {
   "display": {
     "icon": {
-      "id": "beansbackpacks:gold_backpack"
+      "id": "beansbackpacks:iron_backpack"
     },
-    "title": "Beans Backpacks",
-    "description": "Overhaul your inventory with expanded bundle mechanics",
-    "show_toast": false,
-    "announce_to_chat": false,
-    "background": "beansbackpacks:textures/gui/background.png"
+    "title": {
+      "translate": "advancement.beansbackpacks.item.name"
+    },
+    "description": {
+      "translate": "advancement.beansbackpacks.item.desc"
+    },
+    "frame": "goal",
+    "hidden": false
   },
+  "parent": "beansbackpacks:item/decorated_pot",
   "criteria": {
     "requirement": {
       "trigger": "minecraft:inventory_changed",

@@ -1,0 +1,45 @@
+{
+  "display": {
+    "icon": {
+      "id": "minecraft:decorated_pot"
+    },
+    "title": {
+      "translate": "block.minecraft.decorated_pot"
+    },
+    "description": {
+      "translate": "advancement.beansbackpacks.decorated_pot.desc",
+      "with": [
+        {
+          "keybind": "key.use",
+          "type": "keybind"
+        },
+        {
+          "keybind": "key.attack",
+          "type": "keybind"
+        }
+      ]
+    },
+    "hidden": false
+  },
+  "parent": "beansbackpacks:item/burlap_sack",
+  "criteria": {
+    "got_item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "minecraft:decorated_pot"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "got_item"
+    ]
+  ],
+  "rewards": {}
+}

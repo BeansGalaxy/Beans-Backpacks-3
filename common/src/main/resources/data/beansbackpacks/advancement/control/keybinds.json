@@ -1,0 +1,21 @@
+{
+  "display": {
+    "icon": {
+      "id": "beansbackpacks:netherite_backpack"
+    },
+    "title": {
+      "translate": "advancement.beansbackpacks.keybinds.name"
+    },
+    "description": {
+      "translate": "advancement.beansbackpacks.keybinds.desc"
+    },
+    "show_toast": true,
+    "hidden": false
+  },
+  "parent": "beansbackpacks:control/place",
+  "criteria": {
+    "has_done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

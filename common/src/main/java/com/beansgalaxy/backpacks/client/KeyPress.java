@@ -14,6 +14,7 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -52,12 +53,30 @@ public class KeyPress {
       public final KeyMapping ACTION_KEY = new KeyMapping(
                   ACTION_KEY_IDENTIFIER,
                   GLFW.GLFW_KEY_UNKNOWN,
-                  KEY_CATEGORY);
+                  KEY_CATEGORY)
+      {
+            @Override
+            public Component getTranslatedKeyMessage() {
+                  if (isUnbound())
+                        return getDefaultKeyBind().getTranslatedKeyMessage();
+                  
+                  return super.getTranslatedKeyMessage();
+            }
+      };
 
       public final KeyMapping MENUS_KEY = new KeyMapping(
                   MENUS_KEY_IDENTIFIER,
                   GLFW.GLFW_KEY_UNKNOWN,
-                  KEY_CATEGORY);
+                  KEY_CATEGORY)
+      {
+            @Override
+            public Component getTranslatedKeyMessage() {
+                  if (isUnbound())
+                        return getActionKeyBind().getTranslatedKeyMessage();
+                  
+                  return super.getTranslatedKeyMessage();
+            }
+      };
 
       public final KeyMapping INSTANT_KEY = new KeyMapping(
                   INSTANT_KEY_IDENTIFIER,

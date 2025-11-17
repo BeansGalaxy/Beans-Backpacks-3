@@ -1,0 +1,35 @@
+{
+  "display": {
+    "icon": {
+      "id": "beansbackpacks:alchemy_bag"
+    },
+    "title": {
+      "translate": "item.beansbackpacks.alchemy_bag"
+    },
+    "description": {
+      "translate": "advancement.beansbackpacks.alchemy_bag.desc"
+    },
+    "hidden": false
+  },
+  "parent": "beansbackpacks:item/quiver",
+  "criteria": {
+    "got_item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "beansbackpacks:alchemy_bag"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "got_item"
+    ]
+  ],
+  "rewards": {}
+}

@@ -1,0 +1,35 @@
+{
+  "display": {
+    "icon": {
+      "id": "beansbackpacks:burlap_sack"
+    },
+    "title": {
+      "translate": "block.beansbackpacks.burlap_sack"
+    },
+    "description": {
+      "translate": "advancement.beansbackpacks.burlap_sack.desc"
+    },
+    "hidden": false
+  },
+  "parent": "beansbackpacks:item/leather_leggings",
+  "criteria": {
+    "got_item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "beansbackpacks:burlap_sack"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "got_item"
+    ]
+  ],
+  "rewards": {}
+}

@@ -1,0 +1,33 @@
+{
+  "display": {
+    "icon": {
+      "id": "beansbackpacks:bundle"
+    },
+    "title": {
+      "translate": "item.beansbackpacks.bundle"
+    },
+    "description": {
+      "translate": "advancement.beansbackpacks.bundle.desc"
+    },
+    "hidden": false
+  },
+  "parent": "beansbackpacks:beansbackpacks",
+  "criteria": {
+    "got_item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "beansbackpacks:bundle"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "got_item"
+    ]
+  ],
+  "rewards": {}
+}

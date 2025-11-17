@@ -1,0 +1,33 @@
+{
+  "display": {
+    "icon": {
+      "id": "beansbackpacks:backpack"
+    },
+    "title": {
+      "translate": "advancement.beansbackpacks.backpacks.name"
+    },
+    "description": {
+      "translate": "advancement.beansbackpacks.backpacks.desc"
+    },
+    "hidden": false
+  },
+  "parent": "beansbackpacks:item/alchemy_bag",
+  "criteria": {
+    "got_item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "beansbackpacks:backpack"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "got_item"
+    ]
+  ],
+  "rewards": {}
+}

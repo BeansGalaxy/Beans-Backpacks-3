@@ -1,0 +1,36 @@
+{
+  "display": {
+    "icon": {
+      "id": "beansbackpacks:lunch_box"
+    },
+    "title": {
+      "translate": "advancement.beansbackpacks.lunch_boxes.name"
+    },
+    "description": {
+      "translate": "advancement.beansbackpacks.lunch_boxes.desc"
+    },
+    "hidden": false
+  },
+  "parent": "beansbackpacks:item/bundle",
+  "criteria": {
+    "got_item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "beansbackpacks:lunch_box",
+              "beansbackpacks:netherite_lunch_box"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "got_item"
+    ]
+  ],
+  "rewards": {}
+}

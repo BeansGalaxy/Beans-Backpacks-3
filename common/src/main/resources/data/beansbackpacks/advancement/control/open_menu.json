@@ -1,0 +1,21 @@
+{
+  "display": {
+    "icon": {
+      "id": "beansbackpacks:netherite_backpack"
+    },
+    "title": {
+      "translate": "advancement.beansbackpacks.open_menu.name"
+    },
+    "description": {
+      "translate": "advancement.beansbackpacks.open_menu.desc"
+    },
+    "show_toast": true,
+    "hidden": false
+  },
+  "parent": "beansbackpacks:beansbackpacks",
+  "criteria": {
+    "has_done": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

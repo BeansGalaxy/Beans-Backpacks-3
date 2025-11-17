@@ -1,0 +1,35 @@
+{
+  "display": {
+    "icon": {
+      "id": "minecraft:leather_leggings"
+    },
+    "title": {
+      "translate": "item.minecraft.leather_leggings"
+    },
+    "description": {
+      "translate": "advancement.beansbackpacks.leather_leggings.desc"
+    },
+    "hidden": false
+  },
+  "parent": "beansbackpacks:item/backpack",
+  "criteria": {
+    "got_item": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "beansbackpacks:alchemy_bag"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "got_item"
+    ]
+  ],
+  "rewards": {}
+}
