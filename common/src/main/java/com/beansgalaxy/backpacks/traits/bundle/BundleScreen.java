@@ -111,8 +111,11 @@ public class BundleScreen extends BackpackScreen {
             int fontWidth = font.width(title);
             int fontHeight = 10;
             PoseStack pose = gui.pose();
-            pose.pushPose();
+            
             pose.translate(0, 0, 100);
+            
+            pose.pushPose();
+            pose.translate(0, 0, 1);
 
             if (fontWidth > width) {
                   FormattedCharSequence text = title.getVisualOrderText();
@@ -133,19 +136,20 @@ public class BundleScreen extends BackpackScreen {
                   fontHeight = height;
             }
             else gui.drawString(minecraft.font, title, right - fontWidth, top - 10, 0xFFFFFFFF);
-
-            pose.popPose();
-
+            
             this.traitX = left + width;
             this.traitY = top - fontHeight;
             this.traitW = width;
             this.traitH = rows * 18 + fontHeight;
+            
 
-            TooltipRenderUtil.renderTooltipBackground(gui, left - 1, top - 1 - fontHeight, width + 2, rows * 18 + 3 + fontHeight, 1);
+            TooltipRenderUtil.renderTooltipBackground(gui, left - 1, top - 1 - fontHeight, width + 2, rows * 18 + 3 + fontHeight, 0);
 
             for (TraitSlot slot : slots) {
                   slot.render(gui, pMouseX, pMouseY, pPartialTick);
             }
+            
+            pose.popPose();
       }
 
       @Override

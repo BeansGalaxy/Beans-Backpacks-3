@@ -1,9 +1,11 @@
 package com.beansgalaxy.backpacks.mixin.client;
 
+import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.CommonClient;
 import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.access.EquipmentSlotAccess;
 import com.beansgalaxy.backpacks.access.TraitMenuAccessor;
+import com.beansgalaxy.backpacks.data.config.ClientConfig;
 import com.beansgalaxy.backpacks.screen.TraitMenu;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
@@ -32,7 +34,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -145,8 +149,14 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
             if (hoveredSlot != null) {
                   if (shouldMakeNewMenu(pButton)) {
                         TraitMenu<?> menu = TraitMenu.create(minecraft, leftPos, topPos, imageHeight, imageWidth, hoveredSlot);
-                        if (menu != null)
+                        if (menu != null) {
                               traitMenus.addFirst(menu);
+                              ClientConfig config = CommonClass.CLIENT_CONFIG;
+                              if (!config.hide_bundle_tutorial.get()) {
+                                    config.hide_bundle_tutorial.set(true);
+                                    config.write();
+                              }
+                        }
                   }
                   else if (menu.getCarried().isEmpty() && hoveredSlot.hasItem() && minecraft.options.keyPickItem.matchesMouse(pButton)) {
                         BackpackTraits.runIfEquipped(minecraft.player, ((traits, slot) -> {
@@ -212,26 +222,38 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
             }
             
             PoseStack pose = pGuiGraphics.pose();
+            pGuiGraphics.enableScissor(0, 0, width, height);
+            
             int i = traitMenus.size();
             while (i > 0) {
                   i--;
                   
                   TraitMenu<?> traitMenu = traitMenus.get(i);
                   traitMenu.render((AbstractContainerScreen<?>) (Object) this, pGuiGraphics, pMouseX, pMouseY);
+                  pose.translate(0, 0, 300);
             }
             
+            pGuiGraphics.disableScissor();
             
             if (hoveredSlot != null) {
                   ItemStack stack = hoveredSlot.getItem();
-                  if (!stack.isEmpty()) {
+                  if (!stack.isEmpty() && !CommonClass.CLIENT_CONFIG.hide_bundle_tutorial.get()) {
                         Optional<BundleLikeTraits> optional = BundleLikeTraits.get(ComponentHolder.of(stack));
-                        optional.ifPresent(traits ->
-                              CommonClient.renderInfoTooltip(pGuiGraphics, pMouseX - leftPos, pMouseY - topPos, hoveredSlot, traits)
-                        );
+                        optional.ifPresent(traits -> {
+                              if (traits instanceof BackpackTraits) {
+                                    if (hoveredSlot instanceof EquipmentSlotAccess) {}
+                                    else return;
+                              }
+                              
+                              CommonClient.renderInfoTooltip(pGuiGraphics, pMouseX - leftPos, pMouseY - topPos, hoveredSlot, traits);
+                        });
                   }
             }
-            
-            pose.translate(0, 0, 600);
+      }
+      
+      @Inject(method="render", at=@At("TAIL"))
+      private void movePose(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick, CallbackInfo ci) {
+            pGuiGraphics.pose().translate(0,0,traitMenus.size() * 300);
       }
 
       @Override

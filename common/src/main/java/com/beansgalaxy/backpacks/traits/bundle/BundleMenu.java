@@ -7,6 +7,8 @@ import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -116,12 +118,6 @@ public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
             
             if (dragInstance != null) {
                   if (!dragInstance.hasMoved) {
-                        double x = dragInstance.startX - mouseX;
-                        double y = dragInstance.startY - mouseY;
-                        double distance = Math.abs(x) + Math.abs(y);
-                        System.out.println("x = " + x);
-                        System.out.println("y = " + y);
-                        System.out.println("distance = " + distance);
                         dragInstance.hasMoved = true;
                   }
                   else {
@@ -132,20 +128,10 @@ public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
                   LocalPlayer player = minecraft.player;
                   AbstractContainerMenu containerMenu = player.containerMenu;
                   if (containerMenu.getCarried().isEmpty()) {
-                        System.out.println("dragX = " + dragX);
-                        System.out.println("dragY = " + dragY);
                         dragInstance = new DragInstance(mouseX, mouseY, button);
                         cir.setReturnValue(true);
-                        System.out.println("START");
                   }
             }
-            
-//            System.out.println("mouseX = " + mouseX);
-//            System.out.println("mouseY = " + mouseY);
-//            System.out.println("button = " + button);
-//            System.out.println("dragX = " + dragX);
-//            System.out.println("dragY = " + dragY);
-//            System.out.println();
       }
       
       @Override
@@ -274,14 +260,16 @@ public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
                         if (isHovered)
                               hoveredSlot = new tSlot(i, x1, x2, y1, y2, false);
                         
-
                         if (stacks == null)
                               break;
                         
                         Font font = minecraft.font;
                         ItemStack stack = stacks.get(i);
-                        CommonClient.renderItem(minecraft, gui, stack, x1 + 8, y1 + 8, 15, false);
-                        CommonClient.renderItemDecorations(gui, font, stack, x1 + 8, y1 + 8, 15);
+                        PoseStack pose = gui.pose();
+                        pose.pushPose();
+                        CommonClient.renderItem(minecraft, gui, stack, x1 + 8, y1 + 8, 50, false);
+                        CommonClient.renderItemDecorations(gui, font, stack, x1 + 8, y1 + 8, 50);
+                        pose.popPose();
                         
                         if (isHovered) {
                               List<Component> lines = Screen.getTooltipFromItem(this.minecraft, stack);
@@ -298,7 +286,7 @@ public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
             }
 
             if (hoveredSlot != null)
-                  gui.fill(hoveredSlot.x1, hoveredSlot.y1, hoveredSlot.x2, hoveredSlot.y2, 30, 0x60FFFFFF);
+                  gui.fill(hoveredSlot.x1, hoveredSlot.y1, hoveredSlot.x2, hoveredSlot.y2, 100, 0x60FFFFFF);
       }
 
       record tSlot(int index, int x1, int x2, int y1, int y2, boolean isEmpty) {

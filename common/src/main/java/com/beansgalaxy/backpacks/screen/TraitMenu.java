@@ -101,21 +101,22 @@ public abstract class TraitMenu<T extends GenericTraits> {
       }
 
       public void render(AbstractContainerScreen<?> screen, GuiGraphics gui, int mouseX, int mouseY) {
-            PoseStack pose = gui.pose();
-            pose.translate(0, 0, 300);
             int y = slot.y;
             int x = slot.x;
             
             if (isFocused) {
                   ItemStack stack = slot.getItem();
-                  BundleMenu.renderTooltipBackground(gui, x + 1, y + 1, 14, 14, 0);
-                  CommonClient.renderItem(minecraft, gui, stack, x + 8, y + 8, 50, false);
-                  CommonClient.renderItemDecorations(gui, minecraft.font, stack, x + 8, y + 8, 50);
-                  pose.translate(0, 0, 300);
+                  BundleMenu.renderTooltipBackground(gui, x + 1, y + 1, 14, 14, 300);
+                  CommonClient.renderItem(minecraft, gui, stack, x + 8, y + 8, 350, false);
+                  CommonClient.renderItemDecorations(gui, minecraft.font, stack, x + 8, y + 8, 350);
             }
             
+            int xMove = slot.x - slotX + leftPos();
+            int yMove = slot.y - slotY + topPos();
+            
+            PoseStack pose = gui.pose();
             pose.pushPose();
-            pose.translate(slot.x - slotX + leftPos(), slot.y - slotY + topPos(), 0);
+            pose.translate(xMove, yMove, 350);
             menuRender(screen, gui, mouseX - leftPos(), mouseY - topPos());
             pose.popPose();
       }
