@@ -13,6 +13,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -21,29 +22,29 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public record FilterComponent(Iterable<Holder<Item>> items, @Nullable TagKey<Item> tag) {
+public record FilterComponent(Iterable<Holder<Item>> items, @Nullable TagKey<Item> tag, boolean blacklist) {
       public static final String NAME = "filter";
-      public static final FilterComponent EMPTY = new FilterComponent(List.of(), null);
+      public static final FilterComponent EMPTY = new FilterComponent(List.of(), null, false);
       
-      public FilterComponent(TagKey<Item> tag) {
-            this(BuiltInRegistries.ITEM.getTagOrEmpty(tag), tag);
+      public FilterComponent(TagKey<Item> tag, boolean blacklist) {
+            this(BuiltInRegistries.ITEM.getTagOrEmpty(tag), tag, blacklist);
       }
       
       public FilterComponent(List<Holder<Item>> items) {
-            this(items, null);
+            this(items, null, false);
       }
       
       public boolean isEmpty() {
             return this == EMPTY || !items.iterator().hasNext();
       }
       
-      public boolean test(ItemStack stack) {
+      public boolean passes(ItemStack stack) {
             for (Holder<Item> item : items) {
                   if (stack.is(item))
-                        return true;
+                        return !blacklist;
             }
             
-            return false;
+            return blacklist;
       }
       
       @Nullable
@@ -60,11 +61,33 @@ public record FilterComponent(Iterable<Holder<Item>> items, @Nullable TagKey<Ite
             return reference.getFilter().orElse(null);
       }
       
+      private static final Codec<FilterComponent> TAG_CODEC = Codec.STRING.comapFlatMap((string) -> {
+            boolean blacklist;
+            String path;
+            if (string.startsWith("!#")) {
+                  blacklist = true;
+                  path = string.substring(2);
+            }
+            else if (string.startsWith("#")) {
+                  blacklist = false;
+                  path = string.substring(1);
+            }
+            else return DataResult.error(() -> "Not a tag id");
+            
+            return ResourceLocation.read(path).map(location -> {
+                  TagKey<Item> key = TagKey.create(Registries.ITEM, location);
+                  return new FilterComponent(key, blacklist);
+            });
+      }, (filter) -> {
+            String prefix = filter.blacklist ? "!#" : "#";
+            return prefix + filter.tag.location();
+      });
+      
       public static final Codec<FilterComponent> CODEC = new Codec<>() {
             @Override public <T> DataResult<Pair<FilterComponent, T>> decode(DynamicOps<T> ops, T input) {
-                  DataResult<Pair<TagKey<Item>, T>> decodeTag = TagKey.hashedCodec(Registries.ITEM).decode(ops, input);
+                  DataResult<Pair<FilterComponent, T>> decodeTag = TAG_CODEC.decode(ops, input);
                   if (decodeTag.isSuccess())
-                        return decodeTag.map(pair -> pair.mapFirst(FilterComponent::new));
+                        return decodeTag;
                   
                   DataResult<Pair<List<Holder<Item>>, T>> decodeItem = ItemStack.ITEM_NON_AIR_CODEC.listOf().decode(ops, input);
                   if (decodeItem.isSuccess())

@@ -22,7 +22,6 @@ import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.ResultSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Ingredient;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -121,7 +120,7 @@ public abstract class ItemStorageTraits extends GenericTraits {
       public boolean canItemFit(ComponentHolder holder, ItemStack inserted) {
             FilterComponent component = FilterComponent.get(holder);
             if (component != null && !component.isEmpty()) {
-                  if (!component.test(inserted))
+                  if (!component.passes(inserted))
                         return false;
             }
             
