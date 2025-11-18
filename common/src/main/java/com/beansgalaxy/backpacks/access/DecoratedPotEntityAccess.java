@@ -8,6 +8,7 @@ import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -35,6 +36,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -54,6 +56,10 @@ public interface DecoratedPotEntityAccess {
       
       default float getFullness() {
             return getWeight().multiplyBy(Fraction.getFraction(1, SIZE)).floatValue();
+      }
+      
+      default boolean isFull() {
+            return getWeight().multiplyBy(Fraction.getFraction(1, SIZE)).compareTo(Fraction.ONE) > -1;
       }
       
       default ItemStack takeFromFocus() {
@@ -95,26 +101,58 @@ public interface DecoratedPotEntityAccess {
             if (!stack.is(item))
                   return false;
             
+            Level level = getLevel();
+            if (level.isClientSide)
+                  return true;
+            
             BulkComponent bulk = getBulkComponent();
             ArrayList<BulkComponent.ItemlessStack> stacks = bulk == null
                   ? new ArrayList<>()
                   : new ArrayList<>(bulk.stacks());
             
             BulkComponent.ItemlessStack itemless = new BulkComponent.ItemlessStack(focused.getComponentsPatch(), focused.getCount());
-            stacks.add(itemless);
+            stacks.addFirst(itemless);
             
             item().set(stack);
+            
+            if (stacks.size() > 1) {
+                  BulkComponent.ItemlessStack first = stacks.removeFirst();
+                  int maxSize = first.withItem(item).getMaxStackSize();
+                  int count = first.count();
+                  DataComponentPatch patch = first.patch();
+                  
+                  Iterator<BulkComponent.ItemlessStack> iterator = stacks.iterator();
+                  while (iterator.hasNext() && count < maxSize) {
+                        BulkComponent.ItemlessStack next = iterator.next();
+                        if (Objects.equals(patch, next.patch())) {
+                              count += next.count();
+                              iterator.remove();
+                        }
+                  }
+                  
+                  if (count > maxSize) {
+                        stacks.addFirst(new BulkComponent.ItemlessStack(patch, maxSize));
+                        count -= maxSize;
+                  }
+                  
+                  stacks.addFirst(new BulkComponent.ItemlessStack(patch, count));
+            }
+            
             tryFillFocusedItem(item, stacks);
             return true;
       }
       
-      private void tryFillFocusedItem(Holder<Item> item, ArrayList<BulkComponent.ItemlessStack> stacks) {
+      default void tryFillFocusedItem(Holder<Item> item, ArrayList<BulkComponent.ItemlessStack> stacks) {
             ItemStack focused = item().get();
             
             if (focused.isEmpty()) {
-                  focused = stacks.removeLast().withItem(item);
+                  focused = stacks.removeFirst().withItem(item);
                   item().set(focused);
-                  setBulkComponent(new BulkComponent(item, ImmutableList.copyOf(stacks)));
+            }
+            
+            if (stacks.isEmpty()) {
+                  setBulkComponent(null);
+                  return;
             }
             
             int toAdd = focused.getMaxStackSize() - focused.getCount();
@@ -124,6 +162,11 @@ public interface DecoratedPotEntityAccess {
             }
             
             while (toAdd != 0) {
+                  if (stacks.isEmpty()) {
+                        setBulkComponent(null);
+                        return;
+                  }
+                  
                   ItemStack stack = stacks.removeLast().withItem(item);
                   if (!ItemStack.isSameItemSameComponents(focused, stack))
                         return;
@@ -201,7 +244,13 @@ public interface DecoratedPotEntityAccess {
                   }
                   
                   ItemStack insert = inHand.copyWithCount(toAdd);
-                  if (entity.insertIntoFocus(insert)) {
+                  boolean success = entity.insertIntoFocus(insert);
+                  if (level.isClientSide)
+                        return success
+                              ? ItemInteractionResult.SUCCESS
+                              : ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+                  
+                  if (success) {
                         inHand.shrink(toAdd);
                         entity.success(inHand, level, pos, player, entity.getFullness());
                         return ItemInteractionResult.SUCCESS;
@@ -341,4 +390,6 @@ public interface DecoratedPotEntityAccess {
       void wobble(DecoratedPotBlockEntity.WobbleStyle style);
       
       void setChanged();
+      
+      Level getLevel();
 }
