@@ -19,7 +19,7 @@
   - The Alchemy Bag's recipe has been made cheaper
   - Leather Pants now have "pockets" again
 - **Miscellaneous**
-  - The `filter` component can be made a blacklist by starting the tag with a `!`
+  - The `filter` component can be made a blacklist by starting s tag with `!#`
   - Quick moving items from the inventory's crafting result caused items to dupe
 
 <h2>0.11 Fabric <br> 0.11 NeoForge</h2>
