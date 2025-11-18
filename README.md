@@ -1,5 +1,27 @@
 # Changelog
 
+<h2>0.12 Fabric <br> 0.12 NeoForge</h2>
+
+- **Decorated Pots**
+  - Now holds 2 double chests worth of a single item (108 Stacks!)
+  - Decorated Pots need a transparent block above it to interact (like chests do)
+  - Right click to insert the item in your hand
+  - With items in the pot, right click will insert any matching items in the inventory
+  - Left click to remove a stack of the items stored
+- **Bundle Menus**
+  - You can now open multiple menus at once.
+  - Menus can be moved by clicking and dragging on a empty slot
+  - Pressing ESC closes any open menus before closing your screen
+  - Added indication how to open the menu
+- **Changes**
+  - Allay pickup items on the ground while holding a backpack
+  - The Alchemist Bag has been renamed to "Alchemy Bag"
+  - The Alchemy Bag's recipe has been made cheaper
+  - Leather Pants now have "pockets" again
+- **Miscellaneous**
+  - The `filter` component can be made a blacklist by starting the tag with a `!`
+  - Quick moving items from the inventory's crafting result caused items to dupe
+
 <h2>0.11 Fabric <br> 0.11 NeoForge</h2>
 
 - **Tooltip Menus**
