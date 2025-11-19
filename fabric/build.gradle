@@ -2,15 +2,6 @@ plugins {
     id 'multiloader-loader'
     id 'fabric-loom'
 }
-
-base {
-    archivesName = "${mod_id}-${minecraft_version}-f"
-}
-
-repositories {
-    maven { url "https://maven.wispforest.io/releases/" }
-}
-
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
     mappings loom.layered {
@@ -22,9 +13,9 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
     compileOnly "org.spongepowered:mixin:0.8.7"
 
-    include modApi('teamreborn:energy:4.1.0') {
-        exclude(group: "net.fabricmc.fabric-api")
-    }
+//    include modApi('teamreborn:energy:4.1.0') {
+//        exclude(group: "net.fabricmc.fabric-api")
+//    }
 
     modRuntimeOnly "maven.modrinth:energized-power:1.21-2.12.1-fabric"
 
@@ -51,11 +42,6 @@ loom {
     }
     runs {
         client {
-            vmArg "-Dmixin.debug.export=true"
-            vmArg "-Dmixin.debug.verbose=true"
-            vmArg "-Dmixin.debug.countInjections=true"
-            vmArg "-XX:+AllowEnhancedClassRedefinition"
-
             client()
             setConfigName('Fabric Client')
             ideConfigGenerated(true)
@@ -66,6 +52,32 @@ loom {
             setConfigName('Fabric Server')
             ideConfigGenerated(true)
             runDir('runs/server')
+        }
+    }
+}
+
+// Implement mcgradleconventions loader attribute
+def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
+['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements', 'includeInternal', 'modCompileClasspath'].each { variant ->
+    configurations.named("$variant") {
+        attributes {
+            attribute(loaderAttribute, 'fabric')
+        }
+    }
+}
+sourceSets.configureEach {
+    [it.compileClasspathConfigurationName, it.runtimeClasspathConfigurationName].each { variant->
+        configurations.named("$variant") {
+            attributes {
+                attribute(loaderAttribute, 'fabric')
+            }
+        }
+    }
+}
+loom.remapConfigurations.configureEach {
+    configurations.named(it.name) {
+        attributes {
+            attribute(loaderAttribute, 'fabric')
         }
     }
 }
