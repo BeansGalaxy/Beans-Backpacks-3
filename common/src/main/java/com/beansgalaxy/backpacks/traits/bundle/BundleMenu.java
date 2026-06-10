@@ -7,18 +7,19 @@ import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
@@ -29,7 +30,6 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
@@ -153,8 +153,8 @@ public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
       }
 
       private TraitMenuClick.Kind getClickType(int button) {
-            boolean eitherShiftDown = InputConstants.isKeyDown(minecraft.getWindow().getWindow(), 340)
-                        || InputConstants.isKeyDown(minecraft.getWindow().getWindow(), 344);
+            boolean eitherShiftDown = InputConstants.isKeyDown(minecraft.getWindow(), 340)
+                        || InputConstants.isKeyDown(minecraft.getWindow(), 344);
 
             if (eitherShiftDown)
                   return TraitMenuClick.Kind.SHIFT;
@@ -183,49 +183,37 @@ public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
       @Override
       protected void menuRender(AbstractContainerScreen<?> screen, GuiGraphics gui, int mouseX, int mouseY) {
             if (isFocused())
-                  renderTooltipBackground(gui, 8, 4, getWidth() - 16, getHeight() - 8, 0);
+                  renderTooltipBackground(gui, 8, 4, getWidth() - 16, getHeight() - 8, holder.get(DataComponents.TOOLTIP_STYLE));
             else
-                  TooltipRenderUtil.renderTooltipBackground(gui, 8, 4, getWidth() - 16, getHeight() - 8, 0);
+                  TooltipRenderUtil.renderTooltipBackground(gui, 8, 4, getWidth() - 16, getHeight() - 8, holder.get(DataComponents.TOOLTIP_STYLE));
             
             renderItems(gui, mouseX, mouseY);
       }
       
-      public static void renderTooltipBackground(GuiGraphics pGuiGraphics, int pX, int pY, int pWidth, int pHeight, int pZ) {
-            int i = pX - 3;
-            int j = pY - 3;
-            int k = pWidth + 3 + 3;
-            int l = pHeight + 3 + 3;
-            renderHorizontalLine(pGuiGraphics, i, j - 1, k, pZ, -267386864);
-            renderHorizontalLine(pGuiGraphics, i, j + l, k, pZ, -267386864);
-            renderRectangle(pGuiGraphics, i, j, k, l, pZ, -267386864);
-            renderVerticalLine(pGuiGraphics, i - 1, j, l, pZ, -267386864);
-            renderVerticalLine(pGuiGraphics, i + k, j, l, pZ, -267386864);
-            renderFrameGradient(pGuiGraphics, i, j + 1, k, l, pZ, 0xA0FFAA00, 0x50EB7114);
+      public static void renderTooltipBackground(GuiGraphics guiGraphics, int x, int y, int width, int height, @Nullable ResourceLocation sprite) {
+            int i = x - 3 - 9;
+            int j = y - 3 - 9;
+            int k = width + 3 + 3 + 18;
+            int l = height + 3 + 3 + 18;
+            guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, getBackgroundSprite(sprite), i, j, k, l);
+            guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED, getFrameSprite(sprite), i, j, k, l);
       }
       
-      private static void renderFrameGradient(GuiGraphics pGuiGraphics, int pX, int pY, int pWidth, int pHeight, int pZ, int pTopColor, int pBottomColor) {
-            renderVerticalLineGradient(pGuiGraphics, pX, pY, pHeight - 2, pZ, pTopColor, pBottomColor);
-            renderVerticalLineGradient(pGuiGraphics, pX + pWidth - 1, pY, pHeight - 2, pZ, pTopColor, pBottomColor);
-            renderHorizontalLine(pGuiGraphics, pX, pY - 1, pWidth, pZ, pTopColor);
-            renderHorizontalLine(pGuiGraphics, pX, pY - 1 + pHeight - 1, pWidth, pZ, pBottomColor);
+      private static final ResourceLocation BACKGROUND_SPRITE = ResourceLocation.withDefaultNamespace("tooltip/background");
+      private static final ResourceLocation FRAME_SPRITE = ResourceLocation.withDefaultNamespace("tooltip/trait");
+      
+      private static ResourceLocation getBackgroundSprite(@Nullable ResourceLocation name) {
+            return name == null ? BACKGROUND_SPRITE : name.withPath((p_371425_) -> {
+                  return "tooltip/" + p_371425_ + "_background";
+            });
       }
       
-      private static void renderVerticalLine(GuiGraphics pGuiGraphics, int pX, int pY, int pLength, int pZ, int pColor) {
-            pGuiGraphics.fill(pX, pY, pX + 1, pY + pLength, pZ, pColor);
+      private static ResourceLocation getFrameSprite(@Nullable ResourceLocation name) {
+            return name == null ? FRAME_SPRITE : name.withPath((p_371467_) -> {
+                  return "tooltip/" + p_371467_ + "_frame";
+            });
       }
       
-      private static void renderVerticalLineGradient(GuiGraphics pGuiGraphics, int pX, int pY, int pLength, int pZ, int pTopColor, int pBottomColor) {
-            pGuiGraphics.fillGradient(pX, pY, pX + 1, pY + pLength, pZ, pTopColor, pBottomColor);
-      }
-      
-      private static void renderHorizontalLine(GuiGraphics pGuiGraphics, int pX, int pY, int pLength, int pZ, int pColor) {
-            pGuiGraphics.fill(pX, pY, pX + pLength, pY + 1, pZ, pColor);
-      }
-      
-      private static void renderRectangle(GuiGraphics pGuiGraphics, int pX, int pY, int pWidth, int pHeight, int pZ, int pColor) {
-            pGuiGraphics.fill(pX, pY, pX + pWidth, pY + pHeight, pZ, pColor);
-      }
-
       @Nullable
       private tSlot hoveredSlot = null;
 
@@ -265,29 +253,45 @@ public class BundleMenu<T extends BundleLikeTraits> extends TraitMenu<T> {
                         
                         Font font = minecraft.font;
                         ItemStack stack = stacks.get(i);
-                        PoseStack pose = gui.pose();
-                        pose.pushPose();
-                        CommonClient.renderItem(minecraft, gui, stack, x1 + 8, y1 + 8, 50, false);
-                        CommonClient.renderItemDecorations(gui, font, stack, x1 + 8, y1 + 8, 50);
-                        pose.popPose();
+                        CommonClient.renderItem(minecraft, gui, stack, x1 + 8, y1 + 8);
+                        CommonClient.renderItemDecorations(gui, font, stack, x1 + 8, y1 + 8);
                         
                         if (isHovered) {
                               List<Component> lines = Screen.getTooltipFromItem(this.minecraft, stack);
                               Optional<TooltipComponent> image = stack.getTooltipImage();
                               
-                              Integer imageHeight = image.map(ClientTooltipComponent::create).map(ClientTooltipComponent::getHeight).orElse(0);
-                              int linesSize = lines.size();
-                              int linesHeight = linesSize < 2 ? 12 : 14 + (linesSize - 1) * 10;
+                              List<ClientTooltipComponent> collected = lines.stream()
+                                    .map(Component::getVisualOrderText)
+                                    .map(ClientTooltipComponent::create)
+                                    .toList();
                               
-                              int height = imageHeight + linesHeight;
-                              gui.renderTooltip(font, lines, image, -4, -height + 10);
+                              image.map(ClientTooltipComponent::create).ifPresent(component -> {
+                                    if (collected.isEmpty()) 
+                                          collected.addFirst(component);
+                                    else 
+                                          collected.add(1, component);
+                              });
+                              
+                              int height = collected.stream().mapToInt(component -> component.getHeight(font)).sum();
+                              gui.renderTooltip(font, collected, -4, -height + 10, DefaultTooltipPositioner.INSTANCE, holder.get(DataComponents.TOOLTIP_STYLE));
                         }
                   }
             }
 
-            if (hoveredSlot != null)
-                  gui.fill(hoveredSlot.x1, hoveredSlot.y1, hoveredSlot.x2, hoveredSlot.y2, 100, 0x60FFFFFF);
+            if (hoveredSlot != null) {
+                  int x = hoveredSlot.x1;
+                  int y = hoveredSlot.y1;
+                  renderHighlight(gui, x, y);
+            }
       }
+      
+      public static void renderHighlight(GuiGraphics gui, int x, int y) {
+            gui.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_BACK_SPRITE, x - 4, y - 4, 24, 24);
+            gui.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_FRONT_SPRITE, x - 4, y - 4, 24, 24);
+      }
+      
+      private static final ResourceLocation SLOT_HIGHLIGHT_BACK_SPRITE = ResourceLocation.withDefaultNamespace("container/slot_highlight_back");
+      private static final ResourceLocation SLOT_HIGHLIGHT_FRONT_SPRITE = ResourceLocation.withDefaultNamespace("container/slot_highlight_front");
 
       record tSlot(int index, int x1, int x2, int y1, int y2, boolean isEmpty) {
 

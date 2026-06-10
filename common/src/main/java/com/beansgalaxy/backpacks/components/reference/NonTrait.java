@@ -74,7 +74,7 @@ public class NonTrait extends GenericTraits implements ITraitCodec<NonTrait>, Mu
 
       @Override
       public ResourceLocation getTexture() {
-            return ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "backpacks/null");
+            return Constants.defaultLocation("backpacks/null");
       }
 
       @Override

@@ -1,9 +1,12 @@
 package com.beansgalaxy.backpacks.util;
 
+import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,6 +24,10 @@ public interface ComponentHolder {
 
       static ComponentHolder of(ItemStack stack, Player player) {
             return new StackReturningTraitHolder(stack, player);
+      }
+      
+      static ComponentHolder of(BackpackEntity backpack) {
+            return new BackpackEntityTraitHolder(backpack);
       }
 
       @Nullable
@@ -50,6 +57,37 @@ public interface ComponentHolder {
             if (t == null)
                   return defau;
             return t;
+      }
+      
+      class BackpackEntityTraitHolder implements ComponentHolder {
+            private final BackpackEntity entity;
+            
+            BackpackEntityTraitHolder(BackpackEntity entity) {
+                  this.entity = entity;
+            }
+            
+            @Override @Nullable
+            public <T> T remove(DataComponentType<? extends T> type) {
+                  return entity.remove(type);
+            }
+            
+            @Override
+            public <T> void set(DataComponentType<? super T> type, T trait) {
+                  entity.set(type, trait);
+            }
+            
+            @Override @Nullable
+            public <T> T get(DataComponentType<? extends T> type) {
+                  return entity.get(type);
+            }
+            
+            @Override
+            public void setChanged() {
+                  ItemStack stack = entity.getStack();
+                  entity.getEntityData().set(BackpackEntity.ITEM_STACK, stack, true);
+                  BlockPos pPos = entity.blockPosition();
+                  entity.level().updateNeighbourForOutputSignal(pPos, Blocks.AIR);
+            }
       }
       
       class StackReturningTraitHolder implements ComponentHolder {

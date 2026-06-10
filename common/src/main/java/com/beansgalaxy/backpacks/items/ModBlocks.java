@@ -13,11 +13,12 @@ import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 public enum ModBlocks {
-      BURLAP_SACK("burlap_sack", () -> new BurlapSackBlock(BlockBehaviour.Properties.of()
+      BURLAP_SACK("burlap_sack", (properties) -> new BurlapSackBlock(properties
                                                                        .mapColor(MapColor.COLOR_YELLOW)
                                                                        .instrument(NoteBlockInstrument.GUITAR)
                                                                        .pushReaction(PushReaction.BLOCK)
@@ -28,23 +29,17 @@ public enum ModBlocks {
       ;
 
       public final String id;
-      public final Supplier<Block> block;
-      public final Supplier<Item> item;
+      public final Supplier<BlockItem> item;
       public final boolean creativeIncluded;
 
 
-      ModBlocks(String id, Supplier<Block> item) {
-            this(id, item, true);
+      ModBlocks(String id, Function<BlockBehaviour.Properties, Block> factory) {
+            this(id, factory, true);
       }
 
-      ModBlocks(String id, Supplier<Block> block, boolean creativeIncluded) {
+      ModBlocks(String id, Function<BlockBehaviour.Properties, Block> factory, boolean creativeIncluded) {
             this.id = id;
-            this.block = Services.PLATFORM.registerBlock(id, block);
-            this.item = Services.PLATFORM.register(id, () -> new BlockItem(null, new Item.Properties()) {
-                  @Override public Block getBlock() {
-                        return ModBlocks.this.block.get();
-                  }
-            });
+            this.item = Services.PLATFORM.registerBlock(id, factory);
 
             this.creativeIncluded = creativeIncluded;
       }
@@ -54,6 +49,6 @@ public enum ModBlocks {
       }
 
       public Block get() {
-            return block.get();
+            return item.get().getBlock();
       }
 }

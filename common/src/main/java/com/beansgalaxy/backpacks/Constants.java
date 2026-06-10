@@ -1,6 +1,7 @@
 package com.beansgalaxy.backpacks;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -16,6 +17,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Optional;
 
 public class Constants {
       public static final String MOD_ID = "beansbackpacks";
@@ -39,7 +42,7 @@ public class Constants {
 
               if (!stack.isEmpty()) {
                   name.withStyle(stack.getRarity().color())
-                              .withStyle($$0x -> $$0x.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackInfo(stack))));
+                              .withStyle($$0x -> $$0x.withHoverEvent(new HoverEvent.ShowItem(stack)));
               }
 
               return name;
@@ -61,5 +64,13 @@ public class Constants {
                   return key.getPath();
             else
                   return key.getNamespace() + ":" + key.getPath();
+      }
+      
+      public static ResourceLocation defaultLocation(String path) {
+            return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
+      }
+      
+      public static String shortString(Optional<Holder.Reference<Item>> reference) {
+            return reference.map(itemReference -> shortString(itemReference.value())).orElse("");
       }
 }

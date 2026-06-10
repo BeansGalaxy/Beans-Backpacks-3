@@ -90,7 +90,7 @@ public class TraitMenuClick implements Packet2S {
             traits.menuClick(holder, index, clickType, carriedAccess, sender);
       }
 
-      public static Type<TraitMenuClick> ID = new Type<>(ResourceLocation.parse(Constants.MOD_ID + ":trait_menu_click_s"));
+      public static Type<TraitMenuClick> ID = new Type<>(Constants.defaultLocation("trait_menu_click_s"));
 
       @Override
       public Type<? extends CustomPacketPayload> type() {

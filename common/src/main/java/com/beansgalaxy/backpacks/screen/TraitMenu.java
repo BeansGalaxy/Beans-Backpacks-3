@@ -1,26 +1,23 @@
 package com.beansgalaxy.backpacks.screen;
 
 import com.beansgalaxy.backpacks.CommonClient;
-import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.traits.IClientTraits;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.bundle.BundleMenu;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix3x2fStack;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
@@ -106,19 +103,21 @@ public abstract class TraitMenu<T extends GenericTraits> {
             
             if (isFocused) {
                   ItemStack stack = slot.getItem();
-                  BundleMenu.renderTooltipBackground(gui, x + 1, y + 1, 14, 14, 300);
-                  CommonClient.renderItem(minecraft, gui, stack, x + 8, y + 8, 350, false);
-                  CommonClient.renderItemDecorations(gui, minecraft.font, stack, x + 8, y + 8, 350);
+                  BundleMenu.renderTooltipBackground(gui, x + 1, y + 1, 14, 14, holder.get(DataComponents.TOOLTIP_STYLE));
+                  CommonClient.renderItem(minecraft, gui, stack, x + 8, y + 8);
+                  CommonClient.renderItemDecorations(gui, minecraft.font, stack, x + 8, y + 8);
             }
             
             int xMove = slot.x - slotX + leftPos();
             int yMove = slot.y - slotY + topPos();
             
-            PoseStack pose = gui.pose();
-            pose.pushPose();
-            pose.translate(xMove, yMove, 350);
+            gui.nextStratum();
+            
+            Matrix3x2fStack matrix = gui.pose();
+            matrix.pushMatrix();
+            matrix.translate(xMove, yMove);
             menuRender(screen, gui, mouseX - leftPos(), mouseY - topPos());
-            pose.popPose();
+            matrix.popMatrix();
       }
 
       public boolean isHovering(int mouseX, int mouseY) {
@@ -147,7 +146,7 @@ public abstract class TraitMenu<T extends GenericTraits> {
       protected void menuRender(AbstractContainerScreen<?> screen, GuiGraphics gui, int mouseX, int mouseY) {
             String name = traits.getClass().getSimpleName();
             MutableComponent component = Component.literal(name);
-            gui.renderComponentTooltip(minecraft.font, List.of(component), 0, getHeight());
+            gui.setComponentTooltipForNextFrame(minecraft.font, List.of(component), 0, getHeight());
       }
 
       public void menuClicked(double mouseX, double mouseY, int button, CallbackInfoReturnable<Boolean> cir) {

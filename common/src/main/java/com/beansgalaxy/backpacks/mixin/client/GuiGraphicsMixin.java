@@ -21,23 +21,25 @@ import java.util.Optional;
 public abstract class GuiGraphicsMixin {
 
       @Shadow @Final private Minecraft minecraft;
-
-      @Inject(method = "renderItemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V",
-                  at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;player:Lnet/minecraft/client/player/LocalPlayer;"))
-      private void backpacks_renderItemDecorations(Font pFont, ItemStack pStack, int pX, int pY, String pText, CallbackInfo ci) {
+      
+      @Inject(method="renderItemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V",
+            at=@At("TAIL"))
+      private void renderItemDecorations(Font pFont, ItemStack pStack, int pX, int pY, String pText, CallbackInfo ci) {
+            if (pStack.isEmpty())
+                  return;
+            
             Optional<GenericTraits> traitsOptional = Traits.get(pStack);
             if (traitsOptional.isPresent()) {
                   GenericTraits traits = traitsOptional.get();
                   traits.client().renderItemDecorations(traits, ComponentHolder.of(pStack), (GuiGraphics)(Object) this, pFont, pStack, pX, pY);
                   return;
             }
-
+            
             Optional<EnderTraits> optionalEnder = EnderTraits.get(pStack);
             if (optionalEnder.isPresent()) {
                   EnderTraits enderTraits = optionalEnder.get();
                   GenericTraits traits = enderTraits.getTrait(minecraft.level);
                   traits.client().renderItemDecorations(traits, enderTraits, (GuiGraphics)(Object) this, pFont, pStack, pX, pY);
-                  return;
             }
       }
 }

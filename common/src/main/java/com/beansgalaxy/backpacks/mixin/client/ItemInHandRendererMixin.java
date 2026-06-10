@@ -7,6 +7,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -16,24 +17,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ItemInHandRenderer.class)
 public class ItemInHandRendererMixin {
-
-      @Inject(method = "renderArmWithItem", at = @At("HEAD"))
-      private void backpacks_renderArmWithItem(
-                  AbstractClientPlayer pPlayer,
-                  float pPartialTicks,
-                  float pPitch,
-                  InteractionHand pHand,
-                  float pSwingProgress,
-                  ItemStack ignored,
-                  float pEquippedProgress,
-                  PoseStack pPoseStack,
-                  MultiBufferSource pBuffer,
-                  int pCombinedLight,
-                  CallbackInfo ci,
-                  @Local(argsOnly = true, ordinal = 0) LocalRef<ItemStack> pStack
+      @Inject(method="renderArmWithItem", at=@At("HEAD"))
+      private void renderArmWithItem(
+            AbstractClientPlayer player,
+            float partialTick,
+            float pitch,
+            InteractionHand hand,
+            float swingProgress,
+            ItemStack ignored,
+            float equippedProgress,
+            PoseStack poseStack,
+            SubmitNodeCollector nodeCollector,
+            int packedLight,
+            CallbackInfo ci,
+            @Local(argsOnly = true, ordinal = 0) LocalRef<ItemStack> item
       ) {
-            ItemStack selection = ISlotSelectorTrait.getFoodstuffsSelection(pStack.get(), pPlayer);
+            ItemStack selection = ISlotSelectorTrait.getFoodstuffsSelection(item.get(), player);
             if (selection != null)
-                  pStack.set(selection);
+                  item.set(selection);
       }
 }

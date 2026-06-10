@@ -10,6 +10,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -30,7 +31,7 @@ public class SendEnderEntry<T extends GenericTraits> implements Packet2C {
                         TraitComponentKind.STREAM_CODEC.decode(buf)
                                     .streamCodec().decode(buf),
                         EnderStorage.ENTRY_MAP_STREAM_CODEC.decode(buf),
-                        Component.Serializer.fromJson(buf.readUtf(), buf.registryAccess())
+                        ComponentSerialization.STREAM_CODEC.decode(buf)
             );
       }
 
@@ -65,9 +66,7 @@ public class SendEnderEntry<T extends GenericTraits> implements Packet2C {
             TraitComponentKind.encode(buf, trait);
 
             EnderStorage.ENTRY_MAP_STREAM_CODEC.encode(buf, map);
-
-            String json = Component.Serializer.toJson(name, buf.registryAccess());
-            buf.writeUtf(json);
+            ComponentSerialization.STREAM_CODEC.encode(buf, name);
       }
 
       @Override
@@ -76,7 +75,7 @@ public class SendEnderEntry<T extends GenericTraits> implements Packet2C {
             enderStorage.set(owner, location, kind, trait, map, name);
       }
 
-      public static Type<SendEnderEntry> ID = new Type<>(ResourceLocation.parse(Constants.MOD_ID + ":send_ender_entry_c"));
+      public static Type<SendEnderEntry> ID = new Type<>(Constants.defaultLocation("send_ender_entry_c"));
 
       @Override
       public Type<SendEnderEntry> type() {

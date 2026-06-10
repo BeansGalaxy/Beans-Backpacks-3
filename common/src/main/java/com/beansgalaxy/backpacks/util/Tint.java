@@ -2,22 +2,49 @@ package com.beansgalaxy.backpacks.util;
 
 import net.minecraft.util.Mth;
 
+import java.awt.*;
 import java.util.function.UnaryOperator;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
-public class Tint {
+public class Tint extends Number {
       private int rgba;
-
+      
       public Tint(int rgb) {
-            this.rgba = rgb | 0xff000000;
+            this.rgba = fastColor(rgb);
+      }
+      
+      public Tint(double alpha, int rgb) {
+            this.rgba = fastColor(alpha, rgb);
       }
 
       public Tint(int rgba, boolean hasAlpha) {
             this.rgba = rgba;
       }
-
+      
+      public static int fastColor(double alpha, int rgb) {
+            return ((Mth.floor(alpha * 255) & 0xFF) << 24) | rgb;
+      }
+      
+      public static int fastColor(int alpha, int rgb) {
+            return ((alpha & 0xFF) << 24) | rgb;
+      }
+      
+      public static int fastColor(int rgb) {
+            return (0xFF << 24) | rgb;
+      }
+      
+      public static int fastColor(double r, double g, double b) {
+            return fastColor(r, g, b, 1.0);
+      }
+      public static int fastColor(double r, double g, double b, double a) {
+            return ((Mth.floor(a * 255) & 0xFF) << 24) |
+                   ((Mth.floor(r * 255) & 0xFF) << 16) |
+                   ((Mth.floor(g * 255) & 0xFF) << 8)  |
+                   ((Mth.floor(b * 255) & 0xFF) );
+      }
+      
       public HSV HSV() {
             return new HSV(this);
       }
@@ -31,9 +58,7 @@ public class Tint {
       }
 
       private void setRGB(double r, double g, double b) {
-            rgba = ((Mth.floor(r * 255) & 0xFF) << 16) |
-                   ((Mth.floor(g * 255) & 0xFF) << 8)  |
-                   ((Mth.floor(b * 255) & 0xFF));
+            rgba = fastColor(r, g, b);
       }
 
       private int setRGB(int r, int g, int b) {
@@ -86,7 +111,25 @@ public class Tint {
       public void modRGB(UnaryOperator<Integer> r, UnaryOperator<Integer> g, UnaryOperator<Integer> b) {
             rgba = setRGB(r.apply(getRed()), g.apply(getGreen()), b.apply(getBlue()));
       }
-
+      
+      @Override
+      public int intValue() {
+            return getRGBA();
+      }
+      
+      @Override
+      public long longValue() {
+            return getRGBA();
+      }
+      
+      @Override public float floatValue() {
+            return getRGBA();
+      }
+      
+      @Override public double doubleValue() {
+            return getRGBA();
+      }
+      
       public class HSV {
             private final Tint hsv;
             private double hue;

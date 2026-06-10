@@ -76,7 +76,7 @@ public class TinyMenuClick implements Packet2S {
                         }
                   };
 
-                  traits.tinyMenuClick(backpack, index, clickType, carriedAccess, sender);
+                  traits.tinyMenuClick(ComponentHolder.of(backpack), index, clickType, carriedAccess, sender);
             }
             else {
                   LivingEntity owner;
@@ -104,7 +104,7 @@ public class TinyMenuClick implements Packet2S {
             }
       }
 
-      public static Type<TinyMenuClick> ID = new Type<>(ResourceLocation.parse(Constants.MOD_ID + ":tiny_menu_click_s"));
+      public static Type<TinyMenuClick> ID = new Type<>(Constants.defaultLocation("tiny_menu_click_s"));
 
       @Override
       public Type<? extends CustomPacketPayload> type() {

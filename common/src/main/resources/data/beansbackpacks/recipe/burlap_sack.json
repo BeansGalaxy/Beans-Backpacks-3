@@ -5,12 +5,8 @@
     "S"
   ],
   "key": {
-    "#": {
-      "item": "minecraft:string"
-    },
-    "S": {
-      "item": "minecraft:stripped_bamboo_block"
-    }
+    "#": "minecraft:string",
+    "S": "minecraft:stripped_bamboo_block"
   },
   "result": {
     "id": "beansbackpacks:burlap_sack",

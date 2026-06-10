@@ -101,7 +101,7 @@ public class SyncSelectedSlot implements Packet2S {
             selection.set(sender, selectedSlot);
       }
 
-      public static Type<SyncSelectedSlot> ID = new Type<>(ResourceLocation.parse(Constants.MOD_ID + ":sync_selected_slot_s"));
+      public static Type<SyncSelectedSlot> ID = new Type<>(Constants.defaultLocation("sync_selected_slot_s"));
 
       @Override
       public Type<? extends CustomPacketPayload> type() {

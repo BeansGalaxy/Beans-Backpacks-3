@@ -1,7 +1,13 @@
 package com.beansgalaxy.backpacks.data.config.types;
 
 import com.beansgalaxy.backpacks.Constants;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.JsonOps;
 import net.minecraft.util.GsonHelper;
 
 import java.util.Arrays;
@@ -12,52 +18,66 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public class HSetConfigVariant<ENTRY> extends ConfigVariant<HashSet<ENTRY>> {
-      private final Function<ENTRY, String> encode;
-      private final Function<String, ENTRY> decode;
+      private final Codec<ENTRY> codec;
       private final Predicate<String> isValid;
-      private final HashSet<String> rejects;
-
-      private HSetConfigVariant(String name, HashSet<ENTRY> defau, HashSet<String> rejects, Predicate<String> isValid, Function<ENTRY, String> encode, Function<String, ENTRY> decode, String comment) {
+      private final HashSet<JsonElement> rejects;
+      
+      private HSetConfigVariant(String name, HashSet<ENTRY> defau, HashSet<JsonElement> rejects, Predicate<String> isValid, Codec<ENTRY> codec, String comment) {
             super(name, defau, comment);
             this.value = new HashSet<>(defau);
-            this.encode = encode;
-            this.decode = decode;
+            this.codec = codec;
             this.isValid = isValid;
             this.rejects = rejects;
       }
 
       @Override
       public String encode() {
-            StringBuilder sb = new StringBuilder().append(this);
-            sb.append('"');
-            Iterator<ENTRY> iterator = value.iterator();
-            Iterator<String> rejected = rejects.iterator();
-            while (rejected.hasNext()) {
-                  String entry = rejected.next();
-                  sb.append(entry);
-                  if (iterator.hasNext() || rejected.hasNext())
-                        sb.append(", ");
+            JsonArray array = new JsonArray();
+            
+            for (ENTRY entry : value) {
+                  DataResult<JsonElement> result = codec.encodeStart(JsonOps.INSTANCE, entry);
+                  if (result.isError()) {
+                        result.ifError(error -> {
+                              Constants.LOG.warn(error.toString());
+                        });
+                        continue;
+                  }
+                  
+                  array.add(result.getOrThrow());
+            }
+            
+            for (JsonElement entry : rejects) {
+                  array.add(entry);
             }
 
-            while (iterator.hasNext()) {
-                  String entry = encode.apply(iterator.next());
-                  sb.append(entry);
-                  if (iterator.hasNext())
-                        sb.append(", ");
-            }
-            sb.append('"');
-
-            return sb.toString();
+            return '"' + name + "\": " + array;
       }
 
       @Override
       public void decode(JsonObject jsonObject) {
-            if (!jsonObject.has(name)) return;
-
+            if (!jsonObject.has(name))
+                  return;
+            
+            JsonElement element = jsonObject.get(name);
+            if (!element.isJsonArray()) {
+                  Constants.LOG.error("error while decoding \"" + name + "\"; Not a JSON Array:" + element);
+                  return;
+            }
+            
             value.clear();
             rejects.clear();
-            String string = GsonHelper.getAsString(jsonObject, name);
-            decode(string, isValid, decode, value, rejects);
+            
+            JsonArray jsonArray = element.getAsJsonArray();
+            for (JsonElement jsonElement : jsonArray) {
+                  DataResult<ENTRY> parse = codec.parse(JsonOps.INSTANCE, jsonElement);
+                  if (parse.isError()) {
+                        rejects.add(jsonElement);
+                        continue;
+                  }
+                  
+                  ENTRY entry = parse.getOrThrow();
+                  value.add(entry);
+            }
       }
 
       private static <E> void decode(String encoded, Predicate<String> isValid, Function<String, E> decode, HashSet<E> value, HashSet<String> rejects) {
@@ -74,20 +94,18 @@ public class HSetConfigVariant<ENTRY> extends ConfigVariant<HashSet<ENTRY>> {
       }
 
       public static class Builder<E> {
-            private final Function<E, String> encode;
-            private final Function<String, E> decode;
-            private HashSet<E> defau = new HashSet<>();
-            private String defauString = "";
+            private final Codec<E> codec;
+            private final HashSet<E> defau = new HashSet<>();
+            private String defauString = "[]";
             private Predicate<String> isValid = in -> true;
             private String comment = "";
 
-            private Builder(Function<E, String> encode, Function<String, E> decode) {
-                  this.encode = encode;
-                  this.decode = decode;
+            private Builder(Codec<E> codec) {
+                  this.codec = codec;
             }
-
-            public static <E> Builder<E> create(Function<E, String> encode, Function<String, E> decode) {
-                  return new Builder<>(encode, decode);
+            
+            public static <E> Builder<E> create(Codec<E> codec) {
+                  return new Builder<>(codec);
             }
 
             public Builder<E> comment(String comment) {
@@ -121,9 +139,17 @@ public class HSetConfigVariant<ENTRY> extends ConfigVariant<HashSet<ENTRY>> {
             }
 
             public HSetConfigVariant<E> build(String name) {
-                  HashSet<String> rejects = new HashSet<>();
-                  HSetConfigVariant.decode(defauString, isValid, decode, defau, rejects);
-                  return new HSetConfigVariant<>(name, defau, rejects, isValid, encode, decode, comment);
+                  HashSet<JsonElement> rejects = new HashSet<>();
+                  
+                  for (JsonElement jsonElement : GsonHelper.parseArray(defauString)) {
+                        DataResult<E> result = codec.parse(JsonOps.COMPRESSED, jsonElement);
+                        result.ifSuccess(defau::add).ifError(error -> {
+                              Constants.LOG.warn(error.message());
+                              rejects.add(jsonElement);
+                        });
+                  }
+                  
+                  return new HSetConfigVariant<>(name, defau, rejects, isValid, codec, comment);
             }
       }
 }

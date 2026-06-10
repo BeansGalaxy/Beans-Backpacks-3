@@ -109,7 +109,7 @@ public abstract class ItemStorageTraits extends GenericTraits {
                   if (player instanceof ServerPlayer serverPlayer) {
                         List<Pair<EquipmentSlot, ItemStack>> pSlots = List.of(Pair.of(equipmentSlot, backpack));
                         ClientboundSetEquipmentPacket packet = new ClientboundSetEquipmentPacket(serverPlayer.getId(), pSlots);
-                        serverPlayer.serverLevel().getChunkSource().broadcast(serverPlayer, packet);
+                        serverPlayer.level().getChunkSource().sendToTrackingPlayersAndSelf(serverPlayer, packet);
                   }
 
                   return itemStack.isEmpty();

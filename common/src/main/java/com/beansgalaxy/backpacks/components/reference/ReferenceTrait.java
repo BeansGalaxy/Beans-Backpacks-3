@@ -38,7 +38,7 @@ public record ReferenceTrait(ResourceLocation location) {
       }
 
       public static ReferenceTrait of(String location) {
-            return of(ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, location));
+            return of(Constants.defaultLocation(location));
       }
 
       public static ReferenceTrait of(String namespace, String location) {

@@ -89,7 +89,7 @@ public record FilterComponent(Iterable<Holder<Item>> items, @Nullable TagKey<Ite
                   if (decodeTag.isSuccess())
                         return decodeTag;
                   
-                  DataResult<Pair<List<Holder<Item>>, T>> decodeItem = ItemStack.ITEM_NON_AIR_CODEC.listOf().decode(ops, input);
+                  DataResult<Pair<List<Holder<Item>>, T>> decodeItem = Item.CODEC.listOf().decode(ops, input);
                   if (decodeItem.isSuccess())
                         return decodeItem.map(pair -> pair.mapFirst(FilterComponent::new));
                   
@@ -102,7 +102,7 @@ public record FilterComponent(Iterable<Holder<Item>> items, @Nullable TagKey<Ite
                         for (Holder<Item> holder : filter.items)
                               items.add(holder);
                         
-                        return ItemStack.ITEM_NON_AIR_CODEC.listOf().encode(items, ops, prefix);
+                        return Item.CODEC.listOf().encode(items, ops, prefix);
                   }
                   else
                         return TagKey.hashedCodec(Registries.ITEM).encode(filter.tag, ops, prefix);

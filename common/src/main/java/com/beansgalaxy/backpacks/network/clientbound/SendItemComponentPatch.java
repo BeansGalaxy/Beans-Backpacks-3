@@ -44,7 +44,7 @@ public class SendItemComponentPatch implements Packet2C {
             CommonClient.handleSentItemComponentPatch(slot, patch);
       }
 
-      public static Type<SendItemComponentPatch> ID = new Type<>(ResourceLocation.parse(Constants.MOD_ID + ":send_item_component_patch_c"));
+      public static Type<SendItemComponentPatch> ID = new Type<>(Constants.defaultLocation("send_item_component_patch_c"));
 
       @Override
       public Type<? extends CustomPacketPayload> type() {

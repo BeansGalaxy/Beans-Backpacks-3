@@ -1,6 +1,5 @@
 package com.beansgalaxy.backpacks.mixin.client;
 
-import com.beansgalaxy.backpacks.platform.Services;
 import net.minecraft.client.renderer.texture.atlas.SpriteSource;
 import net.minecraft.client.renderer.texture.atlas.sources.PalettedPermutations;
 import net.minecraft.core.NonNullList;
@@ -21,8 +20,7 @@ public class PalettedPermutationsMixin {
       @Mutable @Shadow private List<ResourceLocation> textures;
       @Shadow private Map<String, ResourceLocation> permutations;
       @Unique private static final ResourceLocation BACKPACK_TRIMS = ResourceLocation.withDefaultNamespace("beansbackpacks/trims");
-
-
+      
       @Inject(method = "run", at = @At("HEAD"))
       public void injectBackpackTrims(ResourceManager manager, SpriteSource.Output output, CallbackInfo ci) {
             if (textures.stream().anyMatch(in -> in.equals(BACKPACK_TRIMS))) {

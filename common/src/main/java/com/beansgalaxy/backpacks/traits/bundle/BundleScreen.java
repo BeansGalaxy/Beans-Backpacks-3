@@ -10,12 +10,12 @@ import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.util.SplitText;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.SlotAccess;
@@ -32,7 +32,8 @@ import java.util.List;
 public class BundleScreen extends BackpackScreen {
       protected final BundleLikeTraits traits;
       protected BundleScreen.BundleTraitSlot lastSlot = null;
-
+      
+      
       public static void openScreen(Player player, ViewableBackpack backpack, BundleLikeTraits traits) {
             Minecraft minecraft = Minecraft.getInstance();
             BundleScreen screen = new BundleScreen(player, backpack, traits);
@@ -109,14 +110,9 @@ public class BundleScreen extends BackpackScreen {
             }
 
             int fontWidth = font.width(title);
-            int fontHeight = 10;
-            PoseStack pose = gui.pose();
+            int fontHeight = font.lineHeight;
             
-            pose.translate(0, 0, 100);
-            
-            pose.pushPose();
-            pose.translate(0, 0, 1);
-
+            gui.nextStratum();
             if (fontWidth > width) {
                   FormattedCharSequence text = title.getVisualOrderText();
                   SplitText splitText = new SplitText(text);
@@ -141,15 +137,12 @@ public class BundleScreen extends BackpackScreen {
             this.traitY = top - fontHeight;
             this.traitW = width;
             this.traitH = rows * 18 + fontHeight;
-            
 
-            TooltipRenderUtil.renderTooltipBackground(gui, left - 1, top - 1 - fontHeight, width + 2, rows * 18 + 3 + fontHeight, 0);
+            TooltipRenderUtil.renderTooltipBackground(gui, left - 1, top - 1, width + 2, rows * 18 + 3 + fontHeight, backpack.get(DataComponents.TOOLTIP_STYLE));
 
             for (TraitSlot slot : slots) {
                   slot.render(gui, pMouseX, pMouseY, pPartialTick);
             }
-            
-            pose.popPose();
       }
 
       @Override
@@ -192,18 +185,18 @@ public class BundleScreen extends BackpackScreen {
 
                   if (!stack.isEmpty()) {
                         Minecraft minecraft = Minecraft.getInstance();
-                        CommonClient.renderItem(minecraft, gui, stack, x, y, 50, false);
-                        CommonClient.renderItemDecorations(gui, font, stack, x, y, 50);
+                        CommonClient.renderItem(minecraft, gui, stack, x, y);
+                        CommonClient.renderItemDecorations(gui, font, stack, x, y);
 
                         if (hovered)
-                              gui.fill(x - 8, y - 8, x + 8, y + 8, 100, 0x80FFFFFF);
+                              BundleMenu.renderHighlight(gui, x - 8, y - 8);
                   } else if (hovered) {
                         if (this == slots.getFirst())
-                              gui.fill(x - 8, y - 8, x + 8, y + 8, 100, 0x80FFFFFF);
+                              BundleMenu.renderHighlight(gui, x - 8, y - 8);
                         else if (lastSlot != null) {
                               int x1 = lastSlot.getX() + 9;
                               int y1 = lastSlot.getY() + 9;
-                              gui.fill(x1 - 8, y1 - 8, x1 + 8, y1 + 8, 100, 0x80FFFFFF);
+                              BundleMenu.renderHighlight(gui, x1 - 8, y1 - 8);
                         }
                   }
             }

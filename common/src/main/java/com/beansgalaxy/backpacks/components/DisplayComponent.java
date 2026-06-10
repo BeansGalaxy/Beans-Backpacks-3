@@ -2,13 +2,9 @@ package com.beansgalaxy.backpacks.components;
 
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.EitherCodec;
-import io.netty.buffer.ByteBuf;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.Optional;
@@ -24,8 +20,5 @@ public record DisplayComponent(ResourceLocation location) {
       public static Optional<DisplayComponent> get(ItemStack stack) {
             return stack.isEmpty() ? Optional.empty() : Optional.ofNullable(stack.get(Traits.DISPLAY));
       }
-
-      public ModelResourceLocation getModel() {
-            return ModelResourceLocation.inventory(location);
-      }
+      
 }

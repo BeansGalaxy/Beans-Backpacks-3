@@ -11,13 +11,16 @@ import com.beansgalaxy.backpacks.util.ModSound;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
 import com.google.common.collect.ImmutableList;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -25,24 +28,24 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 import java.util.List;
 import java.util.Optional;
@@ -52,10 +55,10 @@ import java.util.UUID;
 public abstract class AllayMixin extends PathfinderMob implements ViewableAccessor {
       @Shadow public abstract boolean isDancing();
 
-      @Shadow protected abstract boolean isDuplicationItem(ItemStack pStack);
-
       @Shadow protected abstract boolean canDuplicate();
-
+      
+      
+      @Shadow @Final protected static ImmutableList<MemoryModuleType<?>> MEMORY_TYPES;
       
       protected AllayMixin(EntityType<? extends PathfinderMob> pEntityType, Level pLevel) {
             super(pEntityType, pLevel);
@@ -130,7 +133,7 @@ public abstract class AllayMixin extends PathfinderMob implements ViewableAccess
       @Inject(method = "mobInteract", cancellable = true, at = @At("HEAD"))
       private void backpacksMobInteract(Player player, InteractionHand pHand, CallbackInfoReturnable<InteractionResult> cir) {
             ItemStack inHand = player.getItemInHand(pHand);
-            if (isDancing() && isDuplicationItem(inHand) && canDuplicate())
+            if (isDancing() && inHand.is(ItemTags.DUPLICATES_ALLAYS) && canDuplicate())
                   return;
             
             if (!BackData.get(player).isActionKeyDown()) {
@@ -155,25 +158,11 @@ public abstract class AllayMixin extends PathfinderMob implements ViewableAccess
             if (!getItemBySlot(EquipmentSlot.BODY).isEmpty())
                   cir.setReturnValue(true);
       }
-
-      @ModifyArgs(method = "<clinit>", at = @At(value = "INVOKE", ordinal = 0,
-                  target = "Lcom/google/common/collect/ImmutableList;of(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;[Ljava/lang/Object;)Lcom/google/common/collect/ImmutableList;"))
-      private static void backpackAllayMemory(Args args) {
+      
+      @WrapOperation(method = "brainProvider", at =@At(value="FIELD", target="Lnet/minecraft/world/entity/animal/allay/Allay;MEMORY_TYPES:Lcom/google/common/collect/ImmutableList;"))
+      private ImmutableList<MemoryModuleType<?>> test(Operation<ImmutableList<MemoryModuleType<?>>> original) {
             ImmutableList.Builder<MemoryModuleType<?>> builder = ImmutableList.builder();
-            builder.add(CommonClass.BACKPACK_OWNER_MEMORY.get());
-
-            int lastArgIndex = args.size() - 1;
-            MemoryModuleType<?>[] oldList = args.get(lastArgIndex);
-            MemoryModuleType<?>[] cleanList = new MemoryModuleType<?>[oldList.length + 1];
-
-            int i = 0;
-            for (MemoryModuleType<?> type : oldList) {
-                  cleanList[i] = type;
-                  i++;
-            }
-
-            cleanList[i] = CommonClass.BACKPACK_OWNER_MEMORY.get();
-            args.set(lastArgIndex, cleanList);
+            return builder.addAll(original.call()).add(CommonClass.BACKPACK_OWNER_MEMORY.get()).build();
       }
 
 // ===================================================================================================================== Viewable
@@ -215,47 +204,44 @@ public abstract class AllayMixin extends PathfinderMob implements ViewableAccess
 
                   return Traits.get(stack).isEmpty();
             }
-
-            @Override public float fallDistance() {
-                  return AllayMixin.this.fallDistance;
-            }
+            
       };
 
-      @Override public ViewableBackpack beans_Backpacks_3$getViewable() {
+      @Override
+      public ViewableBackpack getViewable() {
             return viewable;
       }
-
+      
       @Inject(method = "defineSynchedData", at = @At("TAIL"))
       private void backpackSyncedData(SynchedEntityData.Builder pBuilder, CallbackInfo ci) {
             pBuilder.define(IS_OPEN, false);
       }
       
       @Inject(method="addAdditionalSaveData", at=@At("TAIL"))
-      private void addAdditionalSaveData(CompoundTag pCompound, CallbackInfo ci) {
+      private void addAdditionalSaveData(ValueOutput output, CallbackInfo ci) {
             Optional<UUID> optional = brain.getMemory(CommonClass.BACKPACK_OWNER_MEMORY.get());
             optional.ifPresent(value ->
-                  pCompound.putUUID("backpack_owner", value)
+                  output.store("backpack_owner", UUIDUtil.CODEC, value)
             );
       }
       
       @Inject(method="readAdditionalSaveData", at=@At("TAIL"))
-      private void readAdditionalSaveData(CompoundTag pCompound, CallbackInfo ci) {
-            if (pCompound.contains("backpack_owner")) {
-                  UUID owner = pCompound.getUUID("backpack_owner");
-                  brain.setMemory(CommonClass.BACKPACK_OWNER_MEMORY.get(), owner);
+      private void readAdditionalSaveData(ValueInput input, CallbackInfo ci) {
+            input.read("backpack_owner", UUIDUtil.CODEC).ifPresent(uuid -> {
+                  brain.setMemory(CommonClass.BACKPACK_OWNER_MEMORY.get(), uuid);
                   brain.setActiveActivityIfPossible(CommonClass.CHESTER_ACTIVITY.get());
-            }
+            });
       }
       
       @Inject(method="wantsToPickUp", cancellable = true, at=@At("HEAD"))
-      private void wantsToPickUp(ItemStack pStack, CallbackInfoReturnable<Boolean> cir) {
+      private void wantsToPickUp(ServerLevel level, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
             ItemStack backpack = getItemBySlot(EquipmentSlot.BODY);
             if (!backpack.isEmpty()) {
                   BackpackTraits traits = BackpackTraits.get(backpack);
                   if (traits != null) {
                         ComponentHolder holder = ComponentHolder.of(backpack);
                         BackpackMutable mutable = traits.mutable(holder);
-                        if (mutable.toAdd(pStack) > 0) {
+                        if (mutable.toAdd(stack) > 0) {
                               cir.setReturnValue(true);
                               return;
                         }
@@ -265,30 +251,29 @@ public abstract class AllayMixin extends PathfinderMob implements ViewableAccess
       }
       
       @Inject(method="pickUpItem", cancellable = true, at=@At("HEAD"))
-      private void pickUpItem(ItemEntity pItemEntity, CallbackInfo ci) {
+      private void pickUpItem(ServerLevel level, ItemEntity entity, CallbackInfo ci) {
             ItemStack backpack = getItemBySlot(EquipmentSlot.BODY);
             if (!backpack.isEmpty()) {
                   ci.cancel();
                   BackpackTraits traits = BackpackTraits.get(backpack);
                   if (traits != null) {
                         BackpackMutable mutable = traits.mutable(ComponentHolder.of(backpack));
-                        ItemStack stack = pItemEntity.getItem();
+                        ItemStack stack = entity.getItem();
                         int count = stack.getCount();
                         if (mutable.addItem(stack) == null)
                               return;
                         
-                        
                         int taken = count - stack.getCount();
-                        take(pItemEntity, taken);
+                        take(entity, taken);
                         if (stack.isEmpty())
-                              pItemEntity.discard();
+                              entity.discard();
                         
                         mutable.push();
                         
                         if (level() instanceof ServerLevel serverLevel) {
                               List<Pair<EquipmentSlot, ItemStack>> slots = List.of(Pair.of(EquipmentSlot.BODY, getItemBySlot(EquipmentSlot.BODY)));
                               ClientboundSetEquipmentPacket packet = new ClientboundSetEquipmentPacket(this.getId(), slots);
-                              serverLevel.getChunkSource().broadcast(this, packet);
+                              serverLevel.getChunkSource().sendToTrackingPlayers(this, packet);
                         }
                         
                         traits.sound().at(this, ModSound.Type.INSERT, 0.5f, 1f);

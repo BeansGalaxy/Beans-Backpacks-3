@@ -177,13 +177,13 @@ public enum ModSound implements StringRepresentable {
       }
 
       public void atClient(Player player, Type type, float volume, float pitch) {
-            if (player.level().isClientSide) {
+            if (player.level().isClientSide()) {
                   CommonClient.playSound(get(type), volume, pitch);
             }
       }
 
       public void toClient(Player player, Type type, float volume, float pitch) {
-            if (!player.level().isClientSide) {
+            if (!player.level().isClientSide()) {
                   player.playNotifySound(get(type), SoundSource.PLAYERS, volume, pitch);
             }
       }
@@ -247,7 +247,7 @@ public enum ModSound implements StringRepresentable {
 
             public final SoundEvent event;
             Events(String id) {
-                  ResourceLocation location = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, id);
+                  ResourceLocation location = Constants.defaultLocation(id);
                   SoundEvent event = SoundEvent.createVariableRangeEvent(location);
                   this.event = Services.PLATFORM.register(id, event);
             }

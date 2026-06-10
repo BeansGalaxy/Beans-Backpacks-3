@@ -68,7 +68,7 @@ public class PickItem implements Packet2S {
             mutable.pickItem(index, amount, access);
       }
 
-      public static Type<PickItem> ID = new Type<>(ResourceLocation.parse(Constants.MOD_ID + ":pick_item_s"));
+      public static Type<PickItem> ID = new Type<>(Constants.defaultLocation("pick_item_s"));
 
       @Override
       public Type<? extends CustomPacketPayload> type() {

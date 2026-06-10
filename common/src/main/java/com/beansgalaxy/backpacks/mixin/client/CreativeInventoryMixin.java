@@ -2,18 +2,14 @@ package com.beansgalaxy.backpacks.mixin.client;
 
 import com.beansgalaxy.backpacks.CommonClient;
 import com.beansgalaxy.backpacks.Constants;
-import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.container.*;
 import com.beansgalaxy.backpacks.traits.Traits;
-import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
-import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
-import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
-import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
-import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -31,32 +27,30 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import java.util.Optional;
-
 @Mixin(value = CreativeModeInventoryScreen.class)
-public abstract class CreativeInventoryMixin extends EffectRenderingInventoryScreen<CreativeModeInventoryScreen.ItemPickerMenu> {
+public abstract class CreativeInventoryMixin extends AbstractContainerScreen<CreativeModeInventoryScreen.ItemPickerMenu> {
       @Shadow private static CreativeModeTab selectedTab;
 
       public CreativeInventoryMixin(CreativeModeInventoryScreen.ItemPickerMenu pMenu, Inventory pPlayerInventory, Component pTitle) {
             super(pMenu, pPlayerInventory, pTitle);
       }
-
-      @Inject(method = "hasClickedOutside", cancellable = true, at = @At("HEAD"))
-      private void hasClickedShortSlot(double mouseX, double mouseY, int guiLeft, int guiTop, int mouseButton, CallbackInfoReturnable<Boolean> cir) {
+      
+      @Inject(method="hasClickedOutside", cancellable = true, at=@At("HEAD"))
+      private void hasClickedOutside(double x, double y, int left, int top, CallbackInfoReturnable<Boolean> cir) {
             if (hoveredSlot != null)
                   cir.setReturnValue(false);
       }
 
-      private static final ResourceLocation LARGE_SLOT = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "slots/creative_large");
-      private static final ResourceLocation SMALL_SLOT = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "slots/creative_small");
-
+      private static final ResourceLocation LARGE_SLOT = Constants.defaultLocation("slots/creative_large");
+      private static final ResourceLocation SMALL_SLOT = Constants.defaultLocation("slots/creative_small");
+      
       @Override
       protected void renderSlot(GuiGraphics gui, Slot slot) {
             if (slot instanceof BackSlot) {
-                  gui.blitSprite(LARGE_SLOT, leftPos + slot.x - 1, topPos + slot.y - 1, 18, 18);
+                  gui.blitSprite(RenderPipelines.GUI_TEXTURED, LARGE_SLOT, leftPos + slot.x - 1, topPos + slot.y - 1, 18, 18);
             }
             else if (slot instanceof UtilitySlot) {
-                  gui.blitSprite(SMALL_SLOT, leftPos + slot.x - 1, topPos + slot.y - 1, 18, 18);
+                  gui.blitSprite(RenderPipelines.GUI_TEXTURED, SMALL_SLOT, leftPos + slot.x - 1, topPos + slot.y - 1, 18, 18);
             }
             super.renderSlot(gui, slot);
       }
@@ -64,10 +58,10 @@ public abstract class CreativeInventoryMixin extends EffectRenderingInventoryScr
       @Inject(method = "renderBg", at = @At("TAIL"))
       private void backpacks_renderBg(GuiGraphics gui, float pPartialTick, int pMouseX, int pMouseY, CallbackInfo ci) {
             if (selectedTab.getType() == CreativeModeTab.Type.INVENTORY) {
-                  gui.blitSprite(LARGE_SLOT, leftPos + 127 - 1, topPos + 20 - 1, 18, 18);
+                  gui.blitSprite(RenderPipelines.GUI_TEXTURED, LARGE_SLOT, leftPos + 127 - 1, topPos + 20 - 1, 18, 18);
                   UtilityContainer utilities = UtilityContainer.get(minecraft.player);
                   for (byte b = 0; b < utilities.size; b++) {
-                        gui.blitSprite(SMALL_SLOT, leftPos - 58 + 16, topPos + (b * 18) - 1, 18, 18);
+                        gui.blitSprite(RenderPipelines.GUI_TEXTURED, SMALL_SLOT, leftPos - 58 + 16, topPos + (b * 18) - 1, 18, 18);
                   }
             }
       }

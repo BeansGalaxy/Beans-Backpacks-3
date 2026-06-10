@@ -91,10 +91,7 @@ public class BurlapSackMenu extends AbstractContainerMenu {
                   return true;
 
             stopCount = findEmpty(35, 8, clicked, stopCount);
-            if (stopCount == 0)
-                  return true;
-
-            return false;
+            return stopCount == 0;
       }
 
       private int tryStack(int start, int low, ItemStack clicked, int stopCount) {

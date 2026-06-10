@@ -12,6 +12,7 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
@@ -31,10 +32,10 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 public class GuiMixin {
       @Shadow @Final private Minecraft minecraft;
 
-      @Inject(method = "renderItemHotbar", locals = LocalCapture.CAPTURE_FAILHARD, at = @At(value = "INVOKE",
+      @Inject(method = "renderItemHotbar", at = @At(value = "INVOKE",
                   target = "Lnet/minecraft/world/entity/player/Player;getOffhandItem()Lnet/minecraft/world/item/ItemStack;"))
-      public void render(GuiGraphics drawContext, DeltaTracker tickCounter, CallbackInfo callbackInfo, Player player) {
-            CommonClient.renderCompassClockHUD(minecraft, drawContext, player);
+      public void render(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci, @Local Player player) {
+            CommonClient.renderCompassClockHUD(minecraft, guiGraphics, player);
       }
 
       @ModifyArg(method = "renderCameraOverlays", index = 1, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Gui;renderSpyglassOverlay(Lnet/minecraft/client/gui/GuiGraphics;F)V"))
@@ -42,8 +43,8 @@ public class GuiMixin {
             return pScopeScale * pScopeScale * 1.5f;
       }
 
-      @Unique private static final ResourceLocation CROSSHAIR_PLACE_INDICATOR = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "place_indicator");
-      @Unique private static final ResourceLocation CROSSHAIR_PLACE_BACKGROUND = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "place_indicator_background");
+      @Unique private static final ResourceLocation CROSSHAIR_PLACE_INDICATOR = Constants.defaultLocation("place_indicator");
+      @Unique private static final ResourceLocation CROSSHAIR_PLACE_BACKGROUND = Constants.defaultLocation("place_indicator_background");
 
       @Inject(method = "renderCrosshair", at = @At(value = "FIELD", ordinal = 0,
                   target = "Lnet/minecraft/client/Minecraft;crosshairPickEntity:Lnet/minecraft/world/entity/Entity;"))
@@ -63,8 +64,8 @@ public class GuiMixin {
             int i = (int) t - 2;
 
             if (i > 1) {
-                  gui.blitSprite(CROSSHAIR_PLACE_INDICATOR, 16, 16, 0, 0, k, j, 4, 16, i);
-                  gui.blitSprite(CROSSHAIR_PLACE_BACKGROUND, k, j, 16, 16);
+                  gui.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_PLACE_INDICATOR, 16, 16, 0, 0, k, j, 4, 16, i);
+                  gui.blitSprite(RenderPipelines.CROSSHAIR, CROSSHAIR_PLACE_BACKGROUND, k, j, 16, 16);
             }
       }
 }

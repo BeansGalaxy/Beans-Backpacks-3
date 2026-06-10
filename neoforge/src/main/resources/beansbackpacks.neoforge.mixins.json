@@ -7,12 +7,11 @@
     "AttributeUtilMixin",
     "BlocksMixin",
     "InventoryMixin",
-    "ItemRendererMixin",
     "ItemsMixin",
     "ItemStackMixin"
   ],
   "client": [
-    "AbstractContainerScreenMixin", "MouseHandlerMixin"
+    "MouseHandlerMixin"
   ],
   "server": [ ],
   "injectors": {

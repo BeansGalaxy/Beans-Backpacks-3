@@ -7,27 +7,15 @@ import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.container.UtilitySlot;
 import com.beansgalaxy.backpacks.data.EnderStorage;
 import com.beansgalaxy.backpacks.container.BackSlot;
-import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
 import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
-import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
-import com.beansgalaxy.backpacks.traits.lunch_box.LunchBoxTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.beansgalaxy.backpacks.util.SmoothRandomFloat;
-import com.beansgalaxy.backpacks.util.Tint;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
 import net.minecraft.ChatFormatting;
-import net.minecraft.CrashReport;
-import net.minecraft.CrashReportCategory;
-import net.minecraft.ReportedException;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -35,14 +23,13 @@ import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.item.ClampedItemPropertyFunction;
-import net.minecraft.client.renderer.item.CompassItemPropertyFunction;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.client.renderer.item.properties.numeric.CompassAngle;
+import net.minecraft.client.renderer.item.properties.numeric.CompassAngleState;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
@@ -56,18 +43,10 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.CompassItem;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.DyedItemColor;
-import net.minecraft.world.item.component.LodestoneTracker;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
-import org.apache.commons.lang3.math.Fraction;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
-import org.spongepowered.asm.mixin.Unique;
 
 import java.util.Iterator;
 import java.util.Optional;
@@ -77,96 +56,7 @@ public class CommonClient {
       public static void init() {
 
       }
-
-      public static final ItemStack UTILITY_DISPLAY_STAND_IN = new ItemStack(Items.AIR);
-      public static final ClampedItemPropertyFunction UTILITIES_PREDICATE = (itemStack, clientLevel, livingEntity, i) -> {
-            if (itemStack == UTILITY_DISPLAY_STAND_IN && clientLevel == null && livingEntity == null && i == 0)
-                  return 1;
-
-            return 0;
-      };
-
-      public static final ClampedItemPropertyFunction EATING_TRAIT_ITEM_PREDICATE = (itemStack, clientLevel, livingEntity, i) ->
-                  livingEntity != null && livingEntity.isUsingItem() && livingEntity.getUseItem() == itemStack && LunchBoxTraits.get(itemStack) != null
-                              ? 1.0F : 0.0F;
-
-      public static final ClampedItemPropertyFunction FULLNESS_ITEM_PREDICATE = (itemStack, clientLevel, livingEntity, i) -> {
-            Optional<GenericTraits> optional = Traits.get(itemStack);
-            GenericTraits traits;
-            ComponentHolder holder;
-            if (optional.isPresent()) {
-                  traits = optional.get();
-                  holder = ComponentHolder.of(itemStack);
-            }
-            else {
-                  EnderTraits enderTraits = itemStack.get(Traits.ENDER);
-                  if (enderTraits == null)
-                        return 0f;
-
-                  traits = enderTraits.getTrait(clientLevel);
-                  holder = enderTraits;
-            }
-
-            if (traits.isFull(holder))
-                  return 1f;
-
-            Fraction fullness = traits.fullness(holder);
-            if (traits.isEmpty(holder) || fullness.equals(Fraction.ZERO))
-                  return 0f;
-
-            float v = fullness.floatValue();
-            return v * 0.89f + 0.1f;
-      };
-
-      public static final ClampedItemPropertyFunction ENDER_SEARCHING_PREDICATE = (itemStack, clientLevel, livingEntity, i) -> {
-            EnderTraits enderTraits = itemStack.get(Traits.ENDER);
-            if (enderTraits == null || !enderTraits.isLoaded())
-                  return 1;
-            return 0;
-      };
-
-      public static final ItemColor LEATHER_BACKPACK_ITEM_COLOR = (itemStack, layer) -> switch (layer) {
-            case 0 -> componentTint(itemStack, Constants.DEFAULT_LEATHER_COLOR);
-            case 4, 2 -> componentHighlight(itemStack, Constants.DEFAULT_LEATHER_COLOR);
-            default -> 0xFFFFFFFF;
-      };
-
-      public static final ItemColor BUNDLE_ITEM_COLOR = (itemStack, layer) -> layer != 1 ?
-                  componentTint(itemStack, 0xFFcd7b46) : 0xFFFFFFFF;
-
-      private static int componentTint(ItemStack itemStack, int rgbBase) {
-            DyedItemColor itemColor = itemStack.get(DataComponents.DYED_COLOR);
-            if (itemColor != null) {
-                  int rgbTint = itemColor.rgb();
-                  return smartAverageTint(rgbTint, rgbBase).rgb();
-            }
-            return rgbBase;
-      }
-
-      private static int componentHighlight(ItemStack itemStack, int rgbBase) {
-            DyedItemColor itemColor = itemStack.get(DataComponents.DYED_COLOR);
-
-            int rgb = itemColor == null ? rgbBase : itemColor.rgb();
-
-            Tint tint = new Tint(rgb);
-            double brightness = tint.brightness();
-            Tint.HSL hsl = tint.HSL();
-            double lum = hsl.getLum();
-            hsl.rotate(10);
-            hsl.setLum((Math.pow(brightness, 4) + lum + 2.3 + (tint.getBlue() / 160.0)) / 5);
-            double sat = hsl.getSat();
-            hsl.setSat((1 - brightness + sat) / 2);
-            return hsl.rgb();
-      }
-
-      public static Tint.HSL smartAverageTint(int rgbTint, int rgbBase) {
-            Tint tint = new Tint(rgbTint, true);
-            tint.setAlpha(1f);
-            Tint.HSL tintHsl = tint.HSL();
-            tintHsl.modLum(l -> (Math.sqrt(l) + l) / 2);
-            return tintHsl;
-      }
-
+      
       public static void playSound(SoundEvent soundEvent, float volume, float pitch) {
             Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(soundEvent, pitch, volume));
       }
@@ -180,34 +70,19 @@ public class CommonClient {
             return Minecraft.getInstance().level;
       }
 
-      public static final ResourceLocation BACK_SLOT = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/slots/back_slot.png");
-      public static final ResourceLocation UTIL_SLOT = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/slots/util_slot.png");
+      public static final ResourceLocation BACK_SLOT = Constants.defaultLocation("textures/gui/slots/back_slot");
+      public static final ResourceLocation UTIL_SLOT = Constants.defaultLocation("textures/gui/slots/util_slot");
 
       public static void renderSlots(GuiGraphics graphics, int leftPos, int topPos, int imageWidth, int imageHeight, LocalPlayer player) {
-            graphics.blit(BACK_SLOT, leftPos + BackSlot.getX() - 1, topPos + BackSlot.getY() - 1, 10, 0, 0, 18, 18, 18, 18);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, ResourceLocation.withDefaultNamespace("container/slot/back_slot"), leftPos + BackSlot.getX() - 1, topPos + BackSlot.getY() - 1, 10, 0, 0, 18, 18, 18, 18);
             ItemStack backpack = player.getItemBySlot(EquipmentSlot.BODY);
             byte utilities = UtilityComponent.getSize(backpack);
             if (utilities > 0) for (byte i = 0; i < utilities; i++)
-                  graphics.blit(UTIL_SLOT, leftPos + UtilitySlot.getX(i) - 1, topPos + UtilitySlot.getY(i) - 1, 10, 0, 0, 18, 18, 18, 18);
+                  graphics.blit(RenderPipelines.GUI_TEXTURED, UTIL_SLOT, leftPos + UtilitySlot.getX(i) - 1, topPos + UtilitySlot.getY(i) - 1, 10, 0, 0, 18, 18, 18, 18);
       }
 
 
 // ===================================================================================================================== SHORTHAND CLIENT
-
-      private static final CompassItemPropertyFunction COMPASS_FUNCTION = new CompassItemPropertyFunction((clientLevel, itemStack, entity) -> {
-            LodestoneTracker lodestoneTracker = itemStack.get(DataComponents.LODESTONE_TRACKER);
-            return lodestoneTracker != null
-                   ? lodestoneTracker.target().orElse(null)
-                   : CompassItem.getSpawnPosition(clientLevel);
-      });
-
-      private static final CompassItemPropertyFunction RECOVERY_FUNCTION = new CompassItemPropertyFunction((clientLevel, itemStack, entity) -> {
-            if (entity instanceof Player player) {
-                  return player.getLastDeathLocation().orElse(null);
-            } else {
-                  return null;
-            }
-      });
 
       public static void renderCompassClockHUD(Minecraft minecraft, GuiGraphics gui, Player player) {
             if (player == null || player.isSpectator() || minecraft.options.hideGui)
@@ -220,65 +95,67 @@ public class CommonClient {
 
             ClientLevel level = minecraft.level;
             boolean second = false;
+            RegistryAccess access = minecraft.level.registryAccess();
+            
             Iterator<ItemStack> iterator = utilities.iterator();
             while (iterator.hasNext()) {
                   ItemStack stack = iterator.next();
 
                   int x = 8 + (second ? 24 : 0);
-                  if (UtilityComponent.Type.LODESTONE.test(stack)) {
-                        RenderSystem.enableBlend();
-                        float direction = COMPASS_FUNCTION.unclampedCall(stack, level, player, 0);
+                  if (UtilityComponent.Type.LODESTONE.test(stack, access)) {
+//                        RenderSystem.enableBlend();
+                        float direction = new CompassAngle(true, CompassAngleState.CompassTarget.LODESTONE).get(stack, level, player, 0);
                         int compassFrame = modCompassDirection(direction);
-                        ResourceLocation background = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "compass_background" + compassFrame);
-                        gui.blitSprite(background, x, 0, 32, 32);
-
-                        int pZ1 = 10;
+                        ResourceLocation background = Constants.defaultLocation("compass_background" + compassFrame);
+                        gui.blitSprite(RenderPipelines.GUI_TEXTURED, background, x, 0, 32, 32);
+                        gui.blitSprite(RenderType.glint().pipeline(), background, x, 0, 32, 32);
+                        gui.nextStratum();
+                        
                         Optional<GlobalPos> target = stack.get(DataComponents.LODESTONE_TRACKER).target();
-                        drawYDifference("compass_lodestone", gui, player, target, x, 0, pZ1, second);
-                        RenderSystem.disableBlend();
-
-                        drawGlint(gui, x, pZ1);
+                        drawYDifference("compass_lodestone", gui, player, target, x, 0, second);
+//                        RenderSystem.disableBlend();
+                        
                         second = true;
                         continue;
                   }
 
 
-                  if (UtilityComponent.Type.RECOVERY.test(stack)) {
-                        RenderSystem.enableBlend();
-                        float direction = RECOVERY_FUNCTION.unclampedCall(stack, level, player, 0);
+                  if (UtilityComponent.Type.RECOVERY.test(stack, access)) {
+//                        RenderSystem.enableBlend();
+                        float direction = new CompassAngle(true, CompassAngleState.CompassTarget.RECOVERY).get(stack, level, player, 0);
                         int compassFrame = modCompassDirection(direction);
-                        ResourceLocation clockLocation = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "recovery_background" + compassFrame);
-                        gui.blitSprite(clockLocation, x, 0, 32, 32);
+                        ResourceLocation clockLocation = Constants.defaultLocation("recovery_background" + compassFrame);
+                        gui.blitSprite(RenderPipelines.GUI_TEXTURED, clockLocation, x, 0, 32, 32);
 
-                        drawYDifference("recovery_default", gui, player, player.getLastDeathLocation(), x, 0, 0, second);
+                        drawYDifference("recovery_default", gui, player, player.getLastDeathLocation(), x, 0, second);
                         second = true;
-                        RenderSystem.disableBlend();
+//                        RenderSystem.disableBlend();
                         continue;
                   }
 
-                  if (UtilityComponent.Type.COMPASS.test(stack)) {
-                        RenderSystem.enableBlend();
-                        float direction = COMPASS_FUNCTION.unclampedCall(stack, level, player, 0);
+                  if (UtilityComponent.Type.COMPASS.test(stack, access)) {
+//                        RenderSystem.enableBlend();
+                        float direction = new CompassAngle(true, CompassAngleState.CompassTarget.SPAWN).get(stack, level, player, 0);
                         int compassFrame = modCompassDirection(direction);
-                        ResourceLocation background = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "compass_background" + compassFrame);
-                        gui.blitSprite(background, x, 0, 32, 32);
+                        ResourceLocation background = Constants.defaultLocation("compass_background" + compassFrame);
+                        gui.blitSprite(RenderPipelines.GUI_TEXTURED, background, x, 0, 32, 32);
 
                         int rotation = getPlayerRotation(player);
-                        ResourceLocation overlay = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "compass_default" + rotation);
-                        gui.blitSprite(overlay, x, 0, 10, 32, 32);
+                        ResourceLocation overlay = Constants.defaultLocation("compass_default" + rotation);
+                        gui.blitSprite(RenderPipelines.GUI_TEXTURED, overlay, x, 0, 10, 32, 32);
                         second = true;
-                        RenderSystem.disableBlend();
+//                        RenderSystem.disableBlend();
                         continue;
                   }
-
-                  if (UtilityComponent.Type.CLOCK.test(stack)) {
-                        RenderSystem.enableBlend();
+                  
+                  if (UtilityComponent.Type.CLOCK.test(stack, access)) {
+//                        RenderSystem.enableBlend();
                         float day = level.getTimeOfDay(1f);
                         int clockFrame = Mth.floor(day * 92);
-                        ResourceLocation clockLocation = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "clock" + clockFrame);
-                        gui.blitSprite(clockLocation, x, 0, 32, 32);
+                        ResourceLocation clockLocation = Constants.defaultLocation("clock" + clockFrame);
+                        gui.blitSprite(RenderPipelines.GUI_TEXTURED, clockLocation, x, 0, 32, 32);
                         second = true;
-                        RenderSystem.disableBlend();
+//                        RenderSystem.disableBlend();
                   }
             }
 
@@ -308,28 +185,11 @@ public class CommonClient {
             int rotation = quad * 4 + sub;
             return rotation;
       }
-
-      private static void drawGlint(GuiGraphics gui, int x, int pZ1) {
-            PoseStack pose = gui.pose();
-            pose.pushPose();
-            pose.translate(x, 0, 0);
-
-            float scale = 1/32f;
-            Matrix4f matrix4f = pose.last().pose();
-            BufferBuilder bufferbuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-            bufferbuilder.addVertex(matrix4f, 0, 0, pZ1).setUv(0, 0);
-            bufferbuilder.addVertex(matrix4f, 0, 32, pZ1).setUv(0, scale);
-            bufferbuilder.addVertex(matrix4f, 32, 32, pZ1).setUv(scale, scale);
-            bufferbuilder.addVertex(matrix4f, 32, 0, pZ1).setUv(scale, 0);
-            MeshData data = bufferbuilder.buildOrThrow();
-            RenderType.glint().draw(data);
-            pose.popPose();
-      }
-
+      
       private static final SmoothRandomFloat firstFloat = new SmoothRandomFloat();
       private static final SmoothRandomFloat secondFloat = new SmoothRandomFloat();
 
-      private static void drawYDifference(String prefix, GuiGraphics gui, Player player, Optional<GlobalPos> target, int pX1, int pY1, int pZ1, boolean second) {
+      private static void drawYDifference(String prefix, GuiGraphics gui, Player player, Optional<GlobalPos> target, int pX1, int pY1, boolean second) {
             if (target.isPresent() && target.get().dimension().equals(player.level().dimension())) {
                   GlobalPos pos = target.get();
                   double v = pos.pos().getY() - player.getY();
@@ -353,8 +213,8 @@ public class CommonClient {
                         yFrame *= -1;
                   yFrame += 6;
 
-                  ResourceLocation overlay = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, prefix + yFrame);
-                  gui.blitSprite(overlay, pX1, pY1, pZ1, 32, 32);
+                  ResourceLocation overlay = Constants.defaultLocation(prefix + yFrame);
+                  gui.blitSprite(RenderPipelines.GUI_TEXTURED, overlay, pX1, pY1, 32, 32);
             }
             else {
                   RandomSource random = player.getRandom();
@@ -362,8 +222,8 @@ public class CommonClient {
                   SmoothRandomFloat aFloat = second ? secondFloat : firstFloat;
                   float direction = aFloat.getDirection(random, fps);
                   int yFrame = Mth.floor(direction * 10) + 1;
-                  ResourceLocation overlay = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, prefix + yFrame);
-                  gui.blitSprite(overlay, pX1, pY1, pZ1, 32, 32);
+                  ResourceLocation overlay = Constants.defaultLocation(prefix + yFrame);
+                  gui.blitSprite(RenderPipelines.GUI_TEXTURED, overlay, pX1, pY1, 32, 32);
             }
       }
 
@@ -410,7 +270,6 @@ public class CommonClient {
             if (name.equals(Component.translatable(KeyPress.INSTANT_KEY_IDENTIFIER))) {
                   MutableComponent translatable = Component.translatable(KeyPress.ACTION_KEY_IDENTIFIER);
                   changeButton.setTooltip(Tooltip.create(Component.translatable(KeyPress.INSTANT_KEY_DESC, translatable)));
-                  return;
             }
       }
 
@@ -436,11 +295,7 @@ public class CommonClient {
       public static Boolean cancelCapeRender(Player player) {
             ItemStack backpack = player.getItemBySlot(EquipmentSlot.BODY);
             BackpackTraits traits = BackpackTraits.get(backpack);
-            if (traits == null) {
-                  return false;
-            }
-
-            return true;
+            return traits != null;
       }
 
       public static boolean scrollTraits(Player player, ItemStack stack, Level level, int containerId, int scrolled, Slot hoveredSlot) {
@@ -464,11 +319,10 @@ public class CommonClient {
             return false;
       }
 
-      public static void renderItemDecorations(GuiGraphics gui, Font font, ItemStack pStack, int x, int y, int z) {
+      public static void renderItemDecorations(GuiGraphics gui, Font font, ItemStack pStack, int x, int y) {
             if (!pStack.isEmpty()) {
-                  PoseStack pose = gui.pose();
-                  pose.translate(0.0F, 0.0F, z + 50);
-                  pose.pushPose();
+                  gui.nextStratum();
+                  
                   int count = pStack.getCount();
                   if (count != 1) {
                         String string = String.valueOf(count);
@@ -506,72 +360,14 @@ public class CommonClient {
                         traits.client().renderItemDecorations(traits, ComponentHolder.of(pStack), gui, font, pStack, x - 8, y - 8);
                   }
                   
-                  pose.popPose();
             }
       }
 
-      public static void renderItem(Minecraft minecraft, GuiGraphics gui, ItemStack stack, int x, int y, int z, boolean drawShadows) {
-            PoseStack pose = gui.pose();
-            pose.pushPose();
-            BakedModel model = minecraft.getItemRenderer().getModel(stack, minecraft.level, minecraft.player, 0);
-            pose.translate(x, y, z);
-
-            renderModel(minecraft, gui, stack, drawShadows, pose, model);
-
-            pose.popPose();
+      public static void renderItem(Minecraft minecraft, GuiGraphics gui, ItemStack stack, int x, int y) {
+            gui.nextStratum();
+            gui.renderItem(stack, x - 8, y - 8, 0);
       }
-
-      public static void renderModel(Minecraft minecraft, GuiGraphics gui, ItemStack stack, boolean drawShadows, PoseStack pose, BakedModel model) {
-            try {
-                  pose.mulPose((new Matrix4f()).scaling(1.0F, -1.0F, 1.0F));
-                  pose.scale(16.0F, 16.0F, 16.0F);
-                  boolean $$8 = !model.usesBlockLight();
-                  if ($$8) {
-                        Lighting.setupForFlatItems();
-                  }
-
-                  minecraft.getItemRenderer().render(stack, ItemDisplayContext.GUI, false, pose, gui.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY, model);
-                  if (drawShadows && !model.isGui3d()) {
-                        pose.translate(1/16f, -1/16f, -1/16f);
-                        minecraft.getItemRenderer().render(stack, ItemDisplayContext.GUI, false, pose, gui.bufferSource(), 0, OverlayTexture.NO_OVERLAY, model);
-                  }
-
-                  gui.flush();
-                  if ($$8) {
-                        Lighting.setupFor3DItems();
-                  }
-            } catch (Throwable var12) {
-                  CrashReport $$10 = CrashReport.forThrowable(var12, "Rendering item");
-                  CrashReportCategory $$11 = $$10.addCategory("Item being rendered");
-                  $$11.setDetail("Item Type", () -> String.valueOf(stack.getItem()));
-                  $$11.setDetail("Item Components", () -> String.valueOf(stack.getComponents()));
-                  $$11.setDetail("Item Foil", () -> String.valueOf(stack.hasFoil()));
-                  throw new ReportedException($$10);
-            }
-      }
-
-      public static void renderHoveredItem(Minecraft minecraft, GuiGraphics instance, ItemStack stack, int x, int y, int seed, Operation<Void> original, String modelName) {
-            ISlotSelectorTrait trait = ISlotSelectorTrait.get(stack);
-            if (trait != null) {
-                  ItemStack food = trait.getHoverItem(ComponentHolder.of(stack), minecraft.player);
-                  if (food != null) {
-                        original.call(instance, food, x, y, seed);
-                  }
-                  else {
-                        ModelResourceLocation location = Services.PLATFORM.getModelVariant(
-                                    ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "backpack/" + modelName)
-                        );
-
-                        BakedModel model = minecraft.getItemRenderer().getItemModelShaper().getModelManager().getModel(location);
-                        PoseStack pose = instance.pose();
-                        pose.pushPose();
-                        pose.translate(x + 8, y + 8, 0);
-                        renderModel(minecraft, instance, stack, false, pose, model);
-                        pose.popPose();
-                  }
-            }
-      }
-
+      
       public static void handleSentItemComponentPatch(int slot, DataComponentPatch patch) {
             if (slot < 0)
                   return;
@@ -582,16 +378,13 @@ public class CommonClient {
             stack.applyComponents(patch);
       }
       
-      private static final ResourceLocation R_CLICK_ICON = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "r_click_icon");
+      private static final ResourceLocation R_CLICK_ICON = Constants.defaultLocation("r_click_icon");
       
-      public static void renderInfoTooltip(GuiGraphics gui, int mouseX, int mouseY, Slot slot, BundleLikeTraits traits) {
+      public static void renderInfoTooltip(GuiGraphics gui, int mouseX, int mouseY, ComponentHolder holder) {
             int x = mouseX - 20;
             int y = mouseY - 8;
-            TooltipRenderUtil.renderTooltipBackground(gui, x, y, 11, 13, 600);
-            ResourceLocation location = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "textures/gui/sprites/r_click_icon.png");
-//            gui.blit(location, x, y, 10, 0, 0, 16, 16, 16, 16);
-//
-            gui.blitSprite(R_CLICK_ICON, 16, 16, 0, 0, x - 2, y - 2, 600, 16, 16);
+            TooltipRenderUtil.renderTooltipBackground(gui, x, y, 11, 13, holder.get(DataComponents.TOOLTIP_STYLE));
+            gui.blitSprite(RenderPipelines.GUI_TEXTURED, R_CLICK_ICON, 16, 16, 0, 0, x - 2, y - 2, 16, 16);
             
       }
 }

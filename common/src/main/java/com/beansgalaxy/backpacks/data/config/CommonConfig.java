@@ -8,6 +8,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.GameRules;
@@ -20,7 +21,7 @@ public class CommonConfig implements IConfig {
       public EnumConfigVariant<BackpackOnDeath> keep_back_on_death;
 
       private final ConfigLine[] LINES = new ConfigLine[] {
-                  tool_belt_additions = HSetConfigVariant.Builder.create(Constants::shortString, in -> BuiltInRegistries.ITEM.get(ResourceLocation.parse(in)))
+                  tool_belt_additions = HSetConfigVariant.Builder.create(BuiltInRegistries.ITEM.byNameCodec())
                               .isValid(in -> BuiltInRegistries.ITEM.containsKey(ResourceLocation.parse(in))).comment("!!DOES NOTING!! SOON TO BE REMOVED!")
                               .build("tool_belt_additions"),
                   keep_back_on_death = new EnumConfigVariant<>("keep_back_on_death", BackpackOnDeath.KeepInventory, BackpackOnDeath.values(), "On death, will the player keep/drop their backpack") {
@@ -58,7 +59,7 @@ public class CommonConfig implements IConfig {
             return List.of(LINES);
       }
       
-      public boolean keepBackpack(Level level) {
+      public boolean keepBackpack(ServerLevel level) {
             return switch (keep_back_on_death.get()) {
                   case Always -> true;
                   case Never -> false;

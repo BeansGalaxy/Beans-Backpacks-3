@@ -85,7 +85,7 @@ public class ListConfigVariant<ENTRY> extends ConfigVariant<ArrayList<ENTRY>> {
       public static class Builder<E> {
             private final Function<E, String> encode;
             private final Function<JsonElement, E> decode;
-            private ArrayList<E> defau = new ArrayList<>();
+            private final ArrayList<E> defau = new ArrayList<>();
             private Predicate<ArrayList<E>> valid = in -> true;
             private String comment = "";
 

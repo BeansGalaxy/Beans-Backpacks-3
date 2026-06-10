@@ -3,8 +3,10 @@ package com.beansgalaxy.backpacks.data.config.screen;
 import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.data.config.types.ConfigLine;
 import com.beansgalaxy.backpacks.platform.Services;
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import net.minecraft.util.GsonHelper;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,9 +35,11 @@ public interface IConfig {
             try {
                   // Read the .json5 content from the file
                   Path path = Services.PLATFORM.getConfigPath();
+                  
                   Path resolve = path.resolve(getPath() + ".json5");
                   if (!Files.exists(resolve))
                         resolve = getLegacyLocation();
+                  
 
                   String json5Content = new String(Files.readAllBytes(resolve));
 
@@ -43,7 +47,7 @@ public interface IConfig {
                   String jsonContent = json5Content.replaceAll("/\\*.*?\\*/", "").replaceAll("//.*", "");
                   parse(jsonContent);
 
-            } catch (IOException e) {
+            } catch (Throwable e) {
                   Constants.LOG.warn("No Config for " + Constants.MOD_ID + " : Created new config");
             }
 

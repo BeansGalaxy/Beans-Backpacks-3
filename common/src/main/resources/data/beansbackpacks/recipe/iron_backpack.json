@@ -6,12 +6,8 @@
     "iPi"
   ],
   "key": {
-    "i": {
-      "item": "minecraft:iron_ingot"
-    },
-    "P": {
-      "item": "minecraft:phantom_membrane"
-    }
+    "i": "minecraft:iron_ingot",
+    "P": "minecraft:phantom_membrane"
   },
   "result": {
     "id": "beansbackpacks:iron_backpack",

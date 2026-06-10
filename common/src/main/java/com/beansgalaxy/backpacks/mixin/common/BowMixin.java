@@ -23,6 +23,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -39,8 +40,8 @@ public abstract class BowMixin extends ProjectileWeaponItem {
 
       @Inject(method = "releaseUsing", cancellable = true, at = @At(value = "INVOKE",
                   target = "Lnet/minecraft/world/entity/player/Player;getProjectile(Lnet/minecraft/world/item/ItemStack;)Lnet/minecraft/world/item/ItemStack;"))
-      private void useBackpackQuiverArrow(ItemStack bowStack, Level level, LivingEntity pEntityLiving, int pTimeLeft, CallbackInfo ci) {
-            Player player = (Player) pEntityLiving;
+      private void useBackpackQuiverArrow(ItemStack bowStack, Level level, LivingEntity entity, int timeLeft, CallbackInfoReturnable<Boolean> cir) {
+            Player player = (Player) entity;
             Predicate<ItemStack> predicate = getAllSupportedProjectiles();
             QuiverTraits.runIfPresent(player, (proTrait, slot, quiver, holder) -> {
                   MutableBundleLike<?> mutable = proTrait.mutable(holder);
@@ -51,7 +52,7 @@ public abstract class BowMixin extends ProjectileWeaponItem {
                   int slotSafe = mutable.getSelectedSlot(player);
                   ItemStack stack = stacks.get(slotSafe);
                   if (predicate.test(stack)) {
-                        int i = this.getUseDuration(bowStack, player) - pTimeLeft;
+                        int i = this.getUseDuration(bowStack, player) - timeLeft;
                         float f = BowItem.getPowerForTime(i);
                         if (!(f + 0.0 < 0.1)) {
                               List<ItemStack> list = draw(bowStack, stack, player);
@@ -66,7 +67,7 @@ public abstract class BowMixin extends ProjectileWeaponItem {
 
                               mutable.limitSelectedSlot(slotSafe);
                               mutable.push();
-                              ci.cancel();
+                              cir.setReturnValue(true);
 
                               if (holder instanceof EnderTraits enderTraits)
                                     enderTraits.broadcastChanges();
@@ -74,9 +75,9 @@ public abstract class BowMixin extends ProjectileWeaponItem {
                                     SendItemComponentPatch.send(serverPlayer, slot, quiver);
 
                               }
+                              
+                              return true;
                         }
-
-                        return true;
                   }
 
                   return false;

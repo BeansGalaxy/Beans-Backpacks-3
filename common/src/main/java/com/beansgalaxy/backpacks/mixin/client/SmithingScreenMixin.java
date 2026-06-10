@@ -20,7 +20,7 @@ public class SmithingScreenMixin {
       @Shadow @Nullable private ArmorStand armorStandPreview;
 
       @Inject(method = "updateArmorStandPreview", cancellable = true, at = @At(value = "INVOKE",
-                  target = "Lnet/minecraft/world/item/ItemStack;getItem()Lnet/minecraft/world/item/Item;"))
+                  target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z"))
       private void backpackUpdateArmorStandPreview(ItemStack pStack, CallbackInfo ci) {
             BackpackTraits traits = BackpackTraits.get(pStack);
             if (traits == null)
@@ -49,7 +49,7 @@ public class SmithingScreenMixin {
       }
 
       @Inject(method = "renderBg", at = @At(value = "INVOKE",
-                  target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;renderEntityInInventory(Lnet/minecraft/client/gui/GuiGraphics;FFFLorg/joml/Vector3f;Lorg/joml/Quaternionf;Lorg/joml/Quaternionf;Lnet/minecraft/world/entity/LivingEntity;)V"))
+                  target = "Lnet/minecraft/client/gui/screens/inventory/InventoryScreen;renderEntityInInventory(Lnet/minecraft/client/gui/GuiGraphics;IIIIFLorg/joml/Vector3f;Lorg/joml/Quaternionf;Lorg/joml/Quaternionf;Lnet/minecraft/world/entity/LivingEntity;)V"))
       private void backpackSpinArmorStandPreview(GuiGraphics pGuiGraphics, float pPartialTick, int pMouseX, int pMouseY, CallbackInfo ci) {
             ItemStack backSlot = armorStandPreview.getItemBySlot(EquipmentSlot.BODY);
             if (!backSlot.isEmpty()) {

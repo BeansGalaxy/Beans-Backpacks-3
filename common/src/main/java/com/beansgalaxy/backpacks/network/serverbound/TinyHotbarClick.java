@@ -61,7 +61,7 @@ public class TinyHotbarClick implements Packet2S {
             Entity entity = sender.level().getEntity(entityId);
             if (entity instanceof BackpackEntity backpack) {
                   IEntityTraits<?> traits = backpack.getTraits();
-                  traits.tinyHotbarClick(backpack, index, clickType, sender.inventoryMenu, sender);
+                  traits.tinyHotbarClick(ComponentHolder.of(backpack), index, clickType, sender.inventoryMenu, sender);
             }
             else {
                   LivingEntity owner;
@@ -77,7 +77,7 @@ public class TinyHotbarClick implements Packet2S {
             }
       }
 
-      public static Type<TinyHotbarClick> ID = new Type<>(ResourceLocation.parse(Constants.MOD_ID + ":tiny_hotbar_click_s"));
+      public static Type<TinyHotbarClick> ID = new Type<>(Constants.defaultLocation("tiny_hotbar_click_s"));
 
       @Override
       public Type<? extends CustomPacketPayload> type() {

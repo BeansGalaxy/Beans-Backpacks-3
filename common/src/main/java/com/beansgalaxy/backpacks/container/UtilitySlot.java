@@ -3,12 +3,16 @@ package com.beansgalaxy.backpacks.container;
 import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.data.config.options.Orientation;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 public class UtilitySlot extends Slot {
-      public UtilitySlot(UtilityContainer container, int index) {
+      private final RegistryAccess access;
+      
+      public UtilitySlot(UtilityContainer container, int index, RegistryAccess access) {
             super(container, index, getX(index), getY(index));
+            this.access = access;
       }
 
       public static int getX(int index) {
@@ -37,7 +41,7 @@ public class UtilitySlot extends Slot {
 
       @Override
       public boolean mayPlace(ItemStack pStack) {
-            return UtilityComponent.getType(pStack) != UtilityComponent.Type.NONE;
+            return UtilityComponent.getType(pStack, access) != UtilityComponent.Type.NONE;
       }
 
       @Override
@@ -53,6 +57,6 @@ public class UtilitySlot extends Slot {
 
       @Override
       public int getMaxStackSize(ItemStack pStack) {
-            return UtilityComponent.getType(pStack).isStackable() ? pStack.getMaxStackSize() : 1;
+            return UtilityComponent.getType(pStack, access).isStackable() ? pStack.getMaxStackSize() : 1;
       }
 }

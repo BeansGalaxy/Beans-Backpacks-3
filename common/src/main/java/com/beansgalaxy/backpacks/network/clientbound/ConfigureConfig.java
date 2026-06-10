@@ -61,7 +61,7 @@ public class ConfigureConfig implements Packet2C {
             ServerSave.CONFIG.parse(jsonContent);
       }
 
-      public static final Type<ConfigureConfig> ID = new Type<>(ResourceLocation.parse(Constants.MOD_ID + ":config_common_c"));
+      public static final Type<ConfigureConfig> ID = new Type<>(Constants.defaultLocation("config_common_c"));
 
       @Override
       public Type<? extends CustomPacketPayload> type() {

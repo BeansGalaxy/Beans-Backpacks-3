@@ -38,8 +38,9 @@ public abstract class InventoryMixin implements BackData {
       {
             ItemStack carried = player.containerMenu.getCarried();
             Level level = player.level();
-            Traits.get(carried).ifPresent(traits ->
-                        carried.inventoryTick(level, player, -1, false)
+            Traits.get(carried).ifPresent(traits -> {
+                        carried.inventoryTick(level, player, null);
+                  }
             );
 
             getUtility().tick(instance);
@@ -102,33 +103,4 @@ public abstract class InventoryMixin implements BackData {
                   );
             }
       }
-      
-      private long lastFailedTraitScroll = 0;
-      
-      @Inject(method = "swapPaint", cancellable = true, at = @At("HEAD"))
-      private void selectBackpackSlot(double pDirection, CallbackInfo ci) {
-            if (player.level().isClientSide) {
-                  long millis = Util.getMillis();
-                  if (!BackData.get(player).isActionKeyDown()) {
-                        lastFailedTraitScroll = millis;
-                        return;
-                  }
-                  
-                  if (millis - lastFailedTraitScroll < 550L) {
-                        lastFailedTraitScroll = millis;
-                        return;
-                  }
-                  
-                  ItemStack inHand = player.getItemInHand(InteractionHand.MAIN_HAND);
-                  ISlotSelectorTrait trait = ISlotSelectorTrait.get(inHand);
-                  if (trait == null) {
-                        lastFailedTraitScroll = millis;
-                        return;
-                  }
-                  
-                  trait.mouseScrolled(player, ComponentHolder.of(inHand), -1, -1, (int) Math.signum(pDirection));
-                  ci.cancel();
-            }
-      }
-
 }

@@ -3,22 +3,19 @@ package com.beansgalaxy.backpacks.items;
 import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.google.common.collect.Lists;
-import com.mojang.serialization.DataResult;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
-import net.minecraft.world.Containers;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.apache.commons.lang3.math.Fraction;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 public abstract class AbstractBurlapSackEntity extends BlockEntity implements Container {
       protected static final Component NAME = Component.literal("Burlap Sack");
@@ -26,28 +23,24 @@ public abstract class AbstractBurlapSackEntity extends BlockEntity implements Co
       public AbstractBurlapSackEntity(BlockPos pPos, BlockState pBlockState) {
             super(Services.PLATFORM.getBurlapSackEntityType(), pPos, pBlockState);
       }
-
+      
       @Override
-      protected void saveAdditional(CompoundTag pTag, HolderLookup.Provider pRegistries) {
-            super.saveAdditional(pTag, pRegistries);
-            DataResult<Tag> result = Traits.STACKS_CODEC.encodeStart(NbtOps.INSTANCE, stacks);
-            result.ifSuccess(tag -> pTag.put("stacks", tag));
-
+      protected void saveAdditional(ValueOutput output) {
+            super.saveAdditional(output);
+            output.store("stacks", Traits.STACKS_CODEC, stacks);
       }
-
-      @Override
-      protected void loadAdditional(CompoundTag pTag, HolderLookup.Provider pRegistries) {
-            super.loadAdditional(pTag, pRegistries);
-            DataResult<List<ItemStack>> result = Traits.STACKS_CODEC.parse(NbtOps.INSTANCE, pTag.get("stacks"));
-            result.ifSuccess(stacks -> {
+      
+      @Override protected void loadAdditional(ValueInput input) {
+            super.loadAdditional(input);
+            input.read("stacks", Traits.STACKS_CODEC).ifPresent(optional -> {
                   this.stacks.clear();
-                  this.stacks.addAll(stacks);
+                  this.stacks.addAll(optional);
             });
       }
-
+      
       public abstract void openMenu(Player player);
 
-      private List<ItemStack> stacks = Lists.newArrayList();
+      private final List<ItemStack> stacks = Lists.newArrayList();
 
       public List<ItemStack> getItemStacks() {
             return stacks;
@@ -174,9 +167,13 @@ public abstract class AbstractBurlapSackEntity extends BlockEntity implements Co
       public ItemStack getItem(int slot) {
             return getSize() > slot ? getItemStacks().get(slot) : ItemStack.EMPTY;
       }
-
-      public void dropAll() {
-            Containers.dropContents(level, getBlockPos(), this);
+      
+      public void getDrops(Consumer<ItemStack> adder) {
+            for (ItemStack stack : stacks) {
+                  if (!stack.isEmpty()) {
+                        adder.accept(stack);
+                  }
+            }
       }
 
       @Override

@@ -3,6 +3,7 @@ package com.beansgalaxy.backpacks.util;
 import com.beansgalaxy.backpacks.access.ViewableAccessor;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import net.minecraft.core.component.DataComponentType;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -13,11 +14,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashSet;
 
 public abstract class ViewableBackpack implements ComponentHolder {
-
+      
       @Nullable
       public static ViewableBackpack get(LivingEntity livingEntity) {
             if (livingEntity instanceof ViewableAccessor access) {
-                  return access.beans_Backpacks_3$getViewable();
+                  return access.getViewable();
             }
 
             return null;
@@ -28,8 +29,9 @@ public abstract class ViewableBackpack implements ComponentHolder {
       }
 
       private final HashSet<Player> viewers = new HashSet<>();
+      
       public void onOpen(Player player) {
-            if (!player.level().isClientSide) {
+            if (!player.level().isClientSide()) {
                   viewers.add(player);
                   int size = viewers.size();
                   if (size == 1) {
@@ -47,27 +49,32 @@ public abstract class ViewableBackpack implements ComponentHolder {
                   playSound(ModSound.Type.CLOSE);
             }
       }
-
-      public float headPitch = 0f;
-      public float lastPitch = 0;
+      
+      private float nextPitch = 0f;
+      private float lastPitch = 0;
       public float velocity = 0;
       public float lastDelta = 0;
-      public int wobble = 8;
-
-      public void updateOpen() {
+      
+      public float updateOpen(float delta) {
+            float lastDelta = this.lastDelta;
+            this.lastDelta = delta;
+            if (delta > lastDelta)
+                  return Mth.lerp(delta, lastPitch, this.nextPitch) * 0.25f;
+            
             float impulse = 22f;
             float resonance = 9f;
             float height = 18f;
             float closing = 20f;
-
-            if (isOpen()) {
-                  if (headPitch == 0)
+            
+            boolean isOpen = isOpen();
+            if (isOpen) {
+                  if (nextPitch == 0)
                         velocity = impulse;
                   else
                         velocity = velocity + (lastPitch * resonance + height);
             }
             else if (velocity > 0) {
-                  if (headPitch == 0)
+                  if (nextPitch == 0)
                         velocity = (velocity * 0.5f) - 0.2f;
                   else
                         velocity = 0;
@@ -76,20 +83,18 @@ public abstract class ViewableBackpack implements ComponentHolder {
 
             float resistance = 0.3f;
             velocity *= resistance;
-            float newPitch = headPitch - velocity * 0.1f;
+            float newPitch = nextPitch - velocity * 0.1f;
 
             if (newPitch > 0)
                   newPitch = 0;
 
 //            newPitch = -2f; // HOLDS TOP OPEN FOR TEXTURING
-            lastPitch = headPitch;
-            headPitch = newPitch;
+            lastPitch = nextPitch;
+            nextPitch = newPitch;
+            
+            return Mth.lerp(delta, lastPitch, this.nextPitch) * 0.25f;
       }
-
-      public float fallDistance() {
-            return 0f;
-      }
-
+      
       @Override public <T> @Nullable T remove(DataComponentType<? extends T> type) {
             return holder().remove(type);
       }

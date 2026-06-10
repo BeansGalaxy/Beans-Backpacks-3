@@ -5,12 +5,8 @@
     "L"
   ],
   "key": {
-    "#": {
-      "item": "minecraft:amethyst_shard"
-    },
-    "L": {
-      "item": "minecraft:leather"
-    }
+    "#": "minecraft:amethyst_shard",
+    "L": "minecraft:leather"
   },
   "result": {
     "id": "beansbackpacks:alchemy_bag",

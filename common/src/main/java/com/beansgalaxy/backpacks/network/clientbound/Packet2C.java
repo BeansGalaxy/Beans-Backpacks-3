@@ -25,7 +25,7 @@ public interface Packet2C extends CustomPacketPayload {
       default void send2A(ServerPlayer player) {
             Network2C network = getNetwork();
             network.debugMsgEncode();
-            Services.PLATFORM.send(network, this, player.server, player);
+            Services.PLATFORM.send(network, this, player.level().getServer(), player);
       }
 
       void encode(RegistryFriendlyByteBuf buf);

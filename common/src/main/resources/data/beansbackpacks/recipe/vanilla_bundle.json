@@ -5,15 +5,10 @@
     "L"
   ],
   "key": {
-    "#": {
-      "item": "minecraft:string"
-    },
-    "L": {
-      "item": "minecraft:leather"
-    }
+    "#": "minecraft:string",
+    "L": "minecraft:leather"
   },
   "result": {
-    "id": "beansbackpacks:bundle",
-    "count": 1
+    "id": "beansbackpacks:bundle"
   }
 }

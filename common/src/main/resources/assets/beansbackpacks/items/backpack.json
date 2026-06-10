@@ -1,0 +1,21 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "beansbackpacks:item/backpack",
+    "tints": [
+      {
+        "type": "beansbackpacks:dye",
+        "default": [0.5411, 0.2823, 0.1294]
+      },
+      {
+        "type": "minecraft:constant",
+        "value": -1
+      },
+      {
+        "type": "beansbackpacks:dye",
+        "default": [0.5411, 0.2823, 0.1294],
+        "highlight": true
+      }
+    ]
+  }
+}

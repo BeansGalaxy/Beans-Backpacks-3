@@ -19,9 +19,6 @@
         ],
         "client": [
           "com.beansgalaxy.backpacks.FabricClient"
-        ],
-        "modmenu": [
-            "com.beansgalaxy.backpacks.ModMenuCompat"
         ]
     },
     "mixins": [

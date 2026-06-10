@@ -5,6 +5,7 @@ import com.beansgalaxy.backpacks.components.BulkComponent;
 import com.beansgalaxy.backpacks.traits.Traits;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
@@ -18,6 +19,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.ticks.ContainerSingleItem;
 import org.apache.commons.lang3.math.Fraction;
 import org.jetbrains.annotations.Nullable;
@@ -70,20 +73,15 @@ public abstract class DecoratedPotEntityMixin extends BlockEntity implements Dec
       }
       
       @Inject(method="saveAdditional", at=@At("TAIL"))
-      private void saveAdditional(CompoundTag pTag, HolderLookup.Provider pRegistries, CallbackInfo ci) {
+      private void saveAdditional(ValueOutput output, CallbackInfo ci) {
             if (bulkContainer != null) {
-                  RegistryOps<Tag> ops = pRegistries.createSerializationContext(NbtOps.INSTANCE);
-                  pTag.put("bulk", BulkComponent.CODEC.encodeStart(ops, bulkContainer).getOrThrow());
+                  output.store("bulk", BulkComponent.CODEC, bulkContainer);
             }
       }
       
       @Inject(method="loadAdditional", at=@At("TAIL"))
-      private void loadAdditional(CompoundTag pTag, HolderLookup.Provider pRegistries, CallbackInfo ci) {
-            Tag tag = pTag.get("bulk");
-            if (tag != null) {
-                  RegistryOps<Tag> ops = pRegistries.createSerializationContext(NbtOps.INSTANCE);
-                  bulkContainer = BulkComponent.CODEC.parse(ops, tag).result().orElse(null);
-            }
+      private void loadAdditional(ValueInput input, CallbackInfo ci) {
+            bulkContainer = input.read("bulk", BulkComponent.CODEC).orElse(null);
       }
       
       @Inject(method="collectImplicitComponents", at=@At("TAIL"))
@@ -92,8 +90,8 @@ public abstract class DecoratedPotEntityMixin extends BlockEntity implements Dec
       }
       
       @Inject(method="applyImplicitComponents", at=@At("TAIL"))
-      private void applyImplicitComponents(BlockEntity.DataComponentInput pComponentInput, CallbackInfo ci) {
-            bulkContainer = pComponentInput.get(Traits.BULK);
+      private void applyImplicitComponents(DataComponentGetter componentGetter, CallbackInfo ci) {
+            bulkContainer = componentGetter.get(Traits.BULK);
       }
       
       @Override

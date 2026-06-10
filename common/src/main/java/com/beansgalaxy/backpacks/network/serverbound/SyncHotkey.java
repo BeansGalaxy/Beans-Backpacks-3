@@ -48,7 +48,7 @@ public class SyncHotkey implements Packet2S {
             backData.setTinySlot(tinySlot);
       }
 
-      public static Type<SyncHotkey> ID = new Type<>(ResourceLocation.parse(Constants.MOD_ID + ":sync_hotkey_s"));
+      public static Type<SyncHotkey> ID = new Type<>(Constants.defaultLocation("sync_hotkey_s"));
 
       @Override
       public Type<? extends CustomPacketPayload> type() {

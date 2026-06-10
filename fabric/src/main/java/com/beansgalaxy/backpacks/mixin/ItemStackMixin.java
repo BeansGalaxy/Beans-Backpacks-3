@@ -14,12 +14,11 @@ import java.util.function.Consumer;
 
 @Mixin(ItemStack.class)
 public class ItemStackMixin {
-      @Inject(method = "hurtAndBreak(ILnet/minecraft/server/level/ServerLevel;Lnet/minecraft/server/level/ServerPlayer;Ljava/util/function/Consumer;)V",
-                  at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getItem()Lnet/minecraft/world/item/Item;"))
-      private void emptyBrokenArmorTraits(int damage, ServerLevel level, ServerPlayer player, Consumer<Item> onBreak, CallbackInfo ci) {
+      @Inject(method="applyDamage", at=@At(value="INVOKE", target="Lnet/minecraft/world/item/ItemStack;getItem()Lnet/minecraft/world/item/Item;"))
+      private void applyDamage(int damage, ServerPlayer player, Consumer<Item> onBreak, CallbackInfo ci) {
             ItemStack instance = (ItemStack) (Object) this;
             ItemStorageTraits.runIfPresent(instance, traits ->
-                        traits.breakTrait(player, instance)
+                  traits.breakTrait(player, instance)
             );
       }
 }

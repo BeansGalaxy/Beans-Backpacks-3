@@ -5,6 +5,8 @@ import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
+import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.StructureTags;
@@ -84,7 +86,7 @@ public class UtilityContainer implements Container {
       }
 
       private Optional<UtilityComponent.Mutable> getMutable() {
-            ItemStack backpack = owner.beans_Backpacks_3$getBody().getFirst();
+            ItemStack backpack = owner.getBackEquipped();
             if (backpack.isEmpty())
                   return Optional.empty();
 
@@ -103,7 +105,7 @@ public class UtilityContainer implements Container {
       }
 
       private UtilityComponent getUtility() {
-            ItemStack backpack = owner.beans_Backpacks_3$getBody().getFirst();
+            ItemStack backpack = owner.getBackEquipped();
             return backpack.getOrDefault(ITraitData.UTILITIES, UtilityComponent.BLANK);
       }
 
@@ -119,7 +121,7 @@ public class UtilityContainer implements Container {
 
       @Override
       public void clearContent() {
-            ItemStack backpack = owner.beans_Backpacks_3$getBody().getFirst();
+            ItemStack backpack = owner.getBackEquipped();
             backpack.remove(ITraitData.UTILITIES);
       }
 
@@ -136,7 +138,7 @@ public class UtilityContainer implements Container {
       }
 
 
-      private static int EFFECT_COOLDOWN = 40;
+      private static final int EFFECT_COOLDOWN = 40;
       private int effectCooldown = 0;
       public void tick(Inventory inventory) {
             if (effectCooldown > 0) {
@@ -154,10 +156,11 @@ public class UtilityContainer implements Container {
 
             ItemStack first = mutable.slots.get(0);
             ItemStack second = mutable.slots.get(1);
-            UtilityComponent.Type firstType = UtilityComponent.getType(first);
-            UtilityComponent.Type secondType = UtilityComponent.getType(second);
+            RegistryAccess access = player.registryAccess();
+            UtilityComponent.Type firstType = UtilityComponent.getType(first, access);
+            UtilityComponent.Type secondType = UtilityComponent.getType(second, access);
 
-            if (player.isInWaterOrBubble() || player.level().isRaining()) {
+            if (player.isInWater() || player.level().isRaining()) {
                   if (firstType.equals(UtilityComponent.Type.CONDUIT)) {
                         if (secondType.equals(UtilityComponent.Type.CONDUIT)) {
                               MobEffectInstance effect = new MobEffectInstance(MobEffects.CONDUIT_POWER, 260, 1, true, true);
@@ -209,11 +212,11 @@ public class UtilityContainer implements Container {
       }
 
       private boolean isInStructure(ServerLevel level, Player player, TagKey<Structure> tag) {
-            Optional<HolderLookup.RegistryLookup<Structure>> optional = level.registryAccess().lookup(Registries.STRUCTURE);
+            Optional<Registry<Structure>> optional = level.registryAccess().lookup(Registries.STRUCTURE);
             if (optional.isEmpty())
                   return false;
 
-            HolderLookup.RegistryLookup<Structure> lookup = optional.get();
+            Registry<Structure> lookup = optional.get();
             Optional<HolderSet.Named<Structure>> optionalReference = lookup.get(tag);
             if (optionalReference.isEmpty())
                   return false;

@@ -4,6 +4,7 @@ import com.beansgalaxy.backpacks.data.HopperTraitContainer;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.MutableBundleLike;
+import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
@@ -12,7 +13,7 @@ import java.util.List;
 public class BundleHopper extends HopperTraitContainer<MutableBundleLike<? extends BundleLikeTraits>> {
 
       public BundleHopper(BackpackEntity backpack, BundleLikeTraits traits) {
-            super(backpack, traits.mutable(backpack));
+            super(backpack, traits.mutable(ComponentHolder.of(backpack)));
       }
 
       @Override

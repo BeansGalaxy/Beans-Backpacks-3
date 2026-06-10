@@ -6,12 +6,8 @@
     "iPi"
   ],
   "key": {
-    "i": {
-      "item": "minecraft:gold_ingot"
-    },
-    "P": {
-      "item": "minecraft:phantom_membrane"
-    }
+    "i": "minecraft:gold_ingot",
+    "P": "minecraft:phantom_membrane"
   },
   "result": {
     "id": "beansbackpacks:gold_backpack",

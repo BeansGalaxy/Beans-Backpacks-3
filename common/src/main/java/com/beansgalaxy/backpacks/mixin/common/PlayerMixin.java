@@ -2,12 +2,11 @@ package com.beansgalaxy.backpacks.mixin.common;
 
 import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.Constants;
-import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.access.PlayerAccessor;
+import com.beansgalaxy.backpacks.util.SelectionBySlot;
 import com.beansgalaxy.backpacks.access.ViewableAccessor;
 import com.beansgalaxy.backpacks.components.SlotSelection;
 import com.beansgalaxy.backpacks.data.ServerSave;
-import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
@@ -16,17 +15,11 @@ import com.beansgalaxy.backpacks.traits.quiver.QuiverTraits;
 import com.beansgalaxy.backpacks.util.ModSound;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
-import com.mojang.serialization.DataResult;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.RegistryOps;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -38,10 +31,10 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -52,7 +45,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 @Mixin(Player.class)
@@ -61,16 +56,10 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
             super(pEntityType, pLevel);
       }
 
-      @Shadow public abstract ItemStack getItemBySlot(EquipmentSlot pSlot1);
-
-      @Shadow public abstract void setItemSlot(EquipmentSlot pSlot, ItemStack pStack);
-
       @Shadow public abstract Inventory getInventory();
 
       @Shadow @Final private Inventory inventory;
-
-      @Shadow public abstract void displayClientMessage(Component pChatComponent, boolean pActionBar);
-
+      
       @Shadow public abstract void remove(RemovalReason reason);
 
       @Shadow public abstract void travel(Vec3 travelVector);
@@ -133,32 +122,11 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
                   boolean yawMatches = Math.abs(yaw) > 90;
                   return !yawMatches;
             }
-
-            @Override public float fallDistance() {
-                  return PlayerMixin.this.fallDistance;
-            }
+            
       };
 
-      @Override public ViewableBackpack beans_Backpacks_3$getViewable() {
+      @Override public ViewableBackpack getViewable() {
             return viewable;
-      }
-
-      @Inject(method = "getItemBySlot", at = @At("HEAD"), cancellable = true)
-      private void getBackSlotItem(EquipmentSlot equipmentSlot, CallbackInfoReturnable<ItemStack> cir) {
-            if (equipmentSlot == EquipmentSlot.BODY) {
-                  BackData access = (BackData) instance.getInventory();
-                  cir.setReturnValue(access.beans_Backpacks_3$getBody().getFirst());
-            }
-      }
-
-      @Inject(method = "setItemSlot", cancellable = true, at = @At(value = "INVOKE", shift = At.Shift.AFTER,
-                  target = "Lnet/minecraft/world/entity/player/Player;verifyEquippedItem(Lnet/minecraft/world/item/ItemStack;)V"))
-      private void setBackSlotItem(EquipmentSlot pSlot, ItemStack pStack, CallbackInfo ci) {
-            if (EquipmentSlot.BODY.equals(pSlot)) {
-                  BackData access = (BackData) instance.getInventory();
-                  instance.onEquipItem(EquipmentSlot.BODY, access.beans_Backpacks_3$getBody().set(0, pStack), pStack);
-                  ci.cancel();
-            }
       }
 
       @Inject(method = "getProjectile", locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true, at = @At(value = "INVOKE", shift = At.Shift.BEFORE,
@@ -187,54 +155,49 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
        }
 
       @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
-      private void backpackAddSaveData(CompoundTag pCompound, CallbackInfo ci) {
-            RegistryAccess access = instance.registryAccess();
-
-            ItemStack backStack = getItemBySlot(EquipmentSlot.BODY);
-            CompoundTag backpacks = new CompoundTag();
-
-            RegistryOps<Tag> serializationContext = access.createSerializationContext(NbtOps.INSTANCE);
-            DataResult<Tag> dataResult = ItemStack.OPTIONAL_CODEC.encodeStart(serializationContext, backStack);
-            dataResult.ifSuccess(back -> backpacks.put("back", back));
-
+      private void backpackAddSaveData(ValueOutput output, CallbackInfo ci) {
+            ValueOutput selections = output.child("slot_selection");
             Inventory inventory = getInventory();
-            CompoundTag selectedSlots = new CompoundTag();
-            saveSelectedSlots("items", inventory.items, instance, selectedSlots);
-            saveSelectedSlots("armor", inventory.armor, instance, selectedSlots);
-            ItemStack offhand = inventory.offhand.getFirst();
-            saveSelectedSlots("offhand", offhand, instance, selectedSlots);
-            ItemStack back = BackData.get(instance).beans_Backpacks_3$getBody().getFirst();
-            saveSelectedSlots("back", back, instance, selectedSlots);
-            backpacks.put("slot_selection", selectedSlots);
-
-            legacySaveShorthandBackup(backpacks);
-
-            pCompound.put(Constants.MOD_ID, backpacks);
+            saveSelectedSlots("items", inventory.getNonEquipmentItems(), instance, selections);
+            
+            for (EquipmentSlot slot : new EquipmentSlot[] {
+                  EquipmentSlot.HEAD,
+                  EquipmentSlot.CHEST,
+                  EquipmentSlot.LEGS,
+                  EquipmentSlot.FEET,
+                  EquipmentSlot.OFFHAND,
+                  EquipmentSlot.BODY
+            }) {
+                  ItemStack item = instance.getItemBySlot(slot);
+                  SlotSelection slotSelection = item.get(ITraitData.SLOT_SELECTION);
+                  if (slotSelection == null)
+                        continue;
+                  
+                  int selectedSlot = slotSelection.get(instance);
+                  if (selectedSlot == 0)
+                        continue;
+                  
+                  selections.putInt(slot.name(), selectedSlot);
+            }
       }
-
-      @Unique
-      private static void saveSelectedSlots(String name, List<ItemStack> items, Player instance, CompoundTag tag) {
+      
+      private void saveSelectedSlots(String name, NonNullList<ItemStack> items, Player player, ValueOutput output) {
             int size = items.size();
-            CompoundTag slots = new CompoundTag();
+            ArrayList<SelectionBySlot> selectionBySlots = new ArrayList<>(size);
             for (int i = 0; i < size; i++) {
                   ItemStack item = items.get(i);
-                  saveSelectedSlots(String.valueOf(i), item, instance, slots);
+                  SlotSelection slotSelection = item.get(ITraitData.SLOT_SELECTION);
+                  if (slotSelection == null)
+                        continue;
+                  
+                  int selectedSlot = slotSelection.get(instance);
+                  if (selectedSlot == 0)
+                        continue;
+                  
+                  selectionBySlots.add(new SelectionBySlot(i, selectedSlot));
             }
             
-            tag.put(name, slots);
-      }
-
-      @Unique
-      private static void saveSelectedSlots(String name, ItemStack item, Player instance, CompoundTag tag) {
-            SlotSelection slotSelection = item.get(ITraitData.SLOT_SELECTION);
-            if (slotSelection == null)
-                  return;
-
-            int selectedSlot = slotSelection.get(instance);
-            if (selectedSlot == 0)
-                  return;
-
-            tag.putInt(name, selectedSlot);
+            output.store(name, SelectionBySlot.LIST_CODEC, selectionBySlots);
       }
 
       @Unique
@@ -248,83 +211,70 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
 
 
       @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
-      private void backpackReadSaveData(CompoundTag pCompound, CallbackInfo ci) {
-            CompoundTag backpacks = pCompound.getCompound(Constants.MOD_ID);
-            RegistryAccess access = instance.registryAccess();
-
-            if (backpacks.contains("back")) {
-                  Tag backSlot = backpacks.get("back");
-                  RegistryOps<Tag> serializationContext = access.createSerializationContext(NbtOps.INSTANCE);
-                  DataResult<ItemStack> back = ItemStack.OPTIONAL_CODEC.parse(serializationContext, backSlot);
-                  back.ifSuccess(stack -> setItemSlot(EquipmentSlot.BODY, stack));
+      private void backpackReadSaveData(ValueInput input, CallbackInfo ci) {
+            Optional<ValueInput> slot_selection = input.child("slot_selection");
+            if (slot_selection.isPresent()) {
+                  ValueInput selections = slot_selection.get();
+                  readSlotSelection("items", inventory.getNonEquipmentItems(), instance, selections);
+                  
+                  for (EquipmentSlot equipmentSlot : new EquipmentSlot[] {
+                        EquipmentSlot.HEAD,
+                        EquipmentSlot.CHEST,
+                        EquipmentSlot.LEGS,
+                        EquipmentSlot.FEET,
+                        EquipmentSlot.OFFHAND,
+                        EquipmentSlot.BODY
+                  }) {
+                        Optional<Integer> selection = input.getInt(equipmentSlot.name());
+                        if (selection.isEmpty())
+                              continue;
+                        
+                        ItemStack stack = instance.getItemBySlot(equipmentSlot);
+                        int max = getMaxSelection(stack);
+                        if (max == 0)
+                              continue;
+                        
+                        SlotSelection slotSelection1 = stack.getOrDefault(ITraitData.SLOT_SELECTION, new SlotSelection());
+                        
+                        slotSelection1.set(instance, Math.min(selection.get(), max));
+                        stack.set(ITraitData.SLOT_SELECTION, slotSelection1);
+                  }
             }
-
-            CompoundTag slotSelection = backpacks.getCompound("slot_selection");
-            readSlotSelection("items", inventory.items, instance, slotSelection);
-            readSlotSelection("armor", inventory.armor, instance, slotSelection);
-            ItemStack offhand = inventory.offhand.getFirst();
-            readSlotSelection("offhand", offhand, instance, slotSelection);
-            ItemStack back = BackData.get(instance).beans_Backpacks_3$getBody().getFirst();
-            readSlotSelection("back", back, instance, slotSelection);
-
-            legacyReadShorthandBackup(backpacks);
+            
+            legacyCollectBackItem(input);
       }
-
-      @Nullable @Deprecated(since = "0.9-beta") @Unique
-      private CompoundTag legacyShorthandItems = null;
-      @Deprecated(since = "0.9-beta") @Unique
-      private boolean legacyShouldSendShorthandWarning = false;
-
-      @Deprecated(since = "0.9-beta") @Unique
-      private void legacySaveShorthandBackup(CompoundTag backpacks) {
-            if (legacyShorthandItems != null)
-                  backpacks.put("shorthand", legacyShorthandItems);
-      }
-
-      @Deprecated(since = "0.9-beta") @Unique
-      private void legacyReadShorthandBackup(CompoundTag backpacks) {
-            if (!Services.PLATFORM.isModLoaded("beanstoolbelt") && backpacks.contains("shorthand")) {
-                  CompoundTag shorthand = backpacks.getCompound("shorthand");
-                  legacyShorthandItems = shorthand;
-
-                  legacyShouldSendShorthandWarning = true;
-            }
-      }
-
-      @Inject(method = "tick", at = @At("HEAD")) @Deprecated(since = "0.9-beta")
-      private void legacySendWarningMessage(CallbackInfo ci) {
-            if (legacyShouldSendShorthandWarning && getServer() != null && getServer().getConnection() != null) {
-                  MutableComponent literal = Component.literal("THE SHORTHAND IS NO LONGER INCLUDED IN THIS VERSION OF BEANS' BACKPACKS;");
-                  MutableComponent literal2 = Component.literal("QUIT THE GAME AND INSTALL \"BEANS' TOOLBELT\" IMMEDIATELY TO KEEP YOUR TOOLS!!");
-                  displayClientMessage(literal, false);
-                  displayClientMessage(literal2, false);
-
-                  legacyShouldSendShorthandWarning = false;
-            }
-      }
-
-
-      @Unique
-      private static void readSlotSelection(String name, List<ItemStack> items, Player instance, CompoundTag slotSelection) {
-            CompoundTag tag = slotSelection.getCompound(name);
-            for (String key : tag.getAllKeys()) {
-                  int slot = Integer.parseInt(key);
-                  ItemStack stack = items.get(slot);
-                  readSlotSelection(key, stack, instance, tag);
-            }
-      }
-
-      @Unique
-      private static void readSlotSelection(String name, ItemStack item, Player instance, CompoundTag slotSelection) {
-            int selection = slotSelection.getInt(name);
-            if (selection == 0)
+      
+      private void readSlotSelection(String name, NonNullList<ItemStack> items, Player player, ValueInput input) {
+            Optional<List<SelectionBySlot>> optional = input.read(name, SelectionBySlot.LIST_CODEC);
+            if (optional.isEmpty())
                   return;
-
-            SlotSelection slotSelection1 = item.getOrDefault(ITraitData.SLOT_SELECTION, new SlotSelection());
-            int max = getMaxSelection(item);
-
-            slotSelection1.set(instance, Math.min(selection, max));
-            item.set(ITraitData.SLOT_SELECTION, slotSelection1);
+            
+            List<SelectionBySlot> slots = optional.get();
+            for (SelectionBySlot slot : slots) {
+                  int i = slot.slot();
+                  ItemStack stack = items.get(i);
+                  int max = getMaxSelection(stack);
+                  if (max == 0)
+                        continue;
+                  
+                  SlotSelection slotSelection1 = stack.getOrDefault(ITraitData.SLOT_SELECTION, new SlotSelection());
+                  
+                  int selection = slot.selection();
+                  slotSelection1.set(player, Math.min(selection, max));
+                  stack.set(ITraitData.SLOT_SELECTION, slotSelection1);
+            }
+      }
+      
+      @Deprecated(since = "1.21.1")
+      private void legacyCollectBackItem(ValueInput input) {
+            Optional<ValueInput> optional = input.child(Constants.MOD_ID);
+            if (optional.isEmpty())
+                  return;
+            
+            ValueInput backpacks = optional.get();
+            backpacks.read("back", ItemStack.OPTIONAL_CODEC).ifPresent(stack -> {
+                  setItemSlot(EquipmentSlot.BODY, stack);
+            });
       }
 
       @Inject(method = "defineSynchedData", at = @At("TAIL"))
@@ -334,22 +284,24 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
 
       @Inject(method = "dropEquipment", at = @At(value = "HEAD"))
       private void backpackDropEquipment(CallbackInfo ci) {
-            if (!ServerSave.CONFIG.keepBackpack(level()))
-                  BackpackEntity.drop(instance);
-            
-            if (!this.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
-                  for (EquipmentSlot slot: new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
-                        ItemStack backpack = instance.getItemBySlot(slot);
-                        BackpackTraits traits = BackpackTraits.get(backpack);
-                        if (traits == null)
-                              continue;
-                        
-                        List<ItemStack> stacks = backpack.remove(ITraitData.ITEM_STACKS);
-                        if (stacks == null)
-                              continue;
-                        
-                        for (ItemStack stack : stacks)
-                              instance.drop(stack, true, false);
+            if (level() instanceof ServerLevel level) {
+                  if (!ServerSave.CONFIG.keepBackpack(level))
+                        BackpackEntity.drop(instance);
+                  
+                  if (level.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
+                        for (EquipmentSlot slot: new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET}) {
+                              ItemStack backpack = instance.getItemBySlot(slot);
+                              BackpackTraits traits = BackpackTraits.get(backpack);
+                              if (traits == null)
+                                    continue;
+                              
+                              List<ItemStack> stacks = backpack.remove(ITraitData.ITEM_STACKS);
+                              if (stacks == null)
+                                    continue;
+                              
+                              for (ItemStack stack : stacks)
+                                    instance.drop(stack, true, false);
+                        }
                   }
             }
       }
@@ -371,17 +323,5 @@ public abstract class PlayerMixin extends LivingEntity implements ViewableAccess
             if (utilitiesScope)
                   cir.setReturnValue(true);
       }
-
-      @Override
-      public void setItemUsed(ItemStack itemstack) {
-            if (!itemstack.isEmpty() && !this.isUsingItem()) {
-                  this.useItem = itemstack;
-                  this.useItemRemaining = itemstack.getUseDuration(this);
-                  if (!this.level().isClientSide) {
-                        this.setLivingEntityFlag(1, true);
-                        this.setLivingEntityFlag(2, false);
-                        this.gameEvent(GameEvent.ITEM_INTERACT_START);
-                  }
-            }
-      }
+      
 }

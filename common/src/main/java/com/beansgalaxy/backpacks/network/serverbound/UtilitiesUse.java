@@ -64,7 +64,7 @@ public class UtilitiesUse implements Packet2S {
             });
       }
 
-      public static Type<UtilitiesUse> ID = new Type<>(ResourceLocation.parse(Constants.MOD_ID + ":utility_rocket_use_s"));
+      public static Type<UtilitiesUse> ID = new Type<>(Constants.defaultLocation("utility_rocket_use_s"));
 
       @Override
       public Type<? extends CustomPacketPayload> type() {

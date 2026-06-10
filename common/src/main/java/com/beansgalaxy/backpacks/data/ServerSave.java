@@ -2,53 +2,41 @@ package com.beansgalaxy.backpacks.data;
 
 import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.data.config.CommonConfig;
-import com.beansgalaxy.backpacks.util.data_fixers.LegacyEnder;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 import net.minecraft.world.level.storage.DimensionDataStorage;
 
 public class ServerSave extends SavedData {
       public static final CommonConfig CONFIG = new CommonConfig();
-      public final EnderStorage enderStorage = new EnderStorage();
-
-      @Override
-      public CompoundTag save(CompoundTag tag, HolderLookup.Provider provider) {
-            enderStorage.save(tag);
-            return tag;
+      public final EnderStorage enderStorage;
+      
+      public ServerSave() {
+            this(new EnderStorage());
       }
-
-      private static ServerSave load(CompoundTag tag, HolderLookup.Provider provider) {
-            ServerSave save = new ServerSave();
-            recoverLegacyEnderItems(tag, save);
-            save.enderStorage.load(tag);
-
-
-            return save;
+      
+      public ServerSave(EnderStorage enderStorage) {
+            this.enderStorage = enderStorage;
       }
-
-      private static void recoverLegacyEnderItems(CompoundTag tag, ServerSave save) {
-            LegacyEnder legacyEnder = new LegacyEnder();
-            legacyEnder.fromNbt(tag);
-            legacyEnder.MAP.forEach(save.enderStorage::setLegacyEnder);
-            tag.remove("EnderData");
-            tag.remove("Config");
-            tag.remove("LockedAdvancement");
-      }
-
+      
       public static ServerSave getSave(MinecraftServer server, boolean updateSave) {
             ServerLevel level = server.getLevel(Level.OVERWORLD);
             DimensionDataStorage dataStorage = level.getDataStorage();
-            Factory<ServerSave> factory = new Factory<>(ServerSave::new, ServerSave::load, DataFixTypes.LEVEL);
-            ServerSave save = dataStorage.computeIfAbsent(factory, Constants.MOD_ID);
-
+            SavedDataType<ServerSave> type = new SavedDataType<>(Constants.MOD_ID, ServerSave::new, ServerSave.CODEC, DataFixTypes.LEVEL);
+            ServerSave save = dataStorage.computeIfAbsent(type);
+            
             if (updateSave)
                   save.setDirty();
 
             return save;
       }
+      
+      public static final Codec<ServerSave> CODEC = RecordCodecBuilder.create(in -> in.group(
+            EnderStorage.CODEC.fieldOf("ender_storage").forGetter(save -> save.enderStorage)
+      ).apply(in, ServerSave::new));
 }

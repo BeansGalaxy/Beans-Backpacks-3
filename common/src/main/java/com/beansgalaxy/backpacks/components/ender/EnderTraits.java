@@ -179,7 +179,7 @@ public final class EnderTraits implements ComponentHolder {
 
       @Override
       public void setChanged() {
-            if (!isLoaded() || level.isClientSide)
+            if (!isLoaded() || level.isClientSide())
                   return;
 
             Predicate<ItemStack> matchTraits = stack -> this.equals(stack.get(Traits.ENDER));

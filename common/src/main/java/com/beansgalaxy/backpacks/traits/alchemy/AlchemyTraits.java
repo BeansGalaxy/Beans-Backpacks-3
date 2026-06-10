@@ -4,11 +4,11 @@ import com.beansgalaxy.backpacks.traits.TraitComponentKind;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.abstract_traits.IDraggingTrait;
 import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
-import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.ChestLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.util.ModSound;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
+import com.beansgalaxy.backpacks.util.Tint;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -18,10 +18,9 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
-import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
@@ -32,13 +31,13 @@ import net.minecraft.world.item.PotionItem;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import javax.xml.crypto.Data;
 import java.util.List;
 import java.util.Optional;
 
@@ -72,7 +71,7 @@ public class AlchemyTraits extends ChestLikeTraits implements ISlotSelectorTrait
       }
 
       @Override
-      public void use(Level level, Player player, InteractionHand hand, ComponentHolder holder, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
+      public void use(Level level, Player player, InteractionHand hand, ComponentHolder holder, CallbackInfoReturnable<InteractionResult> cir) {
             if (isEmpty(holder))
                   return;
 
@@ -88,8 +87,12 @@ public class AlchemyTraits extends ChestLikeTraits implements ISlotSelectorTrait
                   FoodProperties foodproperties = selected.get(DataComponents.FOOD);
                   if (foodproperties == null)
                         return;
-
-                  useHoneyBottle(level, player, selected, foodproperties, item);
+                  
+                  Consumable consumable = selected.get(DataComponents.CONSUMABLE);
+                  if (consumable == null)
+                        return;
+                  
+                  useHoneyBottle(level, player, selected, foodproperties, consumable, item);
             }
             else if (Items.MILK_BUCKET.equals(item))
                   useMilkBucketItem(mutable, level, player, item, selected);
@@ -97,55 +100,54 @@ public class AlchemyTraits extends ChestLikeTraits implements ISlotSelectorTrait
                   PotionContents potioncontents = selected.get(DataComponents.POTION_CONTENTS);
                   if (potioncontents != null)
                         usePotionLikeItem(potioncontents, level, player, selected, item);
-                  else {
-                        Integer ominousAmplifier = selected.get(DataComponents.OMINOUS_BOTTLE_AMPLIFIER);
-                        if (ominousAmplifier != null) {
-                              Vec3 movement = player.getDeltaMovement().multiply(2, 0.5, 2);
-                              ColorParticleOption effect = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, FastColor.ARGB32.color(255, 0x493348));
-                              
-                              for (int j = 0; j < 15; j++) {
-                                    double random0 = level.random.nextDouble();
-                                    double random1 = level.random.nextDouble();
-                                    double y = Mth.lerp(random0, player.getY() + player.getBbHeight(), player.getY());
-                                    
-                                    double centered0 = random0 - 0.5;
-                                    double xSpeed = movement.x + centered0 * 0.1;
-                                    double ySpeed = movement.y - random1 * 0.2;
-                                    double centered1 = random1 - 0.5;
-                                    double zSpeed = movement.z + centered1 * 0.1;
-                                    
-                                    level.addParticle(effect, player.getX(), y, player.getZ(), xSpeed, ySpeed, zSpeed);
-                                    
-                                    if (level.random.nextBoolean())
-                                          level.addParticle(ParticleTypes.SMOKE, player.getX() + centered1, y, player.getZ() + centered0, xSpeed, random0 * 0.1, zSpeed);
-                              }
-                              
-                              for (int j = 0; j < 5; j++) {
-                                    double random0 = level.random.nextDouble();
-                                    double random1 = level.random.nextDouble();
-                                    
-                                    double centered0 = random0 - 0.5;
-                                    double centered1 = random1 - 0.5;
-                                    double y = Mth.lerp(random0, player.getY() + player.getBbHeight(), player.getY());
-                                    
-                                    level.addParticle(ParticleTypes.SMOKE, player.getX() + centered1, y, player.getZ() + centered0, 0, random0 * 0.1, 0);
-                              }
-                              
-                              selected.finishUsingItem(level, player);
-                        }
-                  }
+                  else if (selected.has(DataComponents.OMINOUS_BOTTLE_AMPLIFIER))
+                        useOminousBottleItem(level, player, selected);
             }
 
             if (selected.isEmpty())
                   mutable.limitSelectedSlot(selectedSlot);
 
             mutable.push();
-            ItemStack backpack = player.getItemInHand(hand);
-            cir.setReturnValue(InteractionResultHolder.sidedSuccess(backpack, level.isClientSide));
+            cir.setReturnValue(InteractionResult.SUCCESS_SERVER);
       }
-
-      private static void useHoneyBottle(Level level, Player player, ItemStack selected, FoodProperties foodproperties, Item item) {
-            player.eat(level, selected, foodproperties);
+      
+      private void useOminousBottleItem(Level level, Player player, ItemStack selected) {
+            Vec3 movement = player.getDeltaMovement().multiply(2, 0.5, 2);
+            ColorParticleOption effect = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0xFF493348);
+            
+            for (int j = 0; j < 15; j++) {
+                  double random0 = level.random.nextDouble();
+                  double random1 = level.random.nextDouble();
+                  double y = Mth.lerp(random0, player.getY() + player.getBbHeight(), player.getY());
+                  
+                  double centered0 = random0 - 0.5;
+                  double xSpeed = movement.x + centered0 * 0.1;
+                  double ySpeed = movement.y - random1 * 0.2;
+                  double centered1 = random1 - 0.5;
+                  double zSpeed = movement.z + centered1 * 0.1;
+                  
+                  level.addParticle(effect, player.getX(), y, player.getZ(), xSpeed, ySpeed, zSpeed);
+                  
+                  if (level.random.nextBoolean())
+                        level.addParticle(ParticleTypes.SMOKE, player.getX() + centered1, y, player.getZ() + centered0, xSpeed, random0 * 0.1, zSpeed);
+            }
+            
+            for (int j = 0; j < 5; j++) {
+                  double random0 = level.random.nextDouble();
+                  double random1 = level.random.nextDouble();
+                  
+                  double centered0 = random0 - 0.5;
+                  double centered1 = random1 - 0.5;
+                  double y = Mth.lerp(random0, player.getY() + player.getBbHeight(), player.getY());
+                  
+                  level.addParticle(ParticleTypes.SMOKE, player.getX() + centered1, y, player.getZ() + centered0, 0, random0 * 0.1, 0);
+            }
+            
+            selected.finishUsingItem(level, player);
+      }
+      
+      private static void useHoneyBottle(Level level, Player player, ItemStack selected, FoodProperties foodproperties, Consumable consumable, Item item) {
+            foodproperties.onConsume(level, player, selected, consumable);
             player.playSound(SoundEvents.GLASS_BREAK);
             if (player instanceof ServerPlayer serverplayer) {
                   CriteriaTriggers.CONSUME_ITEM.trigger(serverplayer, selected);
@@ -225,7 +227,7 @@ public class AlchemyTraits extends ChestLikeTraits implements ISlotSelectorTrait
                   level.addParticle(ParticleTypes.WHITE_SMOKE, player.getX() + centered2, y, player.getZ() + centered1, xSpeed, ySpeed, zSpeed);
             }
 
-            ColorParticleOption particleOption = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, FastColor.ARGB32.color(100, 0xFFFFFF));
+            ColorParticleOption particleOption = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, Tint.fastColor(100, 0xFFFFFF));
             for (int j = 0; j < 10; j++) {
                   double random = level.random.nextDouble();
                   double y = Mth.lerp(Math.sqrt(random), player.getY(), player.getEyeY());
@@ -233,7 +235,7 @@ public class AlchemyTraits extends ChestLikeTraits implements ISlotSelectorTrait
                   level.addParticle(particleOption, player.getX(), y, player.getZ(), xySpeed, -random * 0.2, xySpeed);
             }
 
-            ColorParticleOption alphaOption = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, FastColor.ARGB32.color(200, 0xFFFFFF));
+            ColorParticleOption alphaOption = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, Tint.fastColor(200, 0xFFFFFF));
             for (int j = 0; j < 8; j++) {
                   double random = level.random.nextDouble();
                   double y = Mth.lerp(random, player.getY(), player.getEyeY());
@@ -273,7 +275,7 @@ public class AlchemyTraits extends ChestLikeTraits implements ISlotSelectorTrait
                         level.addParticle(ParticleTypes.FALLING_WATER, player.getX() + centered1, y, player.getZ() + centered2, xSpeed, ySpeed, zSpeed);
                   }
 
-                  ColorParticleOption particleOption = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, FastColor.ARGB32.color(100, -13083194));
+                  ColorParticleOption particleOption = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, Tint.fastColor(100, -13083194));
                   for (int j = 0; j < 10; j++) {
                         double random = level.random.nextDouble();
                         double y = Mth.lerp(Math.sqrt(random), player.getY(), player.getEyeY());
@@ -287,7 +289,7 @@ public class AlchemyTraits extends ChestLikeTraits implements ISlotSelectorTrait
                         level.addParticle(ParticleTypes.SPLASH, player.getX(), y, player.getZ(), xSpeed, ySpeed, zSpeed);
                   }
 
-                  ColorParticleOption alphaOption = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, FastColor.ARGB32.color(200, -13083194));
+                  ColorParticleOption alphaOption = ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, Tint.fastColor(200, -13083194));
                   for (int j = 0; j < 8; j++) {
                         double random = level.random.nextDouble();
                         double y = Mth.lerp(random * random, player.getY(), player.getEyeY());
@@ -315,7 +317,7 @@ public class AlchemyTraits extends ChestLikeTraits implements ISlotSelectorTrait
 
                         level.addParticle(effect.getParticleOptions(), player.getX(), y, player.getZ(), xSpeed, ySpeed, zSpeed);
                   }
-            });
+            }, 1);
 
             selected.finishUsingItem(level, player);
             player.playSound(SoundEvents.GLASS_BREAK);

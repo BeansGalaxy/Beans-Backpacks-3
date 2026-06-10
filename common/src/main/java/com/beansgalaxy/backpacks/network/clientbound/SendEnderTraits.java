@@ -53,7 +53,7 @@ public class SendEnderTraits implements Packet2C {
             CommonClient.getEnderStorage().set(owner, location, map);
       }
 
-      public static Type<SendEnderTraits> ID = new Type<>(ResourceLocation.parse(Constants.MOD_ID + ":send_ender_traits_c"));
+      public static Type<SendEnderTraits> ID = new Type<>(Constants.defaultLocation("send_ender_traits_c"));
 
       @Override
       public Type<SendEnderTraits> type() {

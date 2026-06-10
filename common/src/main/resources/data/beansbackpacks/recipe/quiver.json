@@ -6,15 +6,10 @@
     "  #"
   ],
   "key": {
-    "#": {
-      "item": "minecraft:leather"
-    },
-    "S": {
-      "item": "minecraft:string"
-    }
+    "#": "minecraft:leather",
+    "S": "minecraft:string"
   },
   "result": {
-    "id": "beansbackpacks:quiver",
-    "count": 1
+    "id": "beansbackpacks:quiver"
   }
 }

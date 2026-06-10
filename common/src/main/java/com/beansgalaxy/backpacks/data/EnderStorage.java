@@ -1,26 +1,18 @@
 package com.beansgalaxy.backpacks.data;
 
 import com.beansgalaxy.backpacks.CommonClient;
-import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.components.reference.ReferenceRegistry;
-import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
 import com.beansgalaxy.backpacks.network.clientbound.SendEnderEntry;
-import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.TraitComponentKind;
-import com.beansgalaxy.backpacks.traits.Traits;
-import com.beansgalaxy.backpacks.traits.bundle.BundleTraits;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
-import com.beansgalaxy.backpacks.util.ModSound;
+import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.Pair;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentType;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
@@ -28,19 +20,13 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class EnderStorage {
-      public static final ResourceLocation LEGACY_ENDER_LOCATION = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "legacy_ender");
       private final HashMap<UUID, PlayerEntry> storage = new HashMap<>();
 
       public static EnderStorage get(Level level) {
@@ -51,7 +37,7 @@ public class EnderStorage {
             else return ServerSave.getSave(server, true).enderStorage;
       }
 
-      public PlayerEntry get(UUID uuid) {
+      private PlayerEntry get(UUID uuid) {
             return storage.computeIfAbsent(uuid, key -> new PlayerEntry());
       }
 
@@ -105,38 +91,7 @@ public class EnderStorage {
                   entry.traits.put(location, newEntry);
             }
       }
-
-      public void setLegacyEnder(UUID uuid, List<ItemStack> itemStacks) {
-            PlayerEntry playerEntry = get(uuid);
-            playerEntry.traits.computeIfAbsent(LEGACY_ENDER_LOCATION, location -> {
-                  ReferenceRegistry reference = ReferenceRegistry.get(location);
-                  GenericTraits traits = reference.traits();
-
-                  Reference2ObjectOpenHashMap<DataComponentType<?>, Object> map = new Reference2ObjectOpenHashMap<>();
-                  map.put(ITraitData.ITEM_STACKS, itemStacks);
-                  return new TraitEntry(traits.kind(), traits, map);
-            });
-      }
       
-      public void save(CompoundTag tag) {
-            storage.forEach((uuid, entry) -> {
-                  DataResult<Tag> encodedStart = PlayerEntry.ENTRY_CODEC.encodeStart(NbtOps.INSTANCE, entry);
-                  encodedStart.ifSuccess(entryTag ->
-                              tag.put(uuid.toString(), entryTag)
-                  );
-            });
-      }
-      
-      public void load(CompoundTag tag) {
-            for (String key : tag.getAllKeys()) {
-                  UUID uuid = UUID.fromString(key);
-                  CompoundTag entryTag = tag.getCompound(key);
-                  PlayerEntry.ENTRY_CODEC.decode(NbtOps.INSTANCE, entryTag).ifSuccess(pair ->
-                              storage.put(uuid, pair.getFirst())
-                  );
-            }
-      }
-
       public HashSet<ServerPlayer> getListeners(UUID uuid) {
             return get(uuid).listeners;
       }
@@ -190,7 +145,7 @@ public class EnderStorage {
                                     START_CODEC.listOf().fieldOf("entries").forGetter(entry -> entry.traits.entrySet().stream().map(e ->
                                                 Pair.of(e.getKey(), e.getValue())).toList()
                                     ),
-                                    ComponentSerialization.CODEC.fieldOf("name").forGetter(entry -> entry.displayName)
+                                    ComponentSerialization.CODEC.fieldOf("display").forGetter(entry -> entry.displayName)
                         ).apply(in, (trait, name) -> {
                               PlayerEntry entry = new PlayerEntry();
                               entry.displayName = name;
@@ -235,4 +190,46 @@ public class EnderStorage {
                         return map;
                   }
       );
+      
+      public static final Codec<EnderStorage> CODEC = Packaged.CODEC.listOf().xmap(
+            data -> {
+                  EnderStorage storage = new EnderStorage();
+                  
+                  for (Packaged entry : data) {
+                        PlayerEntry playerEntry = new PlayerEntry();
+                        playerEntry.displayName = entry.display;
+                        
+                        entry.data.forEach(reference -> {
+                              playerEntry.traits.put(reference.first(), reference.second());
+                        });
+                        
+                        storage.storage.put(entry.key, playerEntry);
+                  }
+                  
+                  return storage;
+            },
+            storage -> {
+                  ImmutableList.Builder<Packaged> stored = ImmutableList.builder();
+                  
+                  storage.storage.forEach((uuid, entry) -> {
+                        List<Pair<ResourceLocation, TraitEntry>> traits = new ArrayList<>();
+                        entry.traits.forEach((location, trait) ->
+                              traits.add(Pair.of(location, trait))
+                        );
+                        
+                        Packaged data = new Packaged(uuid, entry.displayName, traits);
+                        stored.add(data);
+                  });
+                  
+                  return stored.build();
+            }
+      );
+      
+      record Packaged(UUID key, Component display, List<Pair<ResourceLocation, TraitEntry>> data) {
+            private static final Codec<Packaged> CODEC = RecordCodecBuilder.create(in -> in.group(
+                  UUIDUtil.CODEC.fieldOf("key").forGetter(Packaged::key),
+                  ComponentSerialization.CODEC.fieldOf("display").forGetter(Packaged::display),
+                  PlayerEntry.START_CODEC.listOf().fieldOf("data").forGetter(Packaged::data)
+            ).apply(in, Packaged::new));
+      }
 }

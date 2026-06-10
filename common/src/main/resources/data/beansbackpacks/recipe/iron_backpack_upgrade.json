@@ -1,14 +1,8 @@
 {
   "type": "minecraft:smithing_transform",
-  "template": {
-    "item": "minecraft:netherite_upgrade_smithing_template"
-  },
-  "base": {
-    "item": "beansbackpacks:iron_backpack"
-  },
-  "addition": {
-    "item": "minecraft:netherite_ingot"
-  },
+  "template": "minecraft:netherite_upgrade_smithing_template",
+  "base": "beansbackpacks:iron_backpack",
+  "addition": "minecraft:netherite_ingot",
   "result": {
     "id": "beansbackpacks:netherite_backpack"
   }

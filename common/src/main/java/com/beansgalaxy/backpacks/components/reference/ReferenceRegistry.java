@@ -52,7 +52,7 @@ public record ReferenceRegistry(GenericTraits traits,
             public void encode(RegistryFriendlyByteBuf buf, ReferenceRegistry reference) {
                   TraitComponentKind<? extends GenericTraits> kind = reference.traits.kind();
                   TraitComponentKind.STREAM_CODEC.encode(buf, kind);
-                  encode(buf, kind.codec(), reference.traits);
+                  encode(buf, kind, reference.traits);
 
                   ItemAttributeModifiers.STREAM_CODEC.encode(buf, reference.modifiers);
 
@@ -66,17 +66,16 @@ public record ReferenceRegistry(GenericTraits traits,
                   FilterComponent.STREAM_CODEC.encode(buf, reference.filter);
             }
 
-            private <T extends GenericTraits> void encode(RegistryFriendlyByteBuf buf, Codec<T> codec, GenericTraits fields) {
-                  buf.writeJsonWithCodec(codec, (T) fields);
+            private <T extends GenericTraits> void encode(RegistryFriendlyByteBuf buf, TraitComponentKind<T> kind, GenericTraits fields) {
+                  kind.streamCodec().encode(buf, (T) fields);
             }
 
             @Override
             public ReferenceRegistry decode(RegistryFriendlyByteBuf buf) {
                   TraitComponentKind<? extends GenericTraits> kind = TraitComponentKind.STREAM_CODEC.decode(buf);
-                  GenericTraits fields = buf.readJsonWithCodec(kind.codec());
+                  GenericTraits fields = kind.streamCodec().decode(buf);
 
                   ItemAttributeModifiers modifiers = ItemAttributeModifiers.STREAM_CODEC.decode(buf);
-
 
                   boolean hasDisplay = buf.readBoolean();
                   DisplayComponent display = hasDisplay ? DisplayComponent.STREAM_CODEC.decode(buf) : null;

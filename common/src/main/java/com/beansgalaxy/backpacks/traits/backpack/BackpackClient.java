@@ -47,7 +47,6 @@ public class BackpackClient implements IClientTraits<BackpackTraits> {
 
       @Override
       public void appendTooltipLines(BackpackTraits traits, Consumer<Component> lines) {
-            int size = traits.size();
-            lines.accept(Component.translatable("traits.beansbackpacks.tooltip." + traits.name() + (size == 1 ? ".solo" : ".size"), size).withStyle(ChatFormatting.GOLD));
+      
       }
 }

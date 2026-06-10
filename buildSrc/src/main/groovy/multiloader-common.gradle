@@ -95,9 +95,11 @@ processResources {
             'version'                      : version,
             'group'                        : project.group, //Else we target the task's group.
             'minecraft_version'            : minecraft_version,
-            'minecraft_version_range'      : minecraft_version_range,
-            'fabric_version'               : fabric_version,
+            'minecraft_min_version'        : minecraft_min_version,
+            'minecraft_max_version'        : minecraft_max_version,
+            'fabric_api_version'           : fabric_api_version,
             'fabric_loader_version'        : fabric_loader_version,
+            'fabric_loader_version_range'  : fabric_loader_version_range,
             'mod_name'                     : mod_name,
             'mod_author'                   : mod_author,
             'mod_id'                       : mod_id,

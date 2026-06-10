@@ -8,16 +8,9 @@ import com.beansgalaxy.backpacks.network.clientbound.ConfigureReferences;
 import com.beansgalaxy.backpacks.network.clientbound.Packet2C;
 import com.beansgalaxy.backpacks.network.serverbound.Packet2S;
 import com.beansgalaxy.backpacks.platform.NeoForgePlatformHelper;
-import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
-import com.beansgalaxy.backpacks.items.ModItems;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.syncher.EntityDataSerializer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -27,14 +20,12 @@ import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 @Mod(Constants.MOD_ID)
 public class NeoForgeMain {
 
     public NeoForgeMain(IEventBus eventBus) {
-        Registries.register(eventBus);
+        ModRegistry.register(eventBus);
         NeoForgePlatformHelper.ITEMS_REGISTRY.register(eventBus);
         NeoForgePlatformHelper.SOUND_REGISTRY.register(eventBus);
         NeoForgePlatformHelper.COMPONENTS_REGISTRY.register(eventBus);
@@ -47,7 +38,7 @@ public class NeoForgeMain {
         CommonClass.init();
     }
 
-    @EventBusSubscriber(modid = Constants.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber(modid = Constants.MOD_ID)
     public static class ModEvents {
 
         @SubscribeEvent
@@ -74,11 +65,9 @@ public class NeoForgeMain {
                         )
             );
         }
-    }
-
-    @EventBusSubscriber(modid = Constants.MOD_ID, bus = EventBusSubscriber.Bus.GAME)
-    public static class GameEvents {
-
+        
+//      ================================================================================================================ GAME EVENTS
+        
         @SubscribeEvent
         public static void serverStartingEvent(final ServerStartingEvent event) {
             ServerSave.CONFIG.read();

@@ -15,7 +15,7 @@ public class MobEffectUtilMixin {
       private static void backpacks_digSpeedAmplification(LivingEntity pEntity, CallbackInfoReturnable<Integer> cir,
                                                           @Local(ordinal = 0) int haste, @Local(ordinal = 1) int conduit
       ) {
-            if (pEntity.hasEffect(MobEffects.DIG_SPEED) && pEntity.hasEffect(MobEffects.CONDUIT_POWER)) {
+            if (pEntity.hasEffect(MobEffects.HASTE) && pEntity.hasEffect(MobEffects.CONDUIT_POWER)) {
                   cir.setReturnValue(haste + conduit + 1);
             }
       }

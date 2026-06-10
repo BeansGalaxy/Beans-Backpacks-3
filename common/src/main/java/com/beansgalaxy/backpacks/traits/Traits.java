@@ -34,6 +34,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import org.apache.commons.lang3.math.Fraction;
@@ -88,9 +89,9 @@ public interface Traits {
 
       Codec<List<ItemStack>> STACKS_CODEC = Codec.list(RecordCodecBuilder.create((in) ->
                                           in.group(
-                                                      ItemStack.ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
-                                                      Codec.INT.fieldOf("count").forGetter(ItemStack::getCount),
-                                                      DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(ItemStack::getComponentsPatch)
+                                                Item.CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
+                                                Codec.INT.fieldOf("count").forGetter(ItemStack::getCount),
+                                                DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(ItemStack::getComponentsPatch)
                                           ).apply(in, ItemStack::new)));
 
       static <T> DataComponentType<T> register(String name, Codec<T> codec, StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec) {

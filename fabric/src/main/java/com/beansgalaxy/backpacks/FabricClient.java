@@ -5,16 +5,12 @@ import com.beansgalaxy.backpacks.client.renderer.BackpackCapeModel;
 import com.beansgalaxy.backpacks.client.renderer.BackpackModel;
 import com.beansgalaxy.backpacks.client.renderer.RenderBackpack;
 import com.beansgalaxy.backpacks.client.renderer.EntityRender;
-import com.beansgalaxy.backpacks.events.AppendLoadedModels;
 import com.beansgalaxy.backpacks.events.NetworkPackages;
-import com.beansgalaxy.backpacks.items.ModItems;
 import com.beansgalaxy.backpacks.screen.BurlapSackScreen;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.model.loading.v1.PreparableModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.rendering.v1.*;
 import net.minecraft.client.gui.screens.MenuScreens;
-import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 
 public class FabricClient implements ClientModInitializer {
@@ -23,14 +19,8 @@ public class FabricClient implements ClientModInitializer {
       public void onInitializeClient() {
             CommonClient.init();
             NetworkPackages.registerClient();
-            PreparableModelLoadingPlugin.register(AppendLoadedModels.LOADER, new AppendLoadedModels());
-
-            ColorProviderRegistry.ITEM.register(CommonClient.LEATHER_BACKPACK_ITEM_COLOR, ModItems.LEATHER_BACKPACK.get());
-            ColorProviderRegistry.ITEM.register(CommonClient.BUNDLE_ITEM_COLOR, ModItems.BUNDLE.get());
-            ItemProperties.registerGeneric(ResourceLocation.withDefaultNamespace("utilities"), CommonClient.UTILITIES_PREDICATE);
-            ItemProperties.registerGeneric(ResourceLocation.withDefaultNamespace("fullness"), CommonClient.FULLNESS_ITEM_PREDICATE);
-            ItemProperties.registerGeneric(ResourceLocation.withDefaultNamespace("eating"), CommonClient.EATING_TRAIT_ITEM_PREDICATE);
-            ItemProperties.register(ModItems.ENDER_POUCH.get(), ResourceLocation.withDefaultNamespace("searching"), CommonClient.ENDER_SEARCHING_PREDICATE);
+            
+            ResourceLocation.withDefaultNamespace("dye");
 
             KeyBindingHelper.registerKeyBinding(KeyPress.INSTANCE.ACTION_KEY);
             KeyBindingHelper.registerKeyBinding(KeyPress.INSTANCE.MENUS_KEY);
@@ -43,7 +33,7 @@ public class FabricClient implements ClientModInitializer {
             EntityRendererRegistry.register(CommonClass.LEGACY_ENDER_ENTITY.get(), EntityRender::new);
             EntityRendererRegistry.register(CommonClass.LEGACY_WINGED_ENTITY.get(), EntityRender::new);
             
-            MenuScreens.register(Registries.BURLAP_SACK_MENU, BurlapSackScreen::new);
+            MenuScreens.register(ModRegistry.BURLAP_SACK_MENU, BurlapSackScreen::new);
 
             CommonClass.CLIENT_CONFIG.read();
       }

@@ -28,7 +28,7 @@ public class NetworkPackages {
       private static <T extends Packet2S> void register2S(Network2S.DynamicLoaderPacket<? super RegistryFriendlyByteBuf, T> packet) {
             PayloadTypeRegistry.playC2S().register(packet.type, packet);
             ServerPlayNetworking.registerGlobalReceiver(packet.type, (payload, context) ->
-                        context.player().server.execute(() -> packet.handle(payload, context.player()))
+                        context.server().execute(() -> packet.handle(payload, context.player()))
             );
       }
 

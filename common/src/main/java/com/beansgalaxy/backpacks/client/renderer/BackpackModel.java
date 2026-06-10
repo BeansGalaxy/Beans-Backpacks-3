@@ -1,26 +1,29 @@
 package com.beansgalaxy.backpacks.client.renderer;
 
+import com.beansgalaxy.backpacks.access.BackpackRenderState;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
 import net.minecraft.client.model.geom.builders.*;
-import net.minecraft.world.entity.Entity;
+import net.minecraft.client.renderer.entity.state.EntityRenderState;
 
-public class BackpackModel<T extends Entity>
+public class BackpackModel<T extends EntityRenderState>
 		extends EntityModel<T> {
 	private final ModelPart main;
-	private final ModelPart body;
-	private final ModelPart button;
-	private final ModelPart body_mask;
-	private final ModelPart head_mask;
-
+	public final ModelPart body;
+	public final ModelPart button;
+	public final ModelPart body_mask;
+	public final ModelPart head_mask;
+	public final ModelPart top;
+	
 	public BackpackModel(ModelPart root) {
-		this.main = root.getChild("main");
+            super(root);
+            this.main = root.getChild("main");
 		this.body = main.getChild("body");
 		this.button = main.getChild("button");
+		this.top = body.getChild("top");
 		this.body_mask = main.getChild("body_mask");
 		this.head_mask = main.getChild("head_mask");
 	}
@@ -56,41 +59,23 @@ public class BackpackModel<T extends Entity>
 
 		return LayerDefinition.create(meshdefinition, 32, 32);
 	}
-
+	
 	@Override
-	public void setupAnim(T entity, float f, float g, float h, float i, float j) {
-
-	}
-
-	@Override
-	public void renderToBuffer(PoseStack matrices, VertexConsumer vertexConsumer, int light, int overlay, int color) {
-		body.render(matrices, vertexConsumer, light, overlay, color);
-		button.render(matrices, vertexConsumer, light, overlay, color);
-	}
-
-	public void renderMask(PoseStack pose, VertexConsumer vertexConsumer, int light, int overlay, int color) {
-		head_mask.render(pose, vertexConsumer, light, overlay, color);
-
-		pose.pushPose();
-		pose.mulPose(Axis.YP.rotationDegrees(180));
-
-		pose.scale(1, 1, -1);
-		body_mask.render(pose, vertexConsumer, light, overlay, color);
-		pose.popPose();
-	}
-
-	public void renderBody(PoseStack matrices, VertexConsumer vertexConsumer, int light, int overlay, int color) {
-		body.render(matrices, vertexConsumer, light, overlay, color);
-	}
-
-	public void renderButton(PoseStack matrices, VertexConsumer vertexConsumer, int light, int overlay, int color) {
-		button.render(matrices, vertexConsumer, light, overlay, color);
-	}
-
-	public void setOpenAngle(float headPitch) {
-		ModelPart[] topParts = {body.getChild("top"), button, head_mask};
-		for (ModelPart topPart : topParts) {
-			topPart.xRot = headPitch;
+	public void setupAnim(T renderState) {
+		super.setupAnim(renderState);
+		
+		body_mask.yRot = 0 * 0.017453292F;
+		body_mask.zScale = -1;
+		
+		
+		BackpackRenderState.Context context = BackpackRenderState.get(renderState);
+		if (context == null)
+			return;
+		
+		for (ModelPart part : new ModelPart[]{
+			top, button, head_mask
+		}) {
+			part.xRot = context.headPitch;
 		}
 	}
 }

@@ -23,7 +23,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SlotAccess;
@@ -98,7 +97,7 @@ public class BackpackTraits extends BundleLikeTraits implements IEntityTraits<Ba
       }
 
       @Override
-      public void use(Level level, Player player, InteractionHand hand, ComponentHolder holder, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
+      public void use(Level level, Player player, InteractionHand hand, ComponentHolder holder, CallbackInfoReturnable<InteractionResult> cir) {
             ItemStack backpack = player.getItemInHand(hand);
 
             EquipmentSlot slotCanidate = null;
@@ -108,7 +107,7 @@ public class BackpackTraits extends BundleLikeTraits implements IEntityTraits<Ba
                   if (equipped.isEmpty()) {
                         player.setItemSlot(value, backpack);
                         player.setItemInHand(hand, ItemStack.EMPTY);
-                        cir.setReturnValue(InteractionResultHolder.success(backpack));
+                        cir.setReturnValue(InteractionResult.SUCCESS);
                         return;
                   }
 
@@ -130,7 +129,7 @@ public class BackpackTraits extends BundleLikeTraits implements IEntityTraits<Ba
                   ItemStack equipped = player.getItemBySlot(slotCanidate);
                   player.setItemSlot(slotCanidate, backpack);
                   player.setItemInHand(hand, equipped);
-                  cir.setReturnValue(InteractionResultHolder.success(backpack));
+                  cir.setReturnValue(InteractionResult.SUCCESS);
             }
       }
 
@@ -141,7 +140,10 @@ public class BackpackTraits extends BundleLikeTraits implements IEntityTraits<Ba
 
       public boolean pickupToBackpack(Player player, EquipmentSlot equipmentSlot, Inventory inventory, ItemStack backpack, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
             if (!isFull(backpack)) {
-                  inventory.items.forEach(stacks -> {
+                  inventory.getNonEquipmentItems().forEach(stacks -> {
+                        if (stacks.isEmpty())
+                              return;
+                        
                         if (ItemStack.isSameItemSameComponents(stacks, stack)) {
                               int present = stacks.getCount();
                               int inserted = stack.getCount();
@@ -177,7 +179,7 @@ public class BackpackTraits extends BundleLikeTraits implements IEntityTraits<Ba
                         if (player instanceof ServerPlayer serverPlayer) {
                               List<Pair<EquipmentSlot, ItemStack>> pSlots = List.of(Pair.of(equipmentSlot, backpack));
                               ClientboundSetEquipmentPacket packet = new ClientboundSetEquipmentPacket(serverPlayer.getId(), pSlots);
-                              serverPlayer.serverLevel().getChunkSource().broadcastAndSend(serverPlayer, packet);
+                              serverPlayer.level().getChunkSource().sendToTrackingPlayersAndSelf(serverPlayer, packet);
                         }
                   }
 
@@ -241,7 +243,7 @@ public class BackpackTraits extends BundleLikeTraits implements IEntityTraits<Ba
 
       @Override
       public InteractionResult interact(BackpackEntity backpackEntity, Player player, InteractionHand hand) {
-            if (player.level().isClientSide)
+            if (player.level().isClientSide())
                   BundleScreen.openScreen(player, backpackEntity.viewable, this);
 
             return InteractionResult.SUCCESS;
@@ -257,7 +259,7 @@ public class BackpackTraits extends BundleLikeTraits implements IEntityTraits<Ba
             double x = backpack.getX();
             double y = backpack.getY();
             double z = backpack.getZ();
-            if (dropItems && !level.isClientSide) for (ItemStack stack : stacks) {
+            if (dropItems && !level.isClientSide()) for (ItemStack stack : stacks) {
                   ItemEntity itementity = new ItemEntity(level, x, y, z, stack);
                   itementity.setDefaultPickUpDelay();
                   RandomSource random = backpack.getRandom();

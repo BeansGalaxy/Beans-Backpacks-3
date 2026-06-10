@@ -55,7 +55,7 @@ public class ConfigureReferences implements Packet2C {
             references.forEach(ReferenceRegistry::put);
       }
 
-      public static Type<ConfigureReferences> ID = new Type<>(ResourceLocation.parse(Constants.MOD_ID + ":config_references_c"));
+      public static Type<ConfigureReferences> ID = new Type<>(Constants.defaultLocation("config_references_c"));
 
       @Override
       public Type<? extends CustomPacketPayload> type() {

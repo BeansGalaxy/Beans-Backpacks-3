@@ -107,7 +107,7 @@ public abstract class ChestLikeTraits extends BundleLikeTraits {
             MutableBundleLike<?> mutable = mutable(holder);
             if (clickType.isHotbar()) {
                   Inventory inventory = player.getInventory();
-                  ItemStack hotbarStack = inventory.items.get(clickType.hotbarSlot);
+                  ItemStack hotbarStack = inventory.getItem(clickType.hotbarSlot);
                   ItemStack stack = mutable.removeItem(index);
                   if (!hotbarStack.isEmpty()) {
                         int add = mutable.toAdd(hotbarStack);
@@ -119,7 +119,7 @@ public abstract class ChestLikeTraits extends BundleLikeTraits {
                   }
                   
                   sound().at(player, ModSound.Type.REMOVE);
-                  inventory.items.set(clickType.hotbarSlot, stack);
+                  inventory.setItem( clickType.hotbarSlot, stack);
                   mutable.push();
                   return;
             }
@@ -127,13 +127,13 @@ public abstract class ChestLikeTraits extends BundleLikeTraits {
             if (clickType.isShift()) {
                   Inventory inventory = player.getInventory();
                   ItemStack stack = mutable.removeItem(index);
-                  int size = inventory.items.size();
+                  int size = inventory.getNonEquipmentItems().size();
                   
                   int i = 9;
                   do {
                         if (i == size) i = 0;
                         
-                        ItemStack hotbar = inventory.items.get(i);
+                        ItemStack hotbar = inventory.getItem( i);
                         if (ItemStack.isSameItemSameComponents(stack, hotbar)) {
                               int add = Math.min(hotbar.getMaxStackSize() - hotbar.getCount(), stack.getCount());
                               hotbar.grow(add);
@@ -152,10 +152,10 @@ public abstract class ChestLikeTraits extends BundleLikeTraits {
                   do {
                         if (i == size) i = 0;
                         
-                        ItemStack hotbar = inventory.items.get(i);
+                        ItemStack hotbar = inventory.getItem( i);
                         if (hotbar.isEmpty()) {
                               int add = Math.min(stack.getMaxStackSize(), stack.getCount());
-                              inventory.items.set(i, stack.copyWithCount(add));
+                              inventory.setItem( i, stack.copyWithCount(add));
                               stack.shrink(add);
                         }
                         
@@ -289,7 +289,7 @@ public abstract class ChestLikeTraits extends BundleLikeTraits {
       }
       
       @Override public void onPlayerInteract(LivingEntity owner, Player player, ItemStack backpack, CallbackInfoReturnable<InteractionResult> cir) {
-//            if (player.level().isClientSide) {
+//            if (player.level().isClientSide()) {
 //                  ViewableBackpack viewable = ViewableBackpack.get(owner);
 //                  BundleScreen.openScreen(player, viewable, this);
 //            }
@@ -320,13 +320,13 @@ public abstract class ChestLikeTraits extends BundleLikeTraits {
             if (clickType.isShift()) {
                   Inventory inventory = player.getInventory();
                   ItemStack stack = mutable.removeItem(index);
-                  int size = inventory.items.size();
+                  int size = inventory.getNonEquipmentItems().size();
                   
                   int i = 9;
                   do {
                         if (i == size) i = 0;
                         
-                        ItemStack hotbar = inventory.items.get(i);
+                        ItemStack hotbar = inventory.getItem( i);
                         if (ItemStack.isSameItemSameComponents(stack, hotbar)) {
                               int add = Math.min(hotbar.getMaxStackSize() - hotbar.getCount(), stack.getCount());
                               hotbar.grow(add);
@@ -345,10 +345,10 @@ public abstract class ChestLikeTraits extends BundleLikeTraits {
                   do {
                         if (i == size) i = 0;
                         
-                        ItemStack hotbar = inventory.items.get(i);
+                        ItemStack hotbar = inventory.getItem( i);
                         if (hotbar.isEmpty()) {
                               int add = Math.min(stack.getMaxStackSize(), stack.getCount());
-                              inventory.items.set(i, stack.copyWithCount(add));
+                              inventory.setItem( i, stack.copyWithCount(add));
                               stack.shrink(add);
                         }
                         

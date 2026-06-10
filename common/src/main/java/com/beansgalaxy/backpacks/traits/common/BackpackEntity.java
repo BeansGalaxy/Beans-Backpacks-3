@@ -11,15 +11,10 @@ import com.beansgalaxy.backpacks.util.CollidingVertexMap;
 import com.beansgalaxy.backpacks.util.ModSound;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
-import com.beansgalaxy.backpacks.util.data_fixers.RecoverLocalData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -27,25 +22,30 @@ import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.*;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.DamageResistant;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -57,10 +57,12 @@ import org.joml.Vector3f;
 import java.util.List;
 import java.util.Objects;
 
-public class BackpackEntity extends Entity implements ComponentHolder {
+public class BackpackEntity extends Entity {
       public static final EntityDataAccessor<Boolean> IS_OPEN = SynchedEntityData.defineId(BackpackEntity.class, EntityDataSerializers.BOOLEAN);
       public static final EntityDataAccessor<ItemStack> ITEM_STACK = SynchedEntityData.defineId(BackpackEntity.class, EntityDataSerializers.ITEM_STACK);
       public static final EntityDataAccessor<Direction> DIRECTION = SynchedEntityData.defineId(BackpackEntity.class, EntityDataSerializers.DIRECTION);
+      public static final EntityDataAccessor<Integer> WOBBLE = SynchedEntityData.defineId(BackpackEntity.class, EntityDataSerializers.INT);
+      public static final EntityDataAccessor<Integer> BREAKING = SynchedEntityData.defineId(BackpackEntity.class, EntityDataSerializers.INT);
 
       public final ViewableBackpack viewable = new ViewableBackpack() {
             @Override public void setOpen(boolean isOpen) {
@@ -80,11 +82,11 @@ public class BackpackEntity extends Entity implements ComponentHolder {
             }
 
             @Override protected ComponentHolder holder() {
-                  return BackpackEntity.this;
+                  return ComponentHolder.of(BackpackEntity.this);
             }
 
             @Override public ItemStack toStack() {
-                  ItemStack stack = BackpackEntity.this.toStack();
+                  ItemStack stack = BackpackEntity.this.getStack();
                   stack.setEntityRepresentation(BackpackEntity.this);
                   return stack;
             }
@@ -92,14 +94,9 @@ public class BackpackEntity extends Entity implements ComponentHolder {
             @Override public boolean shouldClose() {
                   return false;
             }
-
-            @Override public float fallDistance() {
-                  return BackpackEntity.this.fallDistance;
-            }
+            
       };
-
-      public int breakAmount = 0;
-
+      
       public InteractionResult useTraitInteraction(Player player, InteractionHand hand) {
             IEntityTraits<?> traits = getTraits();
             return traits.interact(BackpackEntity.this, player, hand);
@@ -272,6 +269,11 @@ public class BackpackEntity extends Entity implements ComponentHolder {
 
             traits.onPlace(backpackEntity, player, backpackStack);
             backpackEntity.entityData.set(ITEM_STACK, backpackStack.copyWithCount(1));
+            backpackEntity.entityData.set(WOBBLE, 8);
+            
+            Component customName = backpackStack.getCustomName();
+            if (customName != null)
+                  backpackEntity.setCustomName(customName);
 
             if (level instanceof ServerLevel) {
                   level.addFreshEntity(backpackEntity);
@@ -285,11 +287,11 @@ public class BackpackEntity extends Entity implements ComponentHolder {
             return backpackEntity;
       }
 
-      @Override @NotNull
-      protected AABB makeBoundingBox() {
-            return newBoundingBox(getDirection(), position());
+      @Override
+      protected AABB makeBoundingBox(Vec3 position) {
+            return newBoundingBox(getDirection(), position);
       }
-
+      
       private static AABB newBoundingBox(Direction direction, Vec3 pos) {
             double d = (4 / 32.0);
             double w = (8 / 32.0);
@@ -317,40 +319,8 @@ public class BackpackEntity extends Entity implements ComponentHolder {
             
             return aabb;
       }
-
-      private static double roundForY(double i, double playerEye) {
-            i -= 1.0/16;
-            double scale = 8;
-            double scaled = i * scale;
-            double v = i - playerEye;
-            if (v > 0) {
-                  return 2.0/16 + (int) scaled / scale;
-            } else {
-                  return 2.0/16 + Mth.ceil(scaled) / scale;
-            }
-      }
-
-      private static double roundToScale(double position, double scale) {
-            int i = position < 0 ? -1 : 1;
-            int block = (int) position;
-            double v = Math.abs(position - block);
-            
-            if (v < 0.12)
-                  return block;
-            
-            if (v > 0.89)
-                  return block + i;
-            
-            if (v < 0.38)
-                  return block + (i * 0.25);
-            
-            if (v > 0.63)
-                  return block + (i * 0.75);
-            
-            return block + (i * 0.5);
-      }
-
-      public ItemStack toStack() {
+      
+      public ItemStack getStack() {
             return entityData.get(ITEM_STACK);
       }
 
@@ -368,9 +338,10 @@ public class BackpackEntity extends Entity implements ComponentHolder {
       }
 
       private void wobble() {
-            if (viewable.wobble > 0)
-                  viewable.wobble--;
-            else breakAmount = 0;
+            int wobble = entityData.get(WOBBLE);
+            if (wobble > 0)
+                  entityData.set(WOBBLE, wobble - 1);
+            else entityData.set(BREAKING, 0);
       }
 
       private void updateGravity() {
@@ -399,7 +370,7 @@ public class BackpackEntity extends Entity implements ComponentHolder {
       private void inWaterGravity() {
             AABB thisBox = this.getBoundingBox();
             AABB box = new AABB(thisBox.maxX, thisBox.maxY + 6D / 16D, thisBox.maxZ, thisBox.minX, thisBox.maxY, thisBox.minZ);
-            List<Entity> entityList = this.getCommandSenderWorld().getEntities(this, box);
+            List<Entity> entityList = level().getEntities(this, box);
             if (!entityList.isEmpty()) {
                   Entity entity = entityList.get(0);
                   double velocity = this.getY() - entity.getY();
@@ -426,7 +397,13 @@ public class BackpackEntity extends Entity implements ComponentHolder {
 
       @Override
       public boolean fireImmune() {
-            return entityData.get(ITEM_STACK).has(DataComponents.FIRE_RESISTANT);
+            DamageResistant resistance = get(DataComponents.DAMAGE_RESISTANT);
+            if (resistance == null)
+                  return false;
+            
+            TagKey<DamageType> resistance_type = resistance.types();
+            TagKey<DamageType> fire_damage_type = DamageTypeTags.IS_FIRE;
+            return Objects.equals(resistance_type, fire_damage_type);
       }
 
       @Override
@@ -434,32 +411,34 @@ public class BackpackEntity extends Entity implements ComponentHolder {
             builder.define(ITEM_STACK, ModItems.IRON_BACKPACK.get().getDefaultInstance());
             builder.define(DIRECTION, Direction.UP);
             builder.define(IS_OPEN, false);
+            builder.define(WOBBLE, 0);
+            builder.define(BREAKING, 0);
       }
-
+      
       @Override
-      protected void readAdditionalSaveData(CompoundTag tag) {
-            if (tag.contains("local_data")) {
-                  RecoverLocalData.readEntity(this, tag);
-                  return;
-            }
-
-            RegistryOps<Tag> serializationContext = registryAccess().createSerializationContext(NbtOps.INSTANCE);
-            ItemStack stack = ItemStack.OPTIONAL_CODEC.parse(serializationContext, tag.get("as_stack")).getOrThrow();
-            entityData.set(ITEM_STACK, stack);
-
-            Direction direction = Direction.CODEC.parse(serializationContext, tag.get("direction")).getOrThrow();
-            setDirection(direction);
+      protected void readAdditionalSaveData(ValueInput input) {
+            input.read("as_stack", ItemStack.OPTIONAL_CODEC)
+                  .ifPresent(stack -> {
+                        entityData.set(ITEM_STACK, stack);
+                        
+                        Component customName = stack.getCustomName();
+                        if (customName != null)
+                              setCustomName(customName);
+                  });
+            
+            input.read("direction", Direction.CODEC).ifPresent(this::setDirection);
+            
+            boolean hanging = input.getBooleanOr("hanging", getDirection().getAxis().isHorizontal());
+            setNoGravity(hanging);
       }
-
+      
       @Override
-      protected void addAdditionalSaveData(CompoundTag tag) {
-            ItemStack stack = toStack();
-            RegistryOps<Tag> serializationContext = registryAccess().createSerializationContext(NbtOps.INSTANCE);
-            tag.put("as_stack", ItemStack.OPTIONAL_CODEC.encodeStart(serializationContext, stack).getOrThrow());
-            Direction direction = getDirection();
-            tag.put("direction", Direction.CODEC.encodeStart(serializationContext, direction).getOrThrow());
+      protected void addAdditionalSaveData(ValueOutput output) {
+            output.store("as_stack", ItemStack.OPTIONAL_CODEC, getStack());
+            output.store("direction", Direction.CODEC, getDirection());
+            output.putBoolean("hanging", isNoGravity());
       }
-
+      
       @Override
       public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity entity) {
             return new ClientboundAddEntityPacket(this, entity, getDirection().get3DDataValue());
@@ -496,7 +475,7 @@ public class BackpackEntity extends Entity implements ComponentHolder {
 
       @Override
       public Component getName() {
-            return Constants.getName(toStack());
+            return Constants.getName(getStack());
       }
 
       @Override
@@ -506,7 +485,7 @@ public class BackpackEntity extends Entity implements ComponentHolder {
 
       @Override
       public boolean canCollideWith(@NotNull Entity that) {
-            if (that instanceof LivingEntity livingEntity && !livingEntity.isAlive())
+            if (this.canBeCollidedWith(that))
                   return false;
 
             if (this.isPassengerOfSameVehicle(that))
@@ -518,17 +497,20 @@ public class BackpackEntity extends Entity implements ComponentHolder {
             if (that.position().y < this.position().y)
                   return false;
 
-            return that.canBeCollidedWith() || that.isPushable();
+            return that.canBeCollidedWith(that) || that.isPushable();
       }
 
       @Override
-      public boolean canBeCollidedWith() {
+      public boolean canBeCollidedWith(Entity that) {
+            if (that instanceof LivingEntity livingEntity && !livingEntity.isAlive())
+                  return false;
+            
             return true;
       }
 
       @Nullable @Override
       public ItemStack getPickResult() {
-            return toStack();
+            return getStack();
       }
 
       @Override
@@ -538,40 +520,48 @@ public class BackpackEntity extends Entity implements ComponentHolder {
 
       @Override
       public boolean skipAttackInteraction(Entity attacker) {
-            if (attacker instanceof Player player) {
-                  return this.hurt(this.damageSources().playerAttack(player), 0.0f);
+            if (attacker instanceof ServerPlayer player) {
+                  return this.hurtServer(player.level(), this.damageSources().playerAttack(player), 0.0f);
             }
             return false;
       }
-
+      
+      public int getBreaking() {
+            return entityData.get(BREAKING);
+      }
+      
       @Override
-      public boolean hurt(DamageSource damageSource, float amount) {
+      public boolean hurtServer(ServerLevel level, DamageSource damageSource, float amount) {
             double height = 0.1D;
             if ((damageSource.is(DamageTypes.IN_FIRE) || damageSource.is(DamageTypes.LAVA))) {
                   if (fireImmune())
                         return false;
 
                   wobble(5);
-                  breakAmount += 1;
-                  if (breakAmount >= BACKPACK_HEALTH)
-                        breakAndDropContents();
+                  int breakAmount = getBreaking();
+                  if (breakAmount >= BACKPACK_HEALTH) {
+                        breakAndDropContents(level);
+                        playSound(SoundEvents.GENERIC_BURN, 1f, 0.8f);
+                        return true;
+                  }
 
-                  if ((breakAmount + 10) % 11 == 0)
-                        playSound(SoundEvents.GENERIC_BURN, 0.8f, 1f);
-
+                  if (breakAmount % 8 == 1)
+                        playSound(SoundEvents.GENERIC_BURN, 0.7f, 1f);
+                  
+                  entityData.set(BREAKING, breakAmount + 1);
                   return true;
             }
             if (damageSource.is(DamageTypes.PLAYER_ATTACK) && damageSource.getDirectEntity() instanceof Player player) {
                   if (player.isCreative()) {
                         IEntityTraits<?> traits = getTraits();
-                        if (!traits.isEmpty(this))
-                              this.spawnAtLocation(toStack());
+                        if (!traits.isEmpty(ComponentHolder.of(this)))
+                              this.spawnAtLocation(level, getStack());
 
-                        killAndUpdate(false);
+                        killAndUpdate(level, false);
                   }
                   else {
-                        if (breakAmount + 10 >= BACKPACK_HEALTH)
-                              breakAndDropContents();
+                        if (getBreaking() + 10 >= BACKPACK_HEALTH)
+                              breakAndDropContents(level);
                         else {
                               boolean silent = this.isSilent();
                               IEntityTraits<?> traits = getTraits();
@@ -584,7 +574,7 @@ public class BackpackEntity extends Entity implements ComponentHolder {
             if (damageSource.is(DamageTypes.ON_FIRE))
                   return false;
             if (damageSource.is(DamageTypes.CACTUS)) {
-                  breakAndDropContents();
+                  breakAndDropContents(level);
                   return true;
             }
             if (damageSource.is(DamageTypes.EXPLOSION) || damageSource.is(DamageTypes.PLAYER_EXPLOSION)) {
@@ -603,7 +593,8 @@ public class BackpackEntity extends Entity implements ComponentHolder {
 
       public static final int BACKPACK_HEALTH = 24;
       public void wobble(int amount) {
-            viewable.wobble = Math.min(viewable.wobble + amount, BACKPACK_HEALTH);
+            int wobble = Math.min(entityData.get(WOBBLE) + amount, BACKPACK_HEALTH);
+            entityData.set(WOBBLE, wobble);
             level().updateNeighbourForOutputSignal(blockPosition(), Blocks.AIR);
       }
 
@@ -614,26 +605,26 @@ public class BackpackEntity extends Entity implements ComponentHolder {
                   this.setDeltaMovement(this.getDeltaMovement().add(0.0D, height, 0.0D));
       }
 
-      protected void breakAndDropContents() {
-            boolean dropItems = level().getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS);
+      protected void breakAndDropContents(ServerLevel level) {
+            boolean dropItems = level.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS);
             IEntityTraits<?> traits = getTraits();
             traits.onBreak(this, dropItems);
 
             if (!this.isSilent())
                   traits.sound().at(this, ModSound.Type.BREAK);
 
-            killAndUpdate(dropItems);
+            killAndUpdate(level, dropItems);
       }
 
-      private void killAndUpdate(boolean dropItems) {
+      private void killAndUpdate(ServerLevel level, boolean dropItems) {
             BlockPos pPos = blockPosition();
             level().updateNeighbourForOutputSignal(pPos, Blocks.AIR);
             if (!this.isRemoved() && !this.level().isClientSide()) {
-                  this.kill();
+                  this.kill(level);
                   this.markHurt();
                   if (dropItems) {
-                        ItemStack backpack = toStack();
-                        this.spawnAtLocation(backpack);
+                        ItemStack backpack = getStack();
+                        this.spawnAtLocation(level, backpack);
                   }
             }
       }
@@ -641,12 +632,11 @@ public class BackpackEntity extends Entity implements ComponentHolder {
       @Override
       public InteractionResult interact(Player player, InteractionHand hand) {
             BackData backData = BackData.get(player);
-            if (backData.isActionKeyDown()) {
-                  InteractionResult tryEquip = tryEquip(player);
-                  if (!tryEquip.equals(InteractionResult.PASS))
-                        return tryEquip;
-            }
-            return useTraitInteraction(player, hand);
+            if (backData.isActionKeyDown())
+                  return tryEquip(player);
+            
+            return InteractionResult.PASS;
+            
       }
 
       public InteractionResult tryEquip(Player player) {
@@ -657,38 +647,16 @@ public class BackpackEntity extends Entity implements ComponentHolder {
             if (!backSlot.isEmpty())
                   return InteractionResult.FAIL;
 
-            ItemStack stack = this.toStack();
+            ItemStack stack = this.getStack();
             player.setItemSlot(EquipmentSlot.BODY, stack);
             this.getTraits().sound().at(this, ModSound.Type.EQUIP);
-            this.killAndUpdate(false);
+            
+            if (level() instanceof ServerLevel serverLevel)
+                  this.killAndUpdate(serverLevel, false);
+            
             return InteractionResult.SUCCESS;
       }
-
-      private void tryInsertInventory(Player player) {
-            ItemStack stack = this.toStack();
-            ItemStack handStack = player.getItemBySlot(EquipmentSlot.MAINHAND);
-            if (handStack.isEmpty()) {
-                  player.setItemSlot(EquipmentSlot.MAINHAND, stack);
-                  return;
-            }
-
-            Inventory inventory = player.getInventory();
-            NonNullList<ItemStack> items = inventory.items;
-
-            for (int i = 0; i < 9; i++) {
-                  ItemStack hotbarStack = items.get(0);
-                  if (hotbarStack.isEmpty()) {
-                        inventory.setItem(i, stack);
-                        inventory.selected = i;
-                        return;
-                  }
-            }
-
-            if (!inventory.add(-1, stack))
-                  this.spawnAtLocation(stack);
-      }
-
-      @Override
+      
       public <T> @Nullable T remove(DataComponentType<? extends T> type) {
             ItemStack stack = entityData.get(ITEM_STACK);
             T removed = stack.remove(type);
@@ -696,8 +664,9 @@ public class BackpackEntity extends Entity implements ComponentHolder {
             return removed;
       }
 
-      @Override
       public <T> void set(DataComponentType<? super T> type, T data) {
+            setComponent(type, data);
+            
             ItemStack stack = entityData.get(ITEM_STACK);
             stack.set(type, data);
             entityData.set(ITEM_STACK, stack);
@@ -707,13 +676,9 @@ public class BackpackEntity extends Entity implements ComponentHolder {
       public <T> T get(DataComponentType<? extends T> type) {
             return entityData.get(ITEM_STACK).get(type);
       }
-
+      
       @Override
-      public void setChanged() {
-            ItemStack stack = toStack();
-            entityData.set(BackpackEntity.ITEM_STACK, stack, true);
-            BlockPos pPos = blockPosition();
-            level().updateNeighbourForOutputSignal(pPos, Blocks.AIR);
+      public boolean shouldShowName() {
+            return getStack().getCustomName() != null;
       }
-
 }

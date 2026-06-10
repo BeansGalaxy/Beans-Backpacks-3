@@ -10,19 +10,20 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.PrimitiveCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.*;
-import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -121,7 +122,7 @@ public class UtilityComponent {
             Mutable mutable = muteOptional.get();
             for (Int2ObjectMap.Entry<ItemStack> entry : mutable.slots.int2ObjectEntrySet()) {
                   ItemStack value = entry.getValue();
-                  if (!Type.OMINOUS.test(value))
+                  if (!Type.OMINOUS.test(value, player.registryAccess()))
                         continue;
 
                   value.shrink(1);
@@ -132,21 +133,7 @@ public class UtilityComponent {
 
             return false;
       }
-
-      public boolean has(Type type) {
-            return get(type) != null;
-      }
-
-      @Nullable
-      public ItemStack get(Type type) {
-            ObjectCollection<ItemStack> values = this.slots.values();
-            for (ItemStack value : values) {
-                  if (type.test(value))
-                        return value;
-            }
-            return null;
-      }
-
+      
       @NotNull
       private static UtilityComponent.Type getUtilities(ItemStack stack) {
             return Type.NONE;
@@ -156,9 +143,9 @@ public class UtilityComponent {
             return slots.get(i);
       }
 
-      public static Type getType(ItemStack stack) {
+      public static Type getType(ItemStack stack, RegistryAccess access) {
             for (Type value : Type.values()) {
-                  if (value.test(stack)) {
+                  if (value.test(stack, access)) {
                         return value;
                   }
             }
@@ -183,12 +170,9 @@ public class UtilityComponent {
       }
 
       private static final Component OMINOUS_NAME = Component.translatable("block.minecraft.ominous_banner").withStyle(ChatFormatting.GOLD);
-      public static boolean isOminousBanner(ItemStack stack) {
-            if (!stack.is(Items.WHITE_BANNER) || !stack.has(DataComponents.HIDE_ADDITIONAL_TOOLTIP))
-                  return false;
-
-            Component component = stack.get(DataComponents.ITEM_NAME);
-            return component != null && component.equals(OMINOUS_NAME);
+      public static boolean isOminousBanner(ItemStack stack, RegistryAccess access) {
+            ItemStack instance = Raid.getOminousBannerInstance(access.lookupOrThrow(Registries.BANNER_PATTERN));
+            return ItemStack.isSameItemSameComponents(instance, stack);
       }
 
       public enum Type {
@@ -207,20 +191,24 @@ public class UtilityComponent {
             POT(Items.DECORATED_POT, false),
             NONE(Items.AIR, true);
 
-            private final Predicate<ItemStack> predicate;
+            private final BiPredicate<ItemStack, RegistryAccess> predicate;
             private final boolean isStackable;
 
             Type(Item item, boolean stackable) {
-                  this(stack -> stack.is(item), stackable);
+                  this((stack, registryAccess) -> stack.is(item), stackable);
+            }
+            
+            Type(Predicate<ItemStack> predicate, boolean stackable) {
+                  this(((stack, access) -> predicate.test(stack)), stackable);
             }
 
-            Type(Predicate<ItemStack> predicate, boolean stackable) {
+            Type(BiPredicate<ItemStack, RegistryAccess> predicate, boolean stackable) {
                   this.predicate = predicate;
                   isStackable = stackable;
             }
 
-            public boolean test(ItemStack item) {
-                  return predicate.test(item);
+            public boolean test(ItemStack item, RegistryAccess access) {
+                  return predicate.test(item, access);
             }
 
             public boolean isStackable() {

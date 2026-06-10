@@ -5,12 +5,8 @@
     "P"
   ],
   "key": {
-    "#": {
-      "item": "minecraft:leather"
-    },
-    "P": {
-      "item": "minecraft:iron_ingot"
-    }
+    "#": "minecraft:leather",
+    "P": "minecraft:iron_ingot"
   },
   "result": {
     "id": "beansbackpacks:lunch_box",

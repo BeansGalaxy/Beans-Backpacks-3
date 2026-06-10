@@ -1,6 +1,7 @@
 package com.beansgalaxy.backpacks.client;
 
 import com.beansgalaxy.backpacks.CommonClass;
+import com.beansgalaxy.backpacks.Constants;
 import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.access.PlayerAccessor;
 import com.beansgalaxy.backpacks.components.UtilityComponent;
@@ -10,11 +11,13 @@ import com.beansgalaxy.backpacks.network.serverbound.SyncHotkey;
 import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.platform.Window;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -37,7 +40,8 @@ import java.util.OptionalInt;
 public class KeyPress {
       public static final KeyPress INSTANCE = new KeyPress();
 
-      public static final String KEY_CATEGORY = "key.beansbackpacks.category";
+      public static final String KEY_CATEGORY_NAME = "key.beansbackpacks.category";
+      public static final KeyMapping.Category KEY_CATEGORY = new KeyMapping.Category(Constants.defaultLocation("backpacks"));
 
       public static final String ACTION_KEY_IDENTIFIER = "key.beansbackpacks.action";
       public static final String MENUS_KEY_IDENTIFIER = "key.beansbackpacks.inventory";
@@ -121,13 +125,12 @@ public class KeyPress {
 
                   int i = itemstack.getCount();
                   InteractionResult interactionresult = minecraft.gameMode.useItemOn(player, interactionhand, coyoteClick.blockhitresult);
-                  if (!interactionresult.consumesAction())
-                        continue;
-
-                  if (interactionresult.shouldSwing()) {
-                        player.swing(interactionhand);
-                        if (!itemstack.isEmpty() && (itemstack.getCount() != i || minecraft.gameMode.hasInfiniteItems())) {
-                              minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionhand);
+                  if (interactionresult instanceof InteractionResult.Success success) {
+                        if (InteractionResult.SwingSource.NONE.equals(success.swingSource())) {
+                              player.swing(interactionhand);
+                              if (!itemstack.isEmpty() && (itemstack.getCount() != i || minecraft.player.isCreative())) {
+                                    minecraft.gameRenderer.itemInHandRenderer.itemUsed(interactionhand);
+                              }
                         }
                   }
 
@@ -189,11 +192,7 @@ public class KeyPress {
 
       @Nullable
       private KeyPress.CoyoteClick coyoteClick = null;
-
-      public boolean hasCoyoteClick() {
-            return coyoteClick != null;
-      }
-
+      
       private static class CoyoteClick {
             final EquipmentSlot slot;
             final BackpackTraits traits;
@@ -330,11 +329,11 @@ public class KeyPress {
                   sneakKey.setDown(bind.isDown());
 
             InputConstants.Key key = InputConstants.getKey(bind.saveString());
-            long window = minecraft.getWindow().getWindow();
+            Window window = minecraft.getWindow();
             int value = key.getValue();
 
             boolean isMouseKey = key.getType().equals(InputConstants.Type.MOUSE);
-            boolean isPressed = isMouseKey ? GLFW.glfwGetMouseButton(window, value) == 1 : InputConstants.isKeyDown(window, value);
+            boolean isPressed = isMouseKey ? GLFW.glfwGetMouseButton(window.handle(), value) == 1 : InputConstants.isKeyDown(window, value);
             return new isPressed(isMouseKey, isPressed);
       }
 

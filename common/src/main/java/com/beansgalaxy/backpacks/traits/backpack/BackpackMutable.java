@@ -46,13 +46,12 @@ public class BackpackMutable extends MutableBundleLike<BackpackTraits> {
             }
 
             Inventory inventory = player.getInventory();
-            int selected = inventory.selected;
-            ItemStack inHand = inventory.items.get(selected);
+            ItemStack inHand = inventory.getSelectedItem();
             if (!inHand.isEmpty()) {
                   if (freeSlot < 9)
-                        inventory.selected = freeSlot;
+                        inventory.setSelectedSlot(freeSlot);
                   else
-                        inventory.items.set(freeSlot, inHand);
+                        inventory.setItem(freeSlot, inHand);
             }
 
             player.setItemInHand(InteractionHand.MAIN_HAND, stack);

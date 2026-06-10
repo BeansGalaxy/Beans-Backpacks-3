@@ -35,8 +35,8 @@ public class QuiverClient extends ChestClient {
                   else i = 0;
 
                   ItemStack arrow = stacks.get(i);
-                  CommonClient.renderItem(minecraft, gui, arrow, x + 8, y + 8, 150, false);
-                  CommonClient.renderItemDecorations(gui, font, arrow, x + 8, y + 8, 150);
+                  CommonClient.renderItem(minecraft, gui, arrow, x + 8, y + 8);
+                  CommonClient.renderItemDecorations(gui, font, arrow, x + 8, y + 8);
             }
             super.renderItemDecorations(trait, holder, gui, font, stack, x, y);
       }

@@ -6,11 +6,13 @@ import com.beansgalaxy.backpacks.components.ender.EnderItem;
 import com.beansgalaxy.backpacks.components.reference.ReferenceTrait;
 import com.beansgalaxy.backpacks.platform.Services;
 import com.beansgalaxy.backpacks.traits.Traits;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.block.Block;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
@@ -21,7 +23,7 @@ public enum ModItems {
       NETHERITE_BACKPACK("netherite_backpack", "netherite_backpack",
                   properties -> properties.fireResistant().stacksTo(1)),
       ENDER_POUCH("ender_pouch", EnderItem::new, false),
-      EMPTY_ENDER_POUCH("empty_ender_pouch", () -> new EmptyEnderItem("vanilla_bundle")),
+      EMPTY_ENDER_POUCH("empty_ender_pouch", p -> new EmptyEnderItem(p, "vanilla_bundle")),
       BUNDLE("bundle", "vanilla_bundle"),
       LUNCH_BOX("lunch_box", "lunch_box"),
       QUIVER("quiver", "quiver"),
@@ -44,31 +46,30 @@ public enum ModItems {
                         output.accept(Items.LEATHER_LEGGINGS);
                         output.accept(Items.DECORATED_POT);
                   });
-
-      public final String id;
-      public final Supplier<Item> item;
-      public final boolean creativeIncluded;
+      
+      private final Holder<Item> item;
+      private final boolean creativeIncluded;
 
       ModItems(String id, String reference) {
             this(id, reference, p -> p.stacksTo(1));
       }
 
       ModItems(String id, String reference, UnaryOperator<Item.Properties> properties) {
-            this.id = id;
-            ResourceLocation location = ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, reference);
+            ResourceLocation location = Constants.defaultLocation(reference);
             ReferenceTrait referenceTrait = new ReferenceTrait(location);
-            Item.Properties properties1 = new Item.Properties().component(Traits.REFERENCE, referenceTrait);
-            this.item = Services.PLATFORM.register(id, () -> new Item(properties.apply(properties1)));
+            this.item = Services.PLATFORM.register(id, p ->
+                  new Item(properties.apply(p).component(Traits.REFERENCE, referenceTrait))
+            );
+            
             this.creativeIncluded = true;
       }
 
-      ModItems(String id, Supplier<Item> item, boolean creativeIncluded) {
-            this.id = id;
+      ModItems(String id, Function<Item.Properties, Item> item, boolean creativeIncluded) {
             this.item = Services.PLATFORM.register(id, item);
             this.creativeIncluded = creativeIncluded;
       }
 
-      ModItems(String id, Supplier<Item> item) {
+      ModItems(String id, Function<Item.Properties, Item> item) {
             this(id, item, true);
       }
 
@@ -77,7 +78,7 @@ public enum ModItems {
       }
 
       public Item get() {
-            return item.get();
+            return item.value();
       }
 
       public boolean is(ItemStack stack) {

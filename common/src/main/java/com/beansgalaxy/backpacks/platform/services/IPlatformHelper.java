@@ -8,11 +8,9 @@ import com.beansgalaxy.backpacks.network.clientbound.Packet2C;
 import com.beansgalaxy.backpacks.network.serverbound.Packet2S;
 import com.beansgalaxy.backpacks.screen.BurlapSackMenu;
 import com.mojang.serialization.Codec;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -22,14 +20,16 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 import java.nio.file.Path;
-import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public interface IPlatformHelper {
@@ -66,9 +66,9 @@ public interface IPlatformHelper {
         return isDevelopmentEnvironment() ? "development" : "production";
     }
 
-    Supplier<Item> register(String name, Supplier<Item> item);
+    Holder<Item> register(String name, Function<Item.Properties, Item> item);
 
-    Supplier<Block> registerBlock(String id, Supplier<Block> item);
+    Supplier<BlockItem> registerBlock(String id, Function<BlockBehaviour.Properties, Block> item);
 
     BlockEntityType<? extends AbstractBurlapSackEntity> getBurlapSackEntityType();
 
@@ -91,13 +91,9 @@ public interface IPlatformHelper {
     void send(Network2C network, Packet2C packet2C, MinecraftServer server, ServerPlayer player);
 
     void send(Network2S network, Packet2S packet2S);
-
-    ModelResourceLocation getModelVariant(ResourceLocation location);
-
+    
     Path getConfigDir();
-
-    Optional<Path> getModFeaturesDir();
-
+    
     default Path getConfigPath() {
         return getConfigDir().resolve(Constants.MOD_ID);
     }

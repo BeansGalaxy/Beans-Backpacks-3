@@ -10,21 +10,21 @@ dependencies {
     }
 
     modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
     compileOnly "org.spongepowered:mixin:0.8.7"
 
 //    include modApi('teamreborn:energy:4.1.0') {
 //        exclude(group: "net.fabricmc.fabric-api")
 //    }
 
-    modRuntimeOnly "maven.modrinth:energized-power:1.21-2.12.1-fabric"
+//    modRuntimeOnly "maven.modrinth:energized-power:1.21-2.12.1-fabric"
 
 //    modRuntimeOnly "maven.modrinth:isometric-renders:0.4.7+1.21"
 //    modRuntimeOnly "io.wispforest:worldmesher:0.4.6+1.21"
 //    modRuntimeOnly "io.wispforest:exo:0.1.5+1.19"
 //    modRuntimeOnly "io.wispforest:owo-lib:0.12.15+1.21"
 //
-    modCompileOnly "maven.modrinth:better-combat:2.0.3+1.21.1-fabric"
+//    modCompileOnly "maven.modrinth:better-combat:2.0.3+1.21.1-fabric"
 //    modRuntimeOnly "maven.modrinth:cloth-config:15.0.140+fabric"
 //    modRuntimeOnly "maven.modrinth:playeranimator:2.0.0-alpha1+1.21-fabric"
     modRuntimeOnly "maven.modrinth:modmenu:11.0.3"

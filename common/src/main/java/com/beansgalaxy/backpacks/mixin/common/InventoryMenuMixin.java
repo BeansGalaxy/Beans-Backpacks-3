@@ -2,6 +2,7 @@ package com.beansgalaxy.backpacks.mixin.common;
 
 import com.beansgalaxy.backpacks.access.BackData;
 import com.beansgalaxy.backpacks.container.*;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -15,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(InventoryMenu.class)
-public abstract class InventoryMenuMixin extends RecipeBookMenu<CraftingInput, CraftingRecipe> {
+public abstract class InventoryMenuMixin extends RecipeBookMenu {
       public InventoryMenuMixin(MenuType<?> $$0, int $$1) {
             super($$0, $$1);
       }
@@ -27,7 +28,8 @@ public abstract class InventoryMenuMixin extends RecipeBookMenu<CraftingInput, C
             BackData backData = BackData.get(owner);
 
             UtilityContainer utility = backData.getUtility();
-            addSlot(new UtilitySlot(utility, 0));
-            addSlot(new UtilitySlot(utility, 1));
+            RegistryAccess access = owner.registryAccess();
+            addSlot(new UtilitySlot(utility, 0, access));
+            addSlot(new UtilitySlot(utility, 1, access));
       }
 }

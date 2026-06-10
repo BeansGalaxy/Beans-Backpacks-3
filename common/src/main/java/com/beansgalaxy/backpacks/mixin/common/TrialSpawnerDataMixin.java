@@ -11,7 +11,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.trialspawner.TrialSpawner;
-import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerData;
+import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerStateData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,15 +21,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@Mixin(TrialSpawnerData.class)
+@Mixin(TrialSpawnerStateData.class)
 public class TrialSpawnerDataMixin {
-
       @Inject(method = "tryDetectPlayers", at = @At(value = "INVOKE", target = "Ljava/util/Optional;isPresent()Z"))
       private void backpacks_detectPlayers(ServerLevel pLevel, BlockPos pPos, TrialSpawner pSpawner, CallbackInfo ci, @Local Optional<Pair<Player, Holder<MobEffect>>> optional, @Local List<UUID> list) {
             if (optional.isPresent())
                   return;
-
-
+            
             for (UUID uuid : list) {
                   Player player = pLevel.getPlayerByUUID(uuid);
                   if (player != null) {

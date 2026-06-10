@@ -14,7 +14,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.Nullable;
 
 public class BackSlot extends Slot implements EquipmentSlotAccess {
       public static final int SLOT = 41;
@@ -83,9 +82,9 @@ public class BackSlot extends Slot implements EquipmentSlotAccess {
       public EquipmentSlot getSlot() {
             return EquipmentSlot.BODY;
       }
-
-      @Nullable @Override
-      public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
-            return Pair.of(InventoryMenu.BLOCK_ATLAS, ResourceLocation.fromNamespaceAndPath(Constants.MOD_ID, "item/empty_slot_backpack"));
+      
+      @Override
+      public ResourceLocation getNoItemIcon() {
+            return Constants.defaultLocation("container/slot/saddle");
       }
 }

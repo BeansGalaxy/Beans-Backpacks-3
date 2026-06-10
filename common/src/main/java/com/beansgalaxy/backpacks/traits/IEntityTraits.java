@@ -28,7 +28,7 @@ public interface IEntityTraits<T extends GenericTraits> {
 
       default void onDamage(BackpackEntity backpack, boolean silent, ModSound sound) {
             backpack.wobble(10);
-            backpack.breakAmount += 10;
+            backpack.getEntityData().set(BackpackEntity.BREAKING, backpack.getBreaking() + 10);
             backpack.hop(0.1);
             if (!silent) {
                   float pitch = backpack.getRandom().nextFloat() * 0.3f;

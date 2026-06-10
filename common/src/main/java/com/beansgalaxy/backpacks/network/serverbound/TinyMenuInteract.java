@@ -9,8 +9,6 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 
 public class TinyMenuInteract implements Packet2S {
@@ -53,7 +51,7 @@ public class TinyMenuInteract implements Packet2S {
             else {
                   ViewableBackpack viewable;
                   if (entity instanceof ViewableAccessor accessor)
-                        viewable = accessor.beans_Backpacks_3$getViewable();
+                        viewable = accessor.getViewable();
                   else return;
 
                   if (isOpen)
@@ -63,7 +61,7 @@ public class TinyMenuInteract implements Packet2S {
             }
       }
 
-      public static Type<TinyMenuInteract> ID = new Type<>(ResourceLocation.parse(Constants.MOD_ID + ":tiny_menu_interact_s"));
+      public static Type<TinyMenuInteract> ID = new Type<>(Constants.defaultLocation("tiny_menu_interact_s"));
 
       @Override
       public Type<? extends CustomPacketPayload> type() {

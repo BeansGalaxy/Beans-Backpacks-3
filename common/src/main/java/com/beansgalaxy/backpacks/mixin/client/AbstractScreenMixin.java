@@ -17,10 +17,15 @@ import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.ItemSlotMouseAction;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
@@ -29,6 +34,7 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix3x2fStack;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -52,8 +58,6 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
 
       @Shadow @Final protected T menu;
 
-      @Shadow @Nullable protected abstract Slot findSlot(double mouseX, double mouseY);
-
       @Shadow protected boolean isQuickCrafting;
 
       @Shadow protected abstract void slotClicked(Slot slot, int slotId, int mouseButton, ClickType type);
@@ -65,8 +69,6 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
       @Shadow protected int leftPos;
 
       @Shadow protected int topPos;
-
-      @Shadow private int lastClickButton;
       
       @Shadow protected int imageHeight;
       
@@ -74,24 +76,17 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
       
       @Shadow public abstract T getMenu();
       
+      @Shadow @Final private List<ItemSlotMouseAction> itemSlotMouseActions;
+      
+      @Shadow @Final private static ResourceLocation SLOT_HIGHLIGHT_BACK_SPRITE;
+      
+      @Shadow @Final private static ResourceLocation SLOT_HIGHLIGHT_FRONT_SPRITE;
+      
       protected AbstractScreenMixin(Component pTitle) {
             super(pTitle);
       }
       
       @Unique private List<TraitMenu<?>> traitMenus = new ArrayList<>();
-      
-      /*
-      TODO:
-       ~The literal slot that holds the bundle always lights up whether the menu is focused or not;~
-       ~Make that slot light up once the menu is focused;~
-       ~fix the Z ordering;~
-       ~When focused, the menu should jump to the front of the list;~
-       ~Add somewhere to click and drag the menu (dedicated bar / click and drag on items or anywhere);~
-       Titles are incorrectly ordered; moving the inject after and increasing the z offset will solve;
-       Change the focused menu border from the standard purple gradient to a orange/gold which matches the attribute/fullness bar
-       ~?Add a sticky start to ignore SMALL accidental clicks~
-       New quicker/intuitive way to close a menu; ESC key closes all menus and cancels closing inv; ?double click empty slot;
-       */
 
       @Override
       public void clickTraitMenu(double pMouseX, double pMouseY, int pButton, CallbackInfoReturnable<Boolean> cir) {
@@ -102,7 +97,7 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
                         
                         if (traitMenu.isHoveringSlot((int) pMouseX, (int) pMouseY)) { // Try and close the menu
                               long i = Util.getMillis();
-                              boolean doubleClick = i - traitMenu.timeOpened < 250L && this.lastClickButton == pButton;
+                              boolean doubleClick = i - traitMenu.timeOpened < 250L;
                               if (doubleClick) {
                                     cir.setReturnValue(true);
                                     return;
@@ -145,9 +140,9 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
       }
       
       @Inject(method = "mouseClicked", cancellable = true, at = @At("HEAD"))
-      private void mouseClicked(double pMouseX, double pMouseY, int pButton, CallbackInfoReturnable<Boolean> cir) {
+      private void mouseClicked(MouseButtonEvent event, boolean isDoubleClick, CallbackInfoReturnable<Boolean> cir) {
             if (hoveredSlot != null) {
-                  if (shouldMakeNewMenu(pButton)) {
+                  if (shouldMakeNewMenu(event.button())) {
                         TraitMenu<?> menu = TraitMenu.create(minecraft, leftPos, topPos, imageHeight, imageWidth, hoveredSlot);
                         if (menu != null) {
                               traitMenus.addFirst(menu);
@@ -158,7 +153,7 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
                               }
                         }
                   }
-                  else if (menu.getCarried().isEmpty() && hoveredSlot.hasItem() && minecraft.options.keyPickItem.matchesMouse(pButton)) {
+                  else if (menu.getCarried().isEmpty() && hoveredSlot.hasItem() && minecraft.options.keyPickItem.matchesMouse(event)) {
                         BackpackTraits.runIfEquipped(minecraft.player, ((traits, slot) -> {
                               Player player = minecraft.player;
                               SlotAccess access = SlotAccess.of(menu::getCarried, menu::setCarried);
@@ -182,9 +177,10 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
             return false;
       }
       
-      @Inject(method = "keyPressed", cancellable = true, at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;checkHotbarKeyPressed(II)Z"))
-      private void keyPressed(int pKeyCode, int pScanCode, int pModifiers, CallbackInfoReturnable<Boolean> cir) {
-            boolean dropButtonWasPressed = minecraft.options.keyDrop.matches(pKeyCode, pScanCode);
+      @Inject(method = "keyPressed", cancellable = true, at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;checkHotbarKeyPressed(Lnet/minecraft/client/input/KeyEvent;)Z"))
+      private void keyPressed(KeyEvent event, CallbackInfoReturnable<Boolean> cir) {
+            boolean dropButtonWasPressed = minecraft.options.keyDrop.matches(event);
             
             if (dropButtonWasPressed) {
                   Iterator<TraitMenu<?>> iterator = traitMenus.iterator();
@@ -205,8 +201,12 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
             }
       }
 
-      @Inject(method = "render", at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderLabels(Lnet/minecraft/client/gui/GuiGraphics;II)V"))
-      protected void renderTooltip(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick, CallbackInfo ci) {
+      @Inject(method = "renderCarriedItem", at =@At("HEAD"))
+      protected void renderTooltip(GuiGraphics gui, int pMouseX, int pMouseY, CallbackInfo ci) {
+            Matrix3x2fStack pose = gui.pose();
+            pose.pushMatrix();
+            pose.translate(leftPos, topPos);
+            
             TraitMenu<?> focusedMenu = null;
             for (TraitMenu<?> traitMenu : traitMenus) {
                   if (focusedMenu == null && traitMenu.isHovering(pMouseX, pMouseY)) {
@@ -221,39 +221,36 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
                   traitMenus.addFirst(focusedMenu);
             }
             
-            PoseStack pose = pGuiGraphics.pose();
-            pGuiGraphics.enableScissor(0, 0, width, height);
-            
             int i = traitMenus.size();
+            if (i > 0) {
+                  gui.nextStratum();
+            }
+            
             while (i > 0) {
                   i--;
                   
                   TraitMenu<?> traitMenu = traitMenus.get(i);
-                  traitMenu.render((AbstractContainerScreen<?>) (Object) this, pGuiGraphics, pMouseX, pMouseY);
-                  pose.translate(0, 0, 300);
+                  traitMenu.render((AbstractContainerScreen<?>) (Object) this, gui, pMouseX, pMouseY);
+                  gui.nextStratum();
             }
-            
-            pGuiGraphics.disableScissor();
             
             if (hoveredSlot != null) {
                   ItemStack stack = hoveredSlot.getItem();
                   if (!stack.isEmpty() && !CommonClass.CLIENT_CONFIG.hide_bundle_tutorial.get()) {
-                        Optional<BundleLikeTraits> optional = BundleLikeTraits.get(ComponentHolder.of(stack));
+                        ComponentHolder holder = ComponentHolder.of(stack);
+                        Optional<BundleLikeTraits> optional = BundleLikeTraits.get(holder);
                         optional.ifPresent(traits -> {
                               if (traits instanceof BackpackTraits) {
                                     if (hoveredSlot instanceof EquipmentSlotAccess) {}
                                     else return;
                               }
                               
-                              CommonClient.renderInfoTooltip(pGuiGraphics, pMouseX - leftPos, pMouseY - topPos, hoveredSlot, traits);
+                              CommonClient.renderInfoTooltip(gui, pMouseX - leftPos, pMouseY - topPos, holder);
                         });
                   }
             }
-      }
-      
-      @Inject(method="render", at=@At("TAIL"))
-      private void movePose(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick, CallbackInfo ci) {
-            pGuiGraphics.pose().translate(0,0,traitMenus.size() * 300);
+            
+            pose.popMatrix();
       }
 
       @Override
@@ -277,24 +274,26 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
       };
 
       @Inject(method = "mouseDragged", at = @At("HEAD"), cancellable = true)
-      public void backpackDragged(double pMouseX, double pMouseY, int pButton, double pDragX, double pDragY, CallbackInfoReturnable<Boolean> cir) {
+      public void backpackDragged(MouseButtonEvent event, double mouseX, double mouseY, CallbackInfoReturnable<Boolean> cir) {
             if (!traitMenus.isEmpty()) {
                   TraitMenu<?> traitMenu = traitMenus.getFirst();
                   if (traitMenu.isFocused()) {
-                        traitMenu.mouseDragged(pMouseX, pMouseY, pButton, pDragX, pDragY, cir);
+                        traitMenu.mouseDragged(event.x(), event.y(), event.button(), mouseX, mouseY, cir);
                         if (cir.isCancelled())
                               return;
                   }
             }
             
             ItemStack backpack = menu.getCarried();
-            Slot slot = this.findSlot(pMouseX, pMouseY);
+            if (hoveredSlot == null)
+                  return;
+            
             if (backpack.isEmpty())
                   return;
 
-            if (slot != lastClickSlot && slot != drag.firstSlot) {
+            if (hoveredSlot != lastClickSlot && hoveredSlot != drag.firstSlot) {
                   IDraggingTrait.runIfPresent(backpack, minecraft.level, ((trait, holder) -> {
-                        beans_Backpacks_3$dragTrait(trait, pButton, slot, cir, holder);
+                        beans_Backpacks_3$dragTrait(trait, event.button(), hoveredSlot, cir, holder);
                   }));
             }
       }
@@ -321,7 +320,7 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
       }
 
       @Inject(method = "mouseReleased", at = @At("HEAD"))
-      public void backpackReleased(double pMouseX, double pMouseY, int pButton, CallbackInfoReturnable<Boolean> cir) {
+      public void backpackReleased(MouseButtonEvent event, CallbackInfoReturnable<Boolean> cir) {
             if (!drag.allSlots.isEmpty()) {
                   if (drag.firstSlot != null) {
                         ItemStack backpack = menu.getCarried();
@@ -336,26 +335,26 @@ public abstract class AbstractScreenMixin<T extends AbstractContainerMenu> exten
             }
       }
 
-      @Inject(method = "renderSlot", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;popPose()V"))
-      public void renderBackpackDraggedSlot(GuiGraphics pGuiGraphics, Slot pSlot, CallbackInfo ci) {
-            ItemStack pair = drag.allSlots.get(pSlot);
+      @Inject(method = "renderSlot", at = @At("TAIL"))
+      public void renderBackpackDraggedSlot(GuiGraphics gui, Slot slot, CallbackInfo ci) {
+            ItemStack pair = drag.allSlots.get(slot);
             if (pair != null) {
-                  int i = pSlot.x;
-                  int j = pSlot.y;
+                  int i = slot.x;
+                  int j = slot.y;
                   if (drag.isPickup) {
-                        pGuiGraphics.renderFakeItem(pair, i, j);
+                        gui.renderFakeItem(pair, i, j);
 
-                        if (pSlot.getItem().getCount() == 1) {
-                              PoseStack pose = pGuiGraphics.pose();
-                              pose.pushPose();
-                              pose.translate(0, 0, 200);
+                        if (slot.getItem().getCount() == 1) {
+                              gui.nextStratum();
                               String pText = String.valueOf(1);
-                              pGuiGraphics.drawString(font, pText, i + 19 - 2 - font.width(pText), j + 6 + 3, 16777215, true);
-                              pose.popPose();
+                              gui.drawString(font, pText, i + 19 - 2 - font.width(pText), j + 6 + 3, 16777215, true);
                         }
+                        }
+                  
+                  if (slot.isHighlightable()) {
+                        gui.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_BACK_SPRITE, slot.x - 4, slot.y - 4, 24, 24);
+                        gui.blitSprite(RenderPipelines.GUI_TEXTURED, SLOT_HIGHLIGHT_FRONT_SPRITE, slot.x - 4, slot.y - 4, 24, 24);
                   }
-
-                  pGuiGraphics.fill(i, j, i + 16, j + 16, drag.isPickup ? 200 : 0,-2130706433);
             }
       }
 

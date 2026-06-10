@@ -4,6 +4,7 @@ import com.beansgalaxy.backpacks.traits.IEntityTraits;
 import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.beansgalaxy.backpacks.traits.common.BackpackEntity;
 import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.decoration.ItemFrame;
@@ -23,11 +24,11 @@ import java.util.Optional;
 
 @Mixin(ComparatorBlock.class)
 public class ComparatorMixin {
-      @Inject(method = "getInputSignal", locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true,
+      @Inject(method = "getInputSignal", cancellable = true,
                   at = @At(value = "INVOKE_ASSIGN", target = "Ljava/lang/Math;max(II)I"))
-      private void injectBackpackComparatorSignal(Level level, BlockPos $$1, BlockState $$2, CallbackInfoReturnable<Integer> cir, int i, Direction direction, BlockPos blockPos, BlockState $$6, ItemFrame $$7, int j) {
+      private void injectBackpackComparatorSignal(Level level, BlockPos pos, BlockState state, CallbackInfoReturnable<Integer> cir, @Local Direction direction, @Local(ordinal = 1) BlockPos blockPos, @Local(ordinal = 0) int i) {
             List<BackpackEntity> backpacks = getBackpack(level, direction, blockPos);
-            int signal = j;
+            int signal = i;
             for (BackpackEntity backpack : backpacks) {
                   IEntityTraits<?> traits = backpack.getTraits();
                   int analog = traits.getAnalogOutput(backpack);
@@ -36,7 +37,7 @@ public class ComparatorMixin {
                   }
             }
 
-            if (signal > j)
+            if (signal > i)
                   cir.setReturnValue(signal);
       }
 
@@ -46,7 +47,9 @@ public class ComparatorMixin {
                         blockPos.getX() + 1, blockPos.getY() + 4/8f, blockPos.getZ() + 1);
 
             List<BackpackEntity> list = level.getEntitiesOfClass(BackpackEntity.class, box, (backpack) -> {
-                  if (backpack == null) return false;
+                  if (backpack == null)
+                        return false;
+                  
                   Direction direction1 = backpack.getDirection();
                   return direction1 == direction;
             });

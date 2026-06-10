@@ -9,15 +9,11 @@ import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
 import com.beansgalaxy.backpacks.util.ModSound;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -26,7 +22,7 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
@@ -49,17 +45,13 @@ public abstract class ArmorStandMixin extends LivingEntity implements ViewableAc
             super(pEntityType, pLevel);
       }
 
-      @Shadow public abstract ItemStack getItemBySlot(EquipmentSlot pSlot);
-
       @Shadow protected abstract EquipmentSlot getClickedSlot(Vec3 pVector);
 
       @Shadow protected abstract boolean swapItem(Player pPlayer, EquipmentSlot pSlot, ItemStack pStack, InteractionHand pHand);
-
-      @Shadow public abstract void tick();
-
+      
       @Shadow public abstract boolean isMarker();
 
-      @Inject(method = "interactAt", cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD, at = @At("HEAD"))
+      @Inject(method = "interactAt", cancellable = true, at = @At("HEAD"))
       private void backpackInteractAt(Player pPlayer, Vec3 pVec, InteractionHand pHand, CallbackInfoReturnable<InteractionResult> cir) {
             if (isMarker())
                   return;
@@ -144,39 +136,11 @@ public abstract class ArmorStandMixin extends LivingEntity implements ViewableAc
             traits.onPlayerInteract(owner, viewer, backpack, cir);
       }
 
-      private ItemStack backItem = ItemStack.EMPTY;
-
-      @Inject(method = "getItemBySlot", cancellable = true, at = @At("HEAD"))
-      private void backpackGetItemBySlot(EquipmentSlot pSlot, CallbackInfoReturnable<ItemStack> cir) {
-            if (EquipmentSlot.BODY.equals(pSlot))
-                  cir.setReturnValue(backItem);
-      }
-
-      @Inject(method = "setItemSlot", cancellable = true, at = @At("HEAD"))
-      private void backpackGetItemBySlot(EquipmentSlot pSlot, ItemStack pStack, CallbackInfo ci) {
-            if (EquipmentSlot.BODY.equals(pSlot)) {
-                  this.verifyEquippedItem(pStack);
-                  onEquipItem(pSlot, backItem, pStack);
-                  backItem = pStack;
-            }
-      }
-
-      @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
-      private void backpackAddSaveData(CompoundTag pCompound, CallbackInfo ci) {
-            Tag backTag = backItem.saveOptional(registryAccess());
-            pCompound.put("BackItem", backTag);
-      }
-
-      @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
-      private void backpackReadSaveData(CompoundTag pCompound, CallbackInfo ci) {
-            if (pCompound.contains("BackItem", 10))
-                  backItem = ItemStack.parseOptional(registryAccess(), pCompound.getCompound("BackItem"));
-      }
-
-      @Inject(method = "brokenByAnything", at = @At("TAIL"))
-      private void backpackBrokenByAnything(ServerLevel pLevel, DamageSource pDamageSource, CallbackInfo ci) {
-            Block.popResource(this.level(), this.blockPosition().above(), backItem);
-            backItem = ItemStack.EMPTY;
+      @Inject(method = "readAdditionalSaveData", at = @At("TAIL")) @Deprecated(since = "1.21.1")
+      private void backpackReadSaveData(ValueInput input, CallbackInfo ci) {
+            input.read("BackItem", ItemStack.CODEC).ifPresent(stack -> {
+                  setItemSlot(EquipmentSlot.BODY, stack);
+            });
       }
 
 // ===================================================================================================================== Viewable
@@ -221,13 +185,10 @@ public abstract class ArmorStandMixin extends LivingEntity implements ViewableAc
 
                   return Traits.get(stack).isEmpty();
             }
-
-            @Override public float fallDistance() {
-                  return ArmorStandMixin.this.fallDistance;
-            }
+            
       };
 
-      @Override public ViewableBackpack beans_Backpacks_3$getViewable() {
+      @Override public ViewableBackpack getViewable() {
             return viewable;
       }
 

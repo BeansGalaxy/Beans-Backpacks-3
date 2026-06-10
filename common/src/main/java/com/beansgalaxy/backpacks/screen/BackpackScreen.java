@@ -6,6 +6,7 @@ import com.beansgalaxy.backpacks.network.serverbound.TinyMenuInteract;
 import com.beansgalaxy.backpacks.util.ViewableBackpack;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
+import net.minecraft.Util;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
@@ -14,11 +15,19 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.navigation.ScreenPosition;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.AbstractRecipeBookScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner;
+import net.minecraft.client.gui.screens.recipebook.CraftingRecipeBookComponent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.sounds.SoundManager;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Inventory;
@@ -30,16 +39,15 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
-public abstract class BackpackScreen extends EffectRenderingInventoryScreen<InventoryMenu> {
+public abstract class BackpackScreen extends AbstractRecipeBookScreen<InventoryMenu> {
       protected final List<TraitSlot> slots = new ArrayList<>();
       protected int traitX = 0, traitY = 0, traitW = 0, traitH = 0;
       protected final ViewableBackpack backpack;
 
       public BackpackScreen(InventoryMenu pMenu, Inventory pPlayerInventory, ViewableBackpack backpack) {
-            super(pMenu, pPlayerInventory, Component.translatable("container.crafting"));
+            super(pMenu, new CraftingRecipeBookComponent(pPlayerInventory.player.inventoryMenu), pPlayerInventory, Component.translatable("container.crafting"));
             this.backpack = backpack;
             this.titleLabelX = 97;
       }
@@ -70,8 +78,8 @@ public abstract class BackpackScreen extends EffectRenderingInventoryScreen<Inve
                   return TinyClickType.ACTION;
             }
 
-            boolean eitherShiftDown = InputConstants.isKeyDown(minecraft.getWindow().getWindow(), 340)
-                        || InputConstants.isKeyDown(minecraft.getWindow().getWindow(), 344);
+            boolean eitherShiftDown = InputConstants.isKeyDown(minecraft.getWindow(), 340)
+                        || InputConstants.isKeyDown(minecraft.getWindow(), 344);
 
             if (eitherShiftDown)
                   return TinyClickType.SHIFT;
@@ -107,13 +115,13 @@ public abstract class BackpackScreen extends EffectRenderingInventoryScreen<Inve
       public List<? extends GuiEventListener> children() {
             return Stream.concat(super.children().stream(), slots.stream()).toList();
       }
-
+      
       @Override
-      public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {
+      public boolean keyPressed(KeyEvent event) {
             TraitSlot slot = getHoveredSlot();
             if (slot != null) {
                   Options options = minecraft.options;
-                  if (options.keyDrop.matches(pKeyCode, pScanCode)) {
+                  if (options.keyDrop.matches(event)) {
                         slot.dropItem();
                         return true;
                   }
@@ -121,13 +129,13 @@ public abstract class BackpackScreen extends EffectRenderingInventoryScreen<Inve
                   KeyMapping[] hotbarSlots = options.keyHotbarSlots;
                   for (int i = 0; i < hotbarSlots.length; i++) {
                         KeyMapping hotbarSlot = hotbarSlots[i];
-                        if (hotbarSlot.matches(pKeyCode, pScanCode)) {
+                        if (hotbarSlot.matches(event)) {
                               slot.hotbarClick(i);
                               return true;
                         }
                   }
             }
-            return super.keyPressed(pKeyCode, pScanCode, pModifiers);
+            return super.keyPressed(event);
       }
 
       private @Nullable TraitSlot getHoveredSlot() {
@@ -150,16 +158,24 @@ public abstract class BackpackScreen extends EffectRenderingInventoryScreen<Inve
             repopulateSlots(gui, pMouseX, pMouseY, pPartialTick);
             super.render(gui, pMouseX, pMouseY, pPartialTick);
 
-            List<Component> tooltipFromItem = Screen.getTooltipFromItem(minecraft, backpack.toStack());
+            List<Component> lines = Screen.getTooltipFromItem(minecraft, backpack.toStack());
             int width = 0;
-            for (Component line : tooltipFromItem) {
+            for (Component line : lines) {
                   int i = font.width(line);
                   if (i > width)
                         width = i;
             }
+            
+            List<ClientTooltipComponent> list = lines.stream()
+                  .map(Component::getVisualOrderText)
+                  .map(ClientTooltipComponent::create)
+                  .collect(Util.toMutableList());
 
             width += 18 + 5 + 33;
-            gui.renderTooltip(font, tooltipFromItem, Optional.empty(), leftPos - width + 19, traitY - 12 * tooltipFromItem.size() + 9);
+            gui.renderTooltip(font, list, leftPos - width + 19, traitY - 12 * lines.size() + 9,
+                  DefaultTooltipPositioner.INSTANCE, backpack.get(DataComponents.TOOLTIP_STYLE)
+            );
+            
             this.renderTooltip(gui, pMouseX, pMouseY);
       }
 
@@ -181,13 +197,13 @@ public abstract class BackpackScreen extends EffectRenderingInventoryScreen<Inve
       protected void renderLabels(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY) {
             pGuiGraphics.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false);
       }
-
+      
       @Override
-      protected boolean hasClickedOutside(double pMouseX, double pMouseY, int pGuiLeft, int pGuiTop, int pMouseButton) {
-            if (pMouseX > traitX - traitW && pMouseY > traitY && pMouseX < traitX && pMouseY < traitY + traitH)
+      protected boolean hasClickedOutside(double x, double y, int left, int top) {
+            if (x > traitX - traitW && y > traitY && x < traitX && y < traitY + traitH)
                   return false;
-
-            return super.hasClickedOutside(pMouseX, pMouseY, pGuiLeft, pGuiTop, pMouseButton);
+            
+            return super.hasClickedOutside(x, y, left, top);
       }
 
       public abstract class TraitSlot extends AbstractWidget {
@@ -199,13 +215,13 @@ public abstract class BackpackScreen extends EffectRenderingInventoryScreen<Inve
             }
 
             public abstract ItemStack getItem();
-
+            
             @Override
-            public boolean mouseClicked(double pMouseX, double pMouseY, int button) {
-                  if (this.active && this.visible && this.clicked(pMouseX, pMouseY)) {
+            public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick) {
+                  if (this.active && this.visible && this.isMouseOver(event.x(), event.y())) {
                         LocalPlayer player = minecraft.player;
 
-                        TinyClickType clickType = getClickType(minecraft, button, player);
+                        TinyClickType clickType = getClickType(minecraft, event.button(), player);
                         AbstractContainerMenu menu = player.containerMenu;
                         SlotAccess carriedAccess = new SlotAccess() {
                               public ItemStack get() {
@@ -274,8 +290,13 @@ public abstract class BackpackScreen extends EffectRenderingInventoryScreen<Inve
       protected void renderBg(GuiGraphics gui, float v, int pMouseX, int pMouseY) {
             int left = this.leftPos;
             int top = this.topPos;
-            gui.blit(INVENTORY_LOCATION, left, top, 0, 0, this.imageWidth, this.imageHeight);
+            gui.blit(RenderPipelines.GUI_TEXTURED, INVENTORY_LOCATION, left, top, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
             InventoryScreen.renderEntityInInventoryFollowsMouse(gui, left + 26, top + 8, left + 75, top + 78, 30, 0.0625F, pMouseX, pMouseY, this.minecraft.player);
             CommonClient.renderSlots(gui, leftPos, topPos, imageWidth, imageHeight, minecraft.player);
+      }
+      
+      @Override
+      protected ScreenPosition getRecipeBookButtonPosition() {
+            return new ScreenPosition(this.leftPos + 104, this.height / 2 - 22);
       }
 }

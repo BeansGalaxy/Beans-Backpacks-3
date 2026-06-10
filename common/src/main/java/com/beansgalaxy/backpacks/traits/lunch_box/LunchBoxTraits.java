@@ -11,7 +11,7 @@ import com.beansgalaxy.backpacks.util.ModSound;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
@@ -149,7 +149,7 @@ public class LunchBoxTraits extends BundleLikeTraits implements ISlotSelectorTra
       }
 
       @Override
-      public void use(Level level, Player player, InteractionHand hand, ComponentHolder holder, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
+      public void use(Level level, Player player, InteractionHand hand, ComponentHolder holder, CallbackInfoReturnable<InteractionResult> cir) {
             LunchBoxMutable mutable = mutable(holder);
             if (mutable.isEmpty())
                   return;
@@ -160,8 +160,7 @@ public class LunchBoxTraits extends BundleLikeTraits implements ISlotSelectorTra
             if ($$4 != null) {
                   if (player.canEat($$4.canAlwaysEat())) {
                         player.startUsingItem(hand);
-                        ItemStack backpack = player.getItemInHand(hand);
-                        cir.setReturnValue(InteractionResultHolder.consume(backpack));
+                        cir.setReturnValue(InteractionResult.CONSUME);
                   }
             }
       }

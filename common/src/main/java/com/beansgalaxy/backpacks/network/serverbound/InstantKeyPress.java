@@ -45,7 +45,7 @@ public class InstantKeyPress implements Packet2S {
                   CommonClass.swapBackWith(allay, sender);
       }
 
-      public static Type<InstantKeyPress> ID = new Type<>(ResourceLocation.parse(Constants.MOD_ID + ":instant_key_press_s"));
+      public static Type<InstantKeyPress> ID = new Type<>(Constants.defaultLocation("instant_key_press_s"));
 
       @Override
       public Type<? extends CustomPacketPayload> type() {

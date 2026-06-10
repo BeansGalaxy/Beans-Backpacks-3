@@ -16,7 +16,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -38,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public interface DecoratedPotEntityAccess {
@@ -102,7 +102,7 @@ public interface DecoratedPotEntityAccess {
                   return false;
             
             Level level = getLevel();
-            if (level.isClientSide)
+            if (level.isClientSide())
                   return true;
             
             BulkComponent bulk = getBulkComponent();
@@ -203,7 +203,7 @@ public interface DecoratedPotEntityAccess {
                   if (returned.isEmpty())
                         return false;
                   
-                  if (!level.isClientSide) {
+                  if (!level.isClientSide()) {
                         double d2 = pos.getX() + 0.5;
                         double d3 = pos.getY() + 1.0;
                         double d4 = pos.getZ() + 0.5;
@@ -223,7 +223,7 @@ public interface DecoratedPotEntityAccess {
             return false;
       }
       
-      static ItemInteractionResult useItemOn(
+      static InteractionResult useItemOn(
             ItemStack inHand,
             Level level,
             BlockPos pos,
@@ -234,31 +234,31 @@ public interface DecoratedPotEntityAccess {
                   BlockPos above = pos.above();
                   BlockState blockState = level.getBlockState(above);
                   if (blockState.isRedstoneConductor(level, above)) {
-                        return ItemInteractionResult.SUCCESS;
+                        return InteractionResult.SUCCESS;
                   }
                   
                   int toAdd = entity.amountToAdd(inHand);
                   if (toAdd <= 0) {
                         entity.fail(level, pos, player);
-                        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+                        return InteractionResult.TRY_WITH_EMPTY_HAND;
                   }
                   
                   ItemStack insert = inHand.copyWithCount(toAdd);
                   boolean success = entity.insertIntoFocus(insert);
-                  if (level.isClientSide)
+                  if (level.isClientSide())
                         return success
-                              ? ItemInteractionResult.SUCCESS
-                              : ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+                              ? InteractionResult.SUCCESS
+                              : InteractionResult.TRY_WITH_EMPTY_HAND;
                   
                   if (success) {
                         inHand.shrink(toAdd);
                         entity.success(inHand, level, pos, player, entity.getFullness());
-                        return ItemInteractionResult.SUCCESS;
+                        return InteractionResult.SUCCESS;
                   }
                   else entity.fail(level, pos, player);
             }
             
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return InteractionResult.TRY_WITH_EMPTY_HAND;
       }
       
       static InteractionResult useWithoutItem(
@@ -279,13 +279,8 @@ public interface DecoratedPotEntityAccess {
                         return InteractionResult.PASS;
                   
                   Inventory inventory = player.getInventory();
-                  Stream<ItemStack> aStream = Stream.concat(inventory.items.stream(), inventory.armor.stream());
-                  Stream<ItemStack> bStream = Stream.of(player.getItemBySlot(EquipmentSlot.BODY));
-                  Iterator<ItemStack> iterator = Stream.concat(aStream, bStream).iterator();
                   
-                  while (iterator.hasNext()) {
-                        ItemStack item = iterator.next();
-                        
+                  for (ItemStack item : inventory) {
                         Optional<BundleLikeTraits> optional = BundleLikeTraits.get(ComponentHolder.of(item));
                         if (optional.isPresent()) {
                               BundleLikeTraits traits = optional.get();
@@ -314,6 +309,18 @@ public interface DecoratedPotEntityAccess {
                   
             }
             return InteractionResult.PASS;
+      }
+      
+      default void collectDrops(Consumer<ItemStack> drops) {
+            BulkComponent bulk = getBulkComponent();
+            if (bulk == null)
+                  return;
+            
+            Holder<Item> item = bulk.item();
+            for (BulkComponent.ItemlessStack stack : bulk.stacks())
+                  drops.accept(stack.withItem(item));
+            
+            setBulkComponent(null);
       }
       
       static void onRemove(

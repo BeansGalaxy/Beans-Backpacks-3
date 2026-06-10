@@ -15,7 +15,7 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class BackpackUseOn implements Packet2S {
-      public static final Type<BackpackUseOn> ID = new Type<>(ResourceLocation.parse(Constants.MOD_ID + ":place_backpack_s"));
+      public static final Type<BackpackUseOn> ID = new Type<>(Constants.defaultLocation("place_backpack_s"));
       private final BlockHitResult blockHitResult;
       private final EquipmentSlot equipmentSlot;
 
