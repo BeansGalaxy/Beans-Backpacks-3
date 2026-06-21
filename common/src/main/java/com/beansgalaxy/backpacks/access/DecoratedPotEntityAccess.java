@@ -1,6 +1,7 @@
 package com.beansgalaxy.backpacks.access;
 
 import com.beansgalaxy.backpacks.components.BulkComponent;
+import com.beansgalaxy.backpacks.mixin.common.DecoratedPotEntityMixin;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
 import com.beansgalaxy.backpacks.traits.generic.MutableBundleLike;
@@ -10,6 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -30,6 +32,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.math.Fraction;
 import org.jetbrains.annotations.Nullable;
@@ -42,6 +45,10 @@ import java.util.stream.Stream;
 
 public interface DecoratedPotEntityAccess {
       int SIZE = 108;
+      
+      default boolean hasLootTable() {
+            return ((DecoratedPotBlockEntity) this).getLootTable() != null;
+      }
       
       default Fraction getWeight() {
             BulkComponent bulk = getBulkComponent();
@@ -230,7 +237,7 @@ public interface DecoratedPotEntityAccess {
             Player player
       ) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof DecoratedPotEntityAccess entity) {
+            if (blockEntity instanceof DecoratedPotEntityAccess entity && !entity.hasLootTable()) {
                   BlockPos above = pos.above();
                   BlockState blockState = level.getBlockState(above);
                   if (blockState.isRedstoneConductor(level, above)) {
@@ -267,7 +274,8 @@ public interface DecoratedPotEntityAccess {
             Player player
       ) {
             BlockEntity blockEntity = level.getBlockEntity(pos);
-            if (blockEntity instanceof DecoratedPotEntityAccess entity) {
+            if (blockEntity instanceof DecoratedPotEntityAccess entity && !entity.hasLootTable()) {
+                  
                   BlockPos above = pos.above();
                   BlockState blockState = level.getBlockState(above);
                   if (blockState.isRedstoneConductor(level, above)) {
