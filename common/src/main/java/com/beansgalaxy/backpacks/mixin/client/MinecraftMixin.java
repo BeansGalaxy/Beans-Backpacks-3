@@ -9,11 +9,9 @@ import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.MouseHandler;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.BlockHitResult;
@@ -50,7 +48,11 @@ public abstract class MinecraftMixin implements MinecraftAccessor {
       public EnderStorage beans_Backpacks_2$getEnder() {
             return beans_Backpacks_2$enderStorage;
       }
-
+      
+      @Override public void beans_Backpacks_3$setRightClickDelay() {
+            rightClickDelay = 4;
+      }
+      
       @Inject(method = "startUseItem", cancellable = true, at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;rightClickDelay:I"))
       private void hotkeyUseItemOn(CallbackInfo ci) {
             boolean isBlockHit = HitResult.Type.BLOCK.equals(instance.hitResult.getType());
@@ -77,8 +79,8 @@ public abstract class MinecraftMixin implements MinecraftAccessor {
                   ci.cancel();
       }
 
-      @Inject(method = "startUseItem", at = @At(value = "INVOKE", ordinal = 1, target = "Lnet/minecraft/world/InteractionResult;shouldSwing()Z"))
-      private void tryCoyoteClick(CallbackInfo ci, @Local(ordinal = 1) InteractionResult result) {
+      @Inject(method = "startUseItem", at = @At(value = "INVOKE", ordinal = 1, target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;itemUsed(Lnet/minecraft/world/InteractionHand;)V"))
+      private void tryCoyoteClick(CallbackInfo ci) {
             KeyPress.INSTANCE.cancelCoyoteClick();
       }
 

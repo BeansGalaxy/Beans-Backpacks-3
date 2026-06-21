@@ -4,4 +4,6 @@ import com.beansgalaxy.backpacks.data.EnderStorage;
 
 public interface MinecraftAccessor {
       EnderStorage beans_Backpacks_2$getEnder();
+      
+      void beans_Backpacks_3$setRightClickDelay();
 }

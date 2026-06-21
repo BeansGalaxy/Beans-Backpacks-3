@@ -2,6 +2,7 @@ package com.beansgalaxy.backpacks.client;
 
 import com.beansgalaxy.backpacks.CommonClass;
 import com.beansgalaxy.backpacks.access.BackData;
+import com.beansgalaxy.backpacks.access.MinecraftAccessor;
 import com.beansgalaxy.backpacks.access.PlayerAccessor;
 import com.beansgalaxy.backpacks.components.UtilityComponent;
 import com.beansgalaxy.backpacks.network.serverbound.BackpackUseOn;
@@ -13,6 +14,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -133,7 +135,8 @@ public class KeyPress {
 
                   break;
             }
-
+            
+            ((MinecraftAccessor) minecraft).beans_Backpacks_3$setRightClickDelay();
             cancelCoyoteClick();
       }
 
@@ -161,23 +164,27 @@ public class KeyPress {
             if (pickUpThru(player)) {
                   return OptionalInt.of(0);
             }
-
-            EquipmentSlot[] slots = {
+            
+            
+            Input input = player.input;
+            if (!input.up && !input.down && !input.left && !input.right) {
+                  EquipmentSlot[] slots = {
                         EquipmentSlot.BODY,
                         EquipmentSlot.MAINHAND,
                         EquipmentSlot.OFFHAND
-            };
-
-            for (EquipmentSlot slot : slots) {
-                  ItemStack backpack = player.getItemBySlot(slot);
-
-                  BackpackTraits traits = BackpackTraits.get(backpack);
-                  if (traits == null) {
-                        continue;
+                  };
+                  
+                  for (EquipmentSlot slot : slots) {
+                        ItemStack backpack = player.getItemBySlot(slot);
+                        
+                        BackpackTraits traits = BackpackTraits.get(backpack);
+                        if (traits == null) {
+                              continue;
+                        }
+                        
+                        coyoteClick = new CoyoteClick(slot, traits, hitResult);
+                        return OptionalInt.of(0);
                   }
-
-                  coyoteClick = new CoyoteClick(slot, traits, hitResult);
-                  return OptionalInt.of(0);
             }
 
             return OptionalInt.empty();
@@ -189,11 +196,7 @@ public class KeyPress {
 
       @Nullable
       private KeyPress.CoyoteClick coyoteClick = null;
-
-      public boolean hasCoyoteClick() {
-            return coyoteClick != null;
-      }
-
+      
       private static class CoyoteClick {
             final EquipmentSlot slot;
             final BackpackTraits traits;
