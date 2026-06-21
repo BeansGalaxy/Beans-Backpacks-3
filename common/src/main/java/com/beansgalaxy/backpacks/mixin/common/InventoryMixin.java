@@ -28,9 +28,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Inventory.class)
 public abstract class InventoryMixin implements BackData {
+      @Unique @Final public Inventory instance = (Inventory) (Object) this;
+      
       @Shadow @Final public Player player;
       @Shadow @Final public NonNullList<ItemStack> items;
-
+      
       @Shadow public abstract ItemStack getItem(int pIndex);
 
       @Inject(method = "tick", at = @At("TAIL"))
@@ -56,8 +58,6 @@ public abstract class InventoryMixin implements BackData {
                   });
             }
       }
-
-      @Unique @Final public Inventory instance = (Inventory) (Object) this;
 
       @Inject(method = "add(Lnet/minecraft/world/item/ItemStack;)Z", at = @At(value = "HEAD"), cancellable = true)
       public void addToBackpackBeforeInventory(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
@@ -100,34 +100,6 @@ public abstract class InventoryMixin implements BackData {
                   BackpackTraits.runIfEquipped(player, (traits, equipmentSlot) ->
                               traits.overflowFromInventory(equipmentSlot, player, stack, cir)
                   );
-            }
-      }
-      
-      private long lastFailedTraitScroll = 0;
-      
-      @Inject(method = "swapPaint", cancellable = true, at = @At("HEAD"))
-      private void selectBackpackSlot(double pDirection, CallbackInfo ci) {
-            if (player.level().isClientSide) {
-                  long millis = Util.getMillis();
-                  if (!BackData.get(player).isActionKeyDown()) {
-                        lastFailedTraitScroll = millis;
-                        return;
-                  }
-                  
-                  if (millis - lastFailedTraitScroll < 550L) {
-                        lastFailedTraitScroll = millis;
-                        return;
-                  }
-                  
-                  ItemStack inHand = player.getItemInHand(InteractionHand.MAIN_HAND);
-                  ISlotSelectorTrait trait = ISlotSelectorTrait.get(inHand);
-                  if (trait == null) {
-                        lastFailedTraitScroll = millis;
-                        return;
-                  }
-                  
-                  trait.mouseScrolled(player, ComponentHolder.of(inHand), -1, -1, (int) Math.signum(pDirection));
-                  ci.cancel();
             }
       }
 
