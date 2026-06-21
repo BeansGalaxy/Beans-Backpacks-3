@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 @Mixin(ItemStack.class)
 public class ItemStackMixin {
       @Inject(method = "hurtAndBreak(ILnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;Ljava/util/function/Consumer;)V",
-                  at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getItem()Lnet/minecraft/world/item/Item;"))
+                  at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;getItem()Lnet/minecraft/world/item/Item;", ordinal = 1))
       private void emptyBrokenArmorTraits(int damage, ServerLevel level, LivingEntity entity, Consumer<Item> onBreak, CallbackInfo ci) {
             if (entity instanceof ServerPlayer player) {
                   ItemStack instance = (ItemStack) (Object) this;
