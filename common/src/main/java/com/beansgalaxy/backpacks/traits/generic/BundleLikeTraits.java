@@ -265,8 +265,9 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
 
       @Override
       public void breakTrait(ServerPlayer pPlayer, ItemStack instance) {
-            List<ItemStack> stacks = instance.get(ITraitData.ITEM_STACKS);
-            if (stacks == null)
+            MutableBundleLike<?> mutable = mutable(ComponentHolder.of(instance));
+            List<ItemStack> stacks = mutable.getItemStacks();
+            if (stacks.isEmpty())
                   return;
 
             stacks.forEach(stack -> {
@@ -275,6 +276,8 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
                         pPlayer.drop(stack, true, true);
                   }
             });
+            
+            mutable.push();
       }
 
       @Override
