@@ -5,6 +5,10 @@ import com.beansgalaxy.backpacks.components.ender.EnderTraits;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.traits.abstract_traits.ISlotSelectorTrait;
 import com.beansgalaxy.backpacks.traits.backpack.BackpackTraits;
+import com.beansgalaxy.backpacks.traits.generic.BundleLikeTraits;
+import com.beansgalaxy.backpacks.traits.generic.GenericTraits;
+import com.beansgalaxy.backpacks.traits.generic.ItemStorageTraits;
+import com.beansgalaxy.backpacks.traits.generic.MutableBundleLike;
 import com.beansgalaxy.backpacks.traits.quiver.QuiverTraits;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
 import net.minecraft.Util;
@@ -25,6 +29,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.Optional;
 
 @Mixin(Inventory.class)
 public abstract class InventoryMixin implements BackData {
@@ -60,38 +66,70 @@ public abstract class InventoryMixin implements BackData {
       }
 
       @Inject(method = "add(Lnet/minecraft/world/item/ItemStack;)Z", at = @At(value = "HEAD"), cancellable = true)
-      public void addToBackpackBeforeInventory(ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
-            if (!stack.isEmpty()) {
-                  BackpackTraits bpackTraits = BackpackTraits.get(stack);
-                  if (bpackTraits != null) {
-                        if (bpackTraits.isEmpty(ComponentHolder.of(stack))) {
-                              for (EquipmentSlot value : bpackTraits.slots().getValues()) {
-                                    ItemStack itemBySlot = player.getItemBySlot(value);
-                                    if (!itemBySlot.isEmpty())
-                                          continue;
+      public void addToBackpackBeforeInventory(ItemStack pickup, CallbackInfoReturnable<Boolean> cir) {
+            if (pickup.isEmpty())
+                  return;
+            
+            BackpackTraits bpackTraits = BackpackTraits.get(pickup);
+            if (bpackTraits != null) {
+                  if (!bpackTraits.isEmpty(ComponentHolder.of(pickup))) {
+                        for (EquipmentSlot value : bpackTraits.slots().getValues()) {
+                              ItemStack itemBySlot = player.getItemBySlot(value);
+                              if (!itemBySlot.isEmpty())
+                                    continue;
 
-                                    player.setItemSlot(value, stack.copy());
-                                    stack.setCount(0);
-                                    cir.setReturnValue(true);
-                                    return;
-                              }
+                              player.setItemSlot(value, pickup.copy());
+                              pickup.setCount(0);
+                              cir.setReturnValue(true);
+                              return;
+                        }
 
-                              if (!player.isCreative()) {
-                                    cir.setReturnValue(false);
-                                    return;
-                              }
+                        if (!player.isCreative()) {
+                              cir.setReturnValue(false);
+                              return;
                         }
                   }
-
-                  BackpackTraits.runIfEquipped(player, (traits, equipmentSlot) -> {
-                        ItemStack backpack = player.getItemBySlot(equipmentSlot);
-                        return traits.pickupToBackpack(player, equipmentSlot, instance, backpack, stack, cir);
-                  });
-
-                  QuiverTraits.runIfPresent(player, (traits, slot, itemStack, holder) -> {
-                        return traits.pickupToQuiver(player, slot, itemStack, stack, cir);
-                  });
             }
+            
+            BackpackTraits.runIfEquipped(player, (traits, equipmentSlot) -> {
+                  ItemStack backpack = player.getItemBySlot(equipmentSlot);
+                  return traits.pickupToBackpack(player, equipmentSlot, instance, backpack, pickup, cir);
+            });
+            
+            int[] i = {-1};
+            player.getInventory().contains(stack -> {
+                  i[0]++;
+                  
+                  Optional<BundleLikeTraits> optional = BundleLikeTraits.get(ComponentHolder.of(stack));
+                  
+                  BundleLikeTraits trait;
+                  ComponentHolder holder;
+                  if (optional.isEmpty()) {
+                        Optional<EnderTraits> optionalEnder = EnderTraits.get(stack);
+                        if (optionalEnder.isEmpty()) {
+                              return false;
+                        }
+                        
+                        EnderTraits ender = optionalEnder.get();
+                        GenericTraits generic = ender.getTrait(player.level());
+                        if (generic instanceof BundleLikeTraits bundleLikeTraits) {
+                              trait = bundleLikeTraits;
+                              holder = ender;
+                        }
+                        else return false;
+                  }
+                  else {
+                        holder = ComponentHolder.of(stack);
+                        trait = optional.get();
+                  }
+                  
+                  if (trait.mutable(holder).pickup(player, i[0], stack, pickup, cir)) {
+                        stack.setPopTime(5);
+                        return true;
+                  }
+                  
+                  return false;
+            });
       }
 
       @Inject(method = "add(ILnet/minecraft/world/item/ItemStack;)Z", at = @At("RETURN"), cancellable = true)

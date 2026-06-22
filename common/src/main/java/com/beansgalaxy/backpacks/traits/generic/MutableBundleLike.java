@@ -1,12 +1,15 @@
 package com.beansgalaxy.backpacks.traits.generic;
 
+import com.beansgalaxy.backpacks.network.clientbound.SendItemComponentPatch;
 import com.beansgalaxy.backpacks.traits.ITraitData;
 import com.beansgalaxy.backpacks.traits.Traits;
 import com.beansgalaxy.backpacks.util.ModSound;
 import com.beansgalaxy.backpacks.util.ComponentHolder;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.apache.commons.lang3.math.Fraction;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.List;
 
@@ -204,5 +207,38 @@ public class MutableBundleLike<T extends BundleLikeTraits> implements MutableIte
       
       public void limitSelectedSlot(int index) {
 
+      }
+      
+      public Boolean pickup(Player player, int slot, ItemStack backpack, ItemStack inserted, CallbackInfoReturnable<Boolean> cir) {
+            if (inserted.getMaxStackSize() == inserted.getCount())
+                  return false;
+            
+            List<ItemStack> stacks = getItemStacks();
+            if (stacks == null || stacks.isEmpty())
+                  return false;
+            
+            int toAdd = getMaxAmountToAdd(inserted);
+            if (toAdd <= 0)
+                  return false;
+            
+            boolean hasMatchingItem = false;
+            for (ItemStack itemStack : stacks) {
+                  if (ItemStack.isSameItemSameComponents(itemStack, inserted))
+                        hasMatchingItem = true;
+            }
+            
+            if (!hasMatchingItem)
+                  return false;
+            
+            if (addItem(inserted) != null) {
+                  cir.setReturnValue(true);
+                  sound().toClient(player, ModSound.Type.INSERT, 1, 1);
+                  push();
+                  
+                  if (player instanceof ServerPlayer serverPlayer)
+                        SendItemComponentPatch.send(serverPlayer, slot, backpack);
+            }
+            
+            return inserted.isEmpty();
       }
 }

@@ -55,7 +55,7 @@ public abstract class BundleLikeTraits extends ItemStorageTraits {
 
             return Optional.empty();
       }
-
+      
       public int size() {
             return size;
       }
