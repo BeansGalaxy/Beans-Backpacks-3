@@ -32,5 +32,16 @@ Utilities are a cool way to tie in this mod with other useful features from vani
 
 Just finished seperating the Shorthand into it's own standalone mod. I've updated a few controls that I find more intuitive and simpler than what's present in Beta-0.8 and I hope you agree. I've submitted the mod for review but it seems like Modrinth is currently going through some growing pains. I perfer Modrinth over CurseForge cuz the genuine effort they put into pushing the Minecraft community. It's like $6/mo for Modrinth+ which is less than a 2 cheeseburger meal from McDonalds. If you think what they are pushing with Server and Mod hosting is more important than 2 burgers, a drink, and fries then go support them!!
 
+## Dev Update 7/2/2025
 
+I've found the freetime to start playing minecraft again! There has recently been a boom in mods with an overarching mood that touches every aspect of minecraft and it has me feeling inspired. Lately I've been playing in a new world with No Man's Land + Farmer's Delights installed as the main mods along with various archology and QOL mods. I've been updating the mod during my gameplay fixing minor bugs and tweaking the feel of the controls which I have just posted as 0.13.5-beta. At it's current state I am happy during gameplay on NeoForge but I've just started filing thru the bug reports, tackling them one by one. Once I catch-up with these reports there are a few things still on my radar which I want to complete before a "full" release.
 
+- Finalize Menus and Containers
+- Introduce Ender Backpacks & Kill Ender Pouches
+- Complete Creative Mode Menus
+- Finilize Major Compat between mods (Curios/Trinkets)
+- Test for bugs and release 3.0
+
+This won't be relatively soon, I'll be completing this short list over the rest of the year. I've been very busy with everything stated above and I hope youll hand with me :)
+
+Thanks for the ongoing support.
